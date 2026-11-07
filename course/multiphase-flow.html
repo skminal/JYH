@@ -1,0 +1,1316 @@
+<title>多相流动力学研习课</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600;700&display=swap">
+<style>
+/* Layout: lecture notes — sticky contents rail on the left, one reading column (~44em) with full-width figures and derivation blocks. */
+:root {
+  --paper: #F4F6F5;
+  --panel: #FFFFFF;
+  --ink: #15212A;
+  --muted: #55626C;
+  --rule: #D5DCE0;
+  --accent: #0C6A7F;
+  --accent-soft: #E1EEF1;
+  --accent-ink: #084A59;
+  --caution: #A1382A;
+  --caution-soft: #F7E6E2;
+  --ok: #2D6A3A;
+  --ok-soft: #E2EFE4;
+  --warn: #875900;
+  --warn-soft: #F5EAD2;
+  --emp: #584A88;
+  --emp-soft: #EBE7F5;
+  --font-display: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+  --font-body: "Noto Sans SC", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0F1519; --panel: #151D22; --ink: #E2E7EA; --muted: #9AA6AF; --rule: #2A353C;
+    --accent: #6CBACF; --accent-soft: #13303A; --accent-ink: #A8DBE7;
+    --caution: #E8927F; --caution-soft: #39201B; --ok: #8DCA97; --ok-soft: #1A2F1F;
+    --warn: #E1B764; --warn-soft: #32280F; --emp: #B8A9EF; --emp-soft: #26213C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0F1519; --panel: #151D22; --ink: #E2E7EA; --muted: #9AA6AF; --rule: #2A353C;
+  --accent: #6CBACF; --accent-soft: #13303A; --accent-ink: #A8DBE7;
+  --caution: #E8927F; --caution-soft: #39201B; --ok: #8DCA97; --ok-soft: #1A2F1F;
+  --warn: #E1B764; --warn-soft: #32280F; --emp: #B8A9EF; --emp-soft: #26213C;
+  color-scheme: dark;
+}
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--paper); color: var(--ink);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.8;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 64px;
+}
+a { color: var(--accent); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+h1, h2, h3, h4 { font-family: var(--font-display); text-wrap: balance; line-height: 1.35; margin: 0; }
+p { margin: 0; }
+.shell { max-width: 1160px; margin: 0 auto; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 48px; }
+.mast { max-width: 1160px; margin: 0 auto; padding-block: 40px 28px; border-bottom: 1px solid var(--rule); margin-bottom: 32px; display: grid; gap: 10px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.mast h1 { font-size: clamp(30px, 4.2vw, 44px); font-weight: 700; }
+.mast .lede { color: var(--muted); max-width: 46em; }
+.mast .meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); }
+.mast .meta b { color: var(--ink); font-weight: 500; }
+
+/* contents rail */
+.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; max-height: calc(100vh - 40px); overflow-y: auto; font-size: 13.5px; line-height: 1.55; padding-right: 6px; }
+.toc details > summary { list-style: none; cursor: pointer; font-family: var(--font-mono); font-size: 12px; letter-spacing: .06em; color: var(--muted); padding: 4px 0 10px; }
+.toc details > summary::-webkit-details-marker { display: none; }
+.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.toc a { display: block; color: var(--muted); text-decoration: none; padding: 3px 0 3px 10px; border-left: 2px solid transparent; }
+.toc a:hover { color: var(--ink); border-left-color: var(--rule); }
+.toc .grp { font-family: var(--font-display); font-weight: 700; color: var(--ink); font-size: 14px; margin: 14px 0 4px; }
+.toc .sub a { padding-left: 22px; font-size: 13px; }
+
+main { min-width: 0; display: grid; gap: 0; }
+.part > *, section.sec > *, .level > *, figure > *, .calc > *, .read > *, .read li, .note > * { min-width: 0; }
+pre.mermaid { margin: 0; font-size: 12px; line-height: 1.4; }
+.part { display: grid; gap: 22px; padding-block: 8px 48px; }
+.part + .part { border-top: 2px solid var(--ink); padding-top: 40px; }
+.part-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--accent); }
+.part > h2 { font-size: clamp(24px, 3vw, 32px); }
+section.sec { display: grid; gap: 16px; padding-top: 18px; scroll-margin-top: 16px; }
+section.sec > h3 { font-size: 22px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+section.sec > h3 .no { font-family: var(--font-mono); font-size: 13px; font-weight: 500; color: var(--accent); letter-spacing: .04em; }
+h4 { font-size: 17.5px; margin-top: 8px; }
+.read { max-width: 46em; display: grid; gap: 14px; }
+.read ul, .read ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
+.muted { color: var(--muted); }
+.small { font-size: 14px; }
+strong { font-weight: 700; }
+.kw { font-weight: 700; color: var(--accent-ink); }
+.en { font-family: var(--font-mono); font-size: .86em; color: var(--muted); }
+
+/* display math */
+mjx-container[jax="SVG"][display="true"] { overflow-x: auto; overflow-y: hidden; max-width: 100%; padding: 4px 0; margin: 6px 0 !important; }
+mjx-container[jax="SVG"] { color: inherit; }
+.eq-key { background: var(--accent-soft); border-radius: 6px; padding: 10px 18px; max-width: 46em; }
+.eq-key .cap { font-size: 13px; color: var(--accent-ink); font-weight: 500; }
+
+/* tags for epistemic status */
+.tag { display: inline-block; font-size: 12px; font-weight: 500; line-height: 1.5; padding: 1px 8px; border-radius: 999px; vertical-align: 2px; white-space: nowrap; }
+.tag.ok { background: var(--ok-soft); color: var(--ok); }
+.tag.approx { background: var(--accent-soft); color: var(--accent-ink); }
+.tag.open { background: var(--warn-soft); color: var(--warn); }
+.tag.emp { background: var(--emp-soft); color: var(--emp); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 13px; color: var(--muted); align-items: center; }
+
+/* concept card: the 12-question protocol */
+.concept { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; max-width: 52em; display: grid; gap: 10px; }
+.concept > h4 { margin: 0; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.concept dl { margin: 0; display: grid; grid-template-columns: 7.2em minmax(0, 1fr); gap: 8px 14px; font-size: 15px; line-height: 1.7; }
+.concept dt { color: var(--muted); font-size: 13px; padding-top: 2px; }
+.concept dd { margin: 0; min-width: 0; }
+@media (max-width: 560px) { .concept dl { grid-template-columns: 1fr; gap: 2px; } .concept dd { margin-bottom: 8px; } }
+
+/* derivation: numbered steps are a real sequence */
+.deriv { border-left: 3px solid var(--accent); padding: 4px 0 4px 18px; max-width: 50em; display: grid; gap: 12px; }
+.deriv > h4 { margin: 0; }
+.deriv ol.steps { list-style: none; counter-reset: st; margin: 0; padding: 0; display: grid; gap: 14px; }
+.deriv ol.steps > li { counter-increment: st; display: grid; grid-template-columns: 4.6em minmax(0, 1fr); gap: 10px; }
+.deriv ol.steps > li::before { content: "第" counter(st) "步"; font-family: var(--font-mono); font-size: 12.5px; color: var(--accent); padding-top: 4px; }
+.deriv ol.steps > li > div { min-width: 0; display: grid; gap: 8px; }
+@media (max-width: 560px) { .deriv ol.steps > li { grid-template-columns: 1fr; gap: 2px; } }
+
+.note { border-radius: 6px; padding: 12px 16px; max-width: 50em; display: grid; gap: 6px; font-size: 15px; }
+.note.caution { background: var(--caution-soft); }
+.note.caution > b:first-child { color: var(--caution); }
+.note.research { background: var(--warn-soft); }
+.note.research > b:first-child { color: var(--warn); }
+.note.link { background: var(--accent-soft); }
+.note.link > b:first-child { color: var(--accent-ink); }
+
+figure { margin: 6px 0; max-width: 52em; display: grid; gap: 8px; }
+.figbox > svg { width: 100%; height: auto; display: block; }
+.figbox { overflow-x: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+.figbox > svg { min-width: 560px; }
+figcaption { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
+figcaption b { color: var(--ink); font-weight: 500; }
+
+.tbl { overflow-x: auto; max-width: 52em; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; line-height: 1.6; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th { font-weight: 500; color: var(--muted); font-size: 13px; white-space: nowrap; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); font-size: 13.5px; white-space: nowrap; }
+
+details.qa { max-width: 50em; border-top: 1px solid var(--rule); padding-top: 10px; }
+details.qa > summary { cursor: pointer; color: var(--accent); font-weight: 500; font-size: 15px; }
+details.qa > div { padding-top: 10px; display: grid; gap: 10px; }
+
+/* syllabus */
+.level { display: grid; gap: 14px; }
+.level-head { display: grid; gap: 4px; max-width: 50em; }
+.level-head h3 { font-size: 22px; }
+.lessons { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 56em; border-top: 1px solid var(--rule); }
+.lessons > li { display: grid; grid-template-columns: 3.4em minmax(0, 1fr); gap: 4px 14px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.lessons .code { font-family: var(--font-mono); font-size: 13px; color: var(--accent); padding-top: 3px; }
+.lessons .body { min-width: 0; display: grid; gap: 4px; }
+.lessons .t { font-weight: 700; }
+.lessons .t a { color: inherit; }
+.lessons .m { font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 2px 16px; }
+.lessons .m span b { color: var(--ink); font-weight: 500; }
+.lessons .eqs { font-size: 14px; overflow-x: auto; }
+.lessons li.now { background: linear-gradient(90deg, var(--accent-soft), transparent 70%); }
+.outcome { font-size: 14.5px; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; max-width: 56em; }
+.outcome b { color: var(--accent-ink); }
+
+/* estimator */
+.calc { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; max-width: 56em; display: grid; gap: 16px; }
+.calc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 12px 16px; }
+.calc label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.calc input { font: inherit; font-family: var(--font-mono); font-size: 14px; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 5px; padding: 6px 8px; width: 100%; min-width: 0; box-sizing: border-box; }
+.calc .group-title { font-size: 13px; font-weight: 500; color: var(--ink); grid-column: 1 / -1; margin-top: 4px; }
+.calc-out { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 24px; border-top: 1px solid var(--rule); padding-top: 8px; }
+.calc-out div { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed var(--rule); font-size: 14px; }
+.calc-out span:last-child { font-family: var(--font-mono); font-variant-numeric: tabular-nums; text-align: right; }
+.calc .flag { color: var(--caution); }
+.calc .verdict { font-size: 14.5px; display: grid; gap: 4px; }
+button.reset { justify-self: start; font: inherit; font-size: 13px; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 5px; padding: 4px 12px; cursor: pointer; }
+
+.foot { max-width: 1160px; margin: 0 auto; border-top: 1px solid var(--rule); padding-top: 20px; font-size: 13px; color: var(--muted); }
+
+@media (max-width: 980px) {
+  .shell { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .toc { position: static; max-height: none; border: 1px solid var(--rule); border-radius: 8px; padding: 8px 14px; margin-bottom: 24px; background: var(--panel); }
+  .toc details > summary { padding: 4px 0; }
+  .toc details[open] > summary { padding-bottom: 8px; }
+}
+</style>
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    macros: {
+      vu: '\\mathbf{u}', vw: '\\mathbf{w}', vn: '\\mathbf{n}', vm: '\\mathbf{m}', vx: '\\mathbf{x}',
+      vg: '\\mathbf{g}', vt: '\\mathbf{t}', vq: '\\mathbf{q}', vE: '\\mathbf{E}', vF: '\\mathbf{F}',
+      tT: '\\mathsf{T}', tI: '\\mathsf{I}', ttau: '\\boldsymbol{\\tau}',
+      D: '\\mathrm{D}', dd: '\\mathrm{d}',
+      jump: ['[\\![\\,#1\\,]\\!]', 1]
+    }
+  },
+  svg: { fontCache: 'global' },
+  options: { enableMenu: false }
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js"></script>
+
+<header class="mast">
+  <div class="eyebrow">重庆大学 能源与动力工程学院 · 研究生课程《多相流动力学》（朱恂）· 研习讲义</div>
+  <h1>多相流动力学研习课</h1>
+  <p class="lede">以课件第 1–8 章为主干，向下补齐流体力学、热力学与数学基础，向上延伸到界面热质传递、电流体动力学和等离子体气泡的多物理场建模。最终目标：能为液态甲醇中针—板电极放电气泡独立建立“电场—能量沉积—界面热质传递—气泡动力学—化学反应”耦合模型。</p>
+  <div class="meta"><span><b>第一部分</b> 课程体系与授课顺序</span><span><b>第二部分</b> 第 2 章第 1 讲：多相流的特征与流型</span><span>第 1 章已自学，授课从第 2 章开始</span></div>
+  <div class="legend">结论标注：<span class="tag ok">已确立</span>经过充分实验检验的理论 <span class="tag approx">合理近似</span>有明确前提的简化 <span class="tag emp">经验关联式</span>拟合数据，非普适定律 <span class="tag open">待验证</span>假说或有争议</div>
+</header>
+
+<div class="shell">
+<nav class="toc" aria-label="目录">
+  <details id="tocd" open>
+    <summary>目录</summary>
+    <ol>
+      <li class="grp">第一部分 · 课程体系</li>
+      <li><a href="#syl-intro">课程定位与使用方法</a></li>
+      <li><a href="#syl-order">授课顺序</a></li>
+      <li><a href="#syl-map">知识依赖关系</a></li>
+      <li><a href="#lv-a">A 基础层</a></li>
+      <li><a href="#lv-b">B 进阶层</a></li>
+      <li><a href="#lv-c">C 高级层</a></li>
+      <li><a href="#lv-d">D 科研层</a></li>
+      <li><a href="#syl-slides">课件对照与勘误</a></li>
+      <li class="grp">第二部分 · 第 2 章第 1 讲</li>
+      <li><a href="#l21-goal">一、学习目标</a></li>
+      <li><a href="#l21-phen">二、物理现象导入</a></li>
+      <li><a href="#l21-concept">三、基本概念</a></li>
+      <li class="sub"><a href="#c21-indicator">相指示函数与平均</a></li>
+      <li class="sub"><a href="#c21-regime">流型</a></li>
+      <li class="sub"><a href="#c21-map">流型图</a></li>
+      <li class="sub"><a href="#c21-fr">Froude 数</a></li>
+      <li class="sub"><a href="#c21-eo">Eötvös 数</a></li>
+      <li class="sub"><a href="#c21-we">Weber 数</a></li>
+      <li class="sub"><a href="#c21-ku">Kutateladze 数</a></li>
+      <li><a href="#l21-mech">四、物理机制分析</a></li>
+      <li><a href="#l21-model">五、数学模型建立</a></li>
+      <li><a href="#l21-deriv">六、完整数学推导</a></li>
+      <li class="sub"><a href="#d21-pi">流型图的量纲分析</a></li>
+      <li class="sub"><a href="#d21-bs">泡状→弹状</a></li>
+      <li class="sub"><a href="#d21-tb">Taylor 气弹</a></li>
+      <li class="sub"><a href="#d21-ku">环状流判据</a></li>
+      <li class="sub"><a href="#d21-fl">流态化特征速度</a></li>
+      <li><a href="#l21-cases">七、典型案例与估算器</a></li>
+      <li><a href="#l21-research">八、科研应用</a></li>
+      <li><a href="#l21-errors">九、常见错误与局限</a></li>
+      <li><a href="#l21-check">十、理解检验</a></li>
+      <li><a href="#l21-next">下一讲与所需实验参数</a></li>
+    </ol>
+  </details>
+</nav>
+<main>
+
+<article class="part" id="syllabus">
+  <div class="part-label">第一部分</div>
+  <h2>课程体系：从连续介质到等离子体气泡多物理场模型</h2>
+
+  <section class="sec" id="syl-intro">
+    <h3><span class="no">0.1</span>课程定位与使用方法</h3>
+    <div class="read">
+      <p>课程分四个层级，共 35 讲。<b>A 基础层</b>建立单相连续介质力学和热力学的“语法”；<b>B 进阶层</b>把语法用于两相系统，核心是界面和平均模型；<b>C 高级层</b>处理气泡、液滴、颗粒、界面热质传递和电场作用；<b>D 科研层</b>围绕你的课题：液态甲醇中针—板电极放电产生的等离子体气泡。</p>
+      <p>每一讲都按同一结构推进：学习目标 → 物理现象 → 基本概念 → 物理机制 → 数学模型 → 完整推导 → 典型案例 → 科研应用 → 常见错误与局限 → 理解检验。每个新概念按“是什么、为什么需要、对应什么现象、机制、数学描述、符号单位、来源、成立与失效条件、与已学内容的联系、应用”十二问展开。</p>
+      <p>每讲的“课件”一栏指向朱恂教授课件的章节。课件是主干；本课程补足课件默认你已经掌握的推导，并把它们接到你的课题上。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="syl-order">
+    <h3><span class="no">0.2</span>授课顺序</h3>
+    <div class="read">
+      <p>四个层级描述的是知识结构；实际授课沿课件章节推进。第 1 章你已自学完成，从第 2 章开始。某一章需要的基础层内容（例如线性稳定性分析、N–S 方程、混合长度理论）在用到的那一讲中当场补齐，不单独开课。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>次序</th><th>课件</th><th>内容</th><th>知识层代码</th><th>状态</th></tr></thead>
+      <tbody>
+        <tr><td class="num">—</td><td>第 1 章</td><td>绪论：相、分类、研究方法、两相流参数</td><td>A1、B1</td><td>已自学</td></tr>
+        <tr><td class="num">1</td><td>第 2 章 2.1–2.2</td><td><a href="#lesson-2-1">多相流的特征与流型</a></td><td>B2a（补 A5 量纲分析）</td><td><span class="tag approx">本页</span></td></tr>
+        <tr><td class="num">2</td><td>第 2 章 2.3</td><td>流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 判据</td><td>B2b（补 A6 线性稳定性）</td><td>下一讲</td></tr>
+        <tr><td class="num">3</td><td>第 2 章 2.4</td><td>相速度与相含率分布：微分分析、积分分析、Bankoff 模型、漂移通量</td><td>B2c、B7（补 A4 N–S 与混合长度）</td><td></td></tr>
+        <tr><td class="num">4–6</td><td>第 3 章</td><td>界面跃迁条件（连续介质到界面）、润湿与接触线、泰勒不稳定性与测量</td><td>A1、B3、B4、B5、C4</td><td></td></tr>
+        <tr><td class="num">7–9</td><td>第 4 章</td><td>成核与生长、Rayleigh–Plesset、脱离与鼓泡</td><td>C1、C2、C3</td><td></td></tr>
+        <tr><td class="num">10–11</td><td>第 5 章</td><td>射流稳定性与雾化、液滴撞击</td><td>C4、C5</td><td></td></tr>
+        <tr><td class="num">12–13</td><td>第 6 章</td><td>颗粒受力、颗粒传热传质</td><td>B6、C6</td><td></td></tr>
+        <tr><td class="num">14–15</td><td>第 7 章</td><td>沸腾系统流动特性、压降、流动不稳定性</td><td>B7、B8</td><td></td></tr>
+        <tr><td class="num">16</td><td>第 8 章</td><td>宏观模型与数值方法</td><td>B7、C10</td><td></td></tr>
+        <tr><td class="num">17 起</td><td>扩展</td><td>界面热质传递、电流体动力学、等离子体气泡专题</td><td>C7–C9、D1–D8</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="syl-map">
+    <h3><span class="no">0.3</span>知识依赖关系</h3>
+    <div class="read"><p>箭头表示“学习后者之前必须掌握前者”。通往你课题的主干是：A1 → A4 → B5（界面跃迁条件）→ C2（Rayleigh–Plesset）→ C7（界面热质传递）→ C8/C9（电流体动力学）→ D1–D7。其余各讲是这条主干的支撑或旁支。</p></div>
+    <div class="figbox">
+<pre class="mermaid">
+flowchart LR
+  subgraph SA[A 基础层]
+    A1[A1 连续介质到界面]
+    A2[A2 向量与张量]
+    A3[A3 流体运动学]
+    A4[A4 守恒方程与N-S]
+    A5[A5 量纲分析]
+    A6[A6 边界层与稳定性]
+    A7[A7 热力学与传热传质]
+  end
+  subgraph SB[B 进阶层]
+    B1[B1 两相流参数]
+    B2[B2 流型与相分布 三讲]
+    B3[B3 界面热力学]
+    B4[B4 润湿与接触线]
+    B5[B5 界面跃迁条件]
+    B6[B6 相间作用力]
+    B7[B7 平均模型]
+    B8[B8 压降与不稳定性]
+  end
+  subgraph SC[C 高级层]
+    C1[C1 成核与生长]
+    C2[C2 Rayleigh-Plesset]
+    C3[C3 脱离上升变形]
+    C4[C4 界面不稳定性]
+    C5[C5 雾化与撞击]
+    C6[C6 颗粒系统]
+    C7[C7 界面热质传递]
+    C8[C8 电流体动力学 I]
+    C9[C9 电流体动力学 II]
+    C10[C10 数值方法]
+  end
+  subgraph SD[D 科研层]
+    D1[D1 针尖气泡力学]
+    D2[D2 放电物理]
+    D3[D3 能量沉积与气泡热力学]
+    D4[D4 界面传热]
+    D5[D5 界面电荷]
+    D6[D6 传质与化学]
+    D7[D7 耦合模型]
+    D8[D8 实验验证]
+  end
+  A2 --> A3 --> A4
+  A1 --> A4 --> A5 --> A6
+  A1 --> B1 --> B2
+  A7 --> B3 --> B4
+  A4 --> B5
+  B3 --> B5
+  A4 --> B6 --> B7 --> B8
+  A7 --> C1 --> C2 --> C3
+  B5 --> C2
+  A6 --> C4 --> C5
+  B6 --> C6
+  B6 --> C3
+  B5 --> C7
+  A7 --> C7
+  A4 --> C8 --> C9
+  B7 --> C10
+  B4 --> D1
+  C3 --> D1
+  C9 --> D1
+  C8 --> D2 --> D3
+  C2 --> D3
+  C7 --> D4
+  C8 --> D5
+  C7 --> D6
+  C10 --> D7
+  D1 --> D7
+  D3 --> D7
+  D4 --> D7
+  D5 --> D7
+  D6 --> D7
+  D7 --> D8
+</pre>
+    </div>
+  </section>
+
+  <section class="sec level" id="lv-a">
+    <div class="level-head">
+      <div class="part-label">A 基础层 · 7 讲</div>
+      <h3>流体力学与数学基础</h3>
+      <p class="muted small">目标：能从守恒定律出发写出并解释单相流体的全部控制方程，能做量纲分析和量级估计。</p>
+    </div>
+    <ol class="lessons">
+      <li><span class="code">A1</span><div class="body">
+        <div class="t">多相流动力学的物理本质：从单相连续介质到气液两相界面</div>
+        <div class="m"><span><b>前置</b> 微积分、大学物理</span><span><b>课件</b> 第 1 章 1.1–1.2；第 3 章 3.1 一至三</span><span><b>状态</b> 第 1 章已自学；连续介质与界面跃迁条件在第 3 章讲授时展开</span></div>
+        <div class="eqs">\(\frac{\dd}{\dd t}\int_{V_m}f\,\dd V=\int_{V_m}\left[\frac{\partial f}{\partial t}+\nabla\cdot(f\vu)\right]\dd V\)，\(\ \dot m\jump{\vu}-\jump{\tT}\cdot\vn=\nabla_s\sigma-\sigma\kappa\vn\)</div>
+      </div></li>
+      <li><span class="code">A2</span><div class="body">
+        <div class="t">向量与张量分析：梯度、散度、旋度、拉普拉斯算子、Gauss 与 Stokes 定理、应力张量</div>
+        <div class="m"><span><b>前置</b> A1</span><span><b>课件</b> 课件默认已掌握</span></div>
+        <div class="eqs">\(\oint_{\partial V}\vF\cdot\vn\,\dd A=\int_V\nabla\cdot\vF\,\dd V\)，\(\ \oint_C\vF\cdot\dd\boldsymbol\ell=\int_S(\nabla\times\vF)\cdot\vn\,\dd A\)，\(\ \tT=\tT^{\mathsf T}\)</div>
+      </div></li>
+      <li><span class="code">A3</span><div class="body">
+        <div class="t">流体运动学：拉格朗日与欧拉描述、迹线与流线、变形率张量、涡量</div>
+        <div class="m"><span><b>前置</b> A2</span><span><b>课件</b> 课件默认已掌握</span></div>
+        <div class="eqs">\(\nabla\vu=\mathsf S+\mathsf W\)，\(\ \boldsymbol\omega=\nabla\times\vu\)，\(\ \frac{1}{\delta V}\frac{\D(\delta V)}{\D t}=\nabla\cdot\vu\)</div>
+      </div></li>
+      <li><span class="code">A4</span><div class="body">
+        <div class="t">守恒方程全集：本构关系、Navier–Stokes 方程、能量方程与熵产</div>
+        <div class="m"><span><b>前置</b> A1–A3</span><span><b>课件</b> 第 8 章各模型的单相母方程</span></div>
+        <div class="eqs">\(\rho\frac{\D\vu}{\D t}=-\nabla p+\nabla\cdot\ttau+\rho\vg\)，\(\ \rho c_p\frac{\D T}{\D t}=\nabla\cdot(k\nabla T)+\beta_TT\frac{\D p}{\D t}+\Phi\)</div>
+      </div></li>
+      <li><span class="code">A5</span><div class="body">
+        <div class="t">量纲分析与相似：π 定理，多相流无量纲数族 Re、Fr、We、Bo、Ca、Oh、Ma、Kn、Pr、Sc、Pe、Ja</div>
+        <div class="m"><span><b>前置</b> A4</span><span><b>课件</b> 第 4、5 章散见</span></div>
+        <div class="eqs">\(\mathrm{We}=\frac{\rho U^2L}{\sigma}\)，\(\ \mathrm{Bo}=\frac{\Delta\rho gL^2}{\sigma}\)，\(\ \mathrm{Ja}=\frac{\rho_lc_{p,l}\Delta T_{\rm sup}}{\rho_vh_{lv}}\)</div>
+      </div></li>
+      <li><span class="code">A6</span><div class="body">
+        <div class="t">黏性与无黏流动、边界层、层流与湍流、线性稳定性分析入门（简正模方法）</div>
+        <div class="m"><span><b>前置</b> A4、A5</span><span><b>课件</b> 第 3 章 3.1 五、第 5 章 5.1 的方法基础</span></div>
+        <div class="eqs">\(p+\tfrac12\rho u^2+\rho gz=\mathrm{const}\)，\(\ \delta\sim L\,\mathrm{Re}^{-1/2}\)，\(\ \eta=\hat\eta\,e^{ikx+st}\)</div>
+      </div></li>
+      <li><span class="code">A7</span><div class="body">
+        <div class="t">热力学与传热传质基础：相平衡、Gibbs 函数、相律、Clausius–Clapeyron、Fourier 与 Fick 定律</div>
+        <div class="m"><span><b>前置</b> 工程热力学</span><span><b>课件</b> 第 1 章 1.1 相图；第 4 章过热度</span></div>
+        <div class="eqs">\(\frac{\dd p_{\rm sat}}{\dd T}=\frac{h_{lv}}{T(v_v-v_l)}\)，\(\ \vq=-k\nabla T\)，\(\ \mathbf j_i=-\rho D_i\nabla Y_i\)</div>
+      </div></li>
+    </ol>
+    <p class="outcome"><b>完成 A 层后你应能：</b>对任意单相流动写出质量、动量、能量方程，说明每一项的物理意义并做量纲检查；对一个实际问题列出控制参数、组成无量纲数并判断哪些项可以忽略；用相图和 Clausius–Clapeyron 关系判断相变条件。</p>
+  </section>
+
+  <section class="sec level" id="lv-b">
+    <div class="level-head">
+      <div class="part-label">B 进阶层 · 10 讲</div>
+      <h3>多相流基础理论</h3>
+      <p class="muted small">目标：理解界面带来的新物理，掌握两相流参数体系与四类宏观模型的假设和相互关系。</p>
+    </div>
+    <ol class="lessons">
+      <li><span class="code">B1</span><div class="body">
+        <div class="t">两相流基本参数：质量含气率、容积含气率、截面含气率、折算速度、滑动比、漂移速度与漂移流率</div>
+        <div class="m"><span><b>前置</b> A1</span><span><b>课件</b> 第 1 章 1.3</span></div>
+        <div class="eqs">\(\alpha=\left[1+S\,\frac{1-x}{x}\,\frac{\rho_g}{\rho_l}\right]^{-1}\)，\(\ j_D=\alpha(1-\alpha)(v_g-v_l)=\alpha(v_g-J)\)</div>
+      </div></li>
+      <li class="now"><span class="code">B2a</span><div class="body">
+        <div class="t"><a href="#lesson-2-1">多相流的特征与流型：主导力分析、流型图坐标、四个转变判据的推导</a>（本页第二部分）</div>
+        <div class="m"><span><b>前置</b> B1、A5</span><span><b>课件</b> 第 2 章 2.1–2.2</span></div>
+        <div class="eqs">\(J_l=3.0J_g-1.15\left[\frac{g\Delta\rho\sigma}{\rho_l^2}\right]^{1/4}\)，\(\ U_{TB}\approx0.35\sqrt{gD}\)，\(\ \mathrm{Ku}=\frac{\rho_g^{1/2}J_g}{(\sigma g\Delta\rho)^{1/4}}\ge3.1\)</div>
+      </div></li>
+      <li><span class="code">B2b</span><div class="body">
+        <div class="t">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 四条判据 <span class="tag approx">半理论</span></div>
+        <div class="m"><span><b>前置</b> B2a、A6</span><span><b>课件</b> 第 2 章 2.3</span></div>
+        <div class="eqs">\(X^2=\frac{(\dd p_F/\dd z)_L}{(\dd p_F/\dd z)_G}\)，\(\ (U_1-U_2)^2\gt\frac{\rho_1+\rho_2}{\rho_1\rho_2}\left[\frac{g\Delta\rho}{k}+\sigma k\right]\)</div>
+      </div></li>
+      <li><span class="code">B2c</span><div class="body">
+        <div class="t">相速度与相含率分布：力平衡求剪切应力分布、环状液膜速度剖面、Bankoff 变密度模型</div>
+        <div class="m"><span><b>前置</b> B2b、A4</span><span><b>课件</b> 第 2 章 2.4</span></div>
+        <div class="eqs">\(\tau^*=r^*P^*+\frac{\cos\theta}{r^*}\int_0^{r^*}(1-\alpha)\,2r'\dd r'\)，\(\ \frac{\langle\alpha\rangle}{\beta}=K\) <span class="tag approx">Bankoff</span></div>
+      </div></li>
+      <li><span class="code">B3</span><div class="body">
+        <div class="t">界面热力学：表面自由能、表面张力的温度与杂质效应、表面活性剂、Marangoni 应力</div>
+        <div class="m"><span><b>前置</b> A7</span><span><b>课件</b> 第 3 章 3.1 二、四</span></div>
+        <div class="eqs">\(\sigma=\left(\frac{\partial G}{\partial A}\right)_{T,p}\)，\(\ \vt\cdot(\ttau_1-\ttau_2)\cdot\vn=\vt\cdot\nabla_s\sigma\)</div>
+      </div></li>
+      <li><span class="code">B4</span><div class="body">
+        <div class="t">润湿、接触角、接触角迟滞与动态接触线</div>
+        <div class="m"><span><b>前置</b> B3</span><span><b>课件</b> 第 3 章 3.2、3.3 一</span></div>
+        <div class="eqs">\(\cos\theta_e=\frac{\sigma_{sg}-\sigma_{sl}}{\sigma_{lg}}\)，\(\ \cos\theta_c=rf\cos\theta_e+f-1\)，\(\ \theta_d^3-\theta_e^3\approx9\,\mathrm{Ca}\ln(L/\ell)\) <span class="tag approx">Cox–Voinov</span></div>
+      </div></li>
+      <li><span class="code">B5</span><div class="body">
+        <div class="t">界面跃迁条件的一般形式：质量、动量、能量，含相变与表面张力梯度</div>
+        <div class="m"><span><b>前置</b> A1、A4、B3</span><span><b>课件</b> 第 3 章 3.1 一、四</span></div>
+        <div class="eqs">\(\jump{\rho(\vu-\vw)\cdot\vn}=0\)，\(\ \dot m\,h_{lv}\approx(\vq_l-\vq_v)\cdot\vn\)，\(\ T_i=T_{\rm sat}(p)\) <span class="tag approx">界面平衡假设</span></div>
+      </div></li>
+      <li><span class="code">B6</span><div class="body">
+        <div class="t">相间作用力：曳力、升力、虚拟质量力、Basset 历史力、湍流弥散</div>
+        <div class="m"><span><b>前置</b> A4、A6</span><span><b>课件</b> 第 6 章 6.2</span></div>
+        <div class="eqs">\(\vF_D=\tfrac12C_D\rho_l|\vu_r|\vu_r\frac{\pi d^2}{4}\)，\(\ C_D=\frac{24}{\mathrm{Re}}\ (\mathrm{Re}\ll1)\)，\(\ \vF_{VM}=\tfrac12\rho_lV_b\frac{\D\vu_r}{\D t}\)</div>
+      </div></li>
+      <li><span class="code">B7</span><div class="body">
+        <div class="t">平均方法与宏观模型：均相模型、分相模型、漂移通量模型、双流体模型</div>
+        <div class="m"><span><b>前置</b> B1、B5、B6</span><span><b>课件</b> 第 8 章；第 7 章 7.1</span></div>
+        <div class="eqs">\(\langle v_g\rangle=C_0\langle J\rangle+V_{gj}\) <span class="tag emp">C₀、V_gj 来自关联式</span>，\(\ \partial_t(\alpha_k\rho_k)+\nabla\cdot(\alpha_k\rho_k\vu_k)=\Gamma_k\)</div>
+      </div></li>
+      <li><span class="code">B8</span><div class="body">
+        <div class="t">两相压降与沸腾系统流动不稳定性（静力学与动力学不稳定性）</div>
+        <div class="m"><span><b>前置</b> B7</span><span><b>课件</b> 第 7 章</span></div>
+        <div class="eqs">\(-\frac{\dd p}{\dd z}=\left(-\frac{\dd p}{\dd z}\right)_{\!f}+\left(-\frac{\dd p}{\dd z}\right)_{\!a}+\left(-\frac{\dd p}{\dd z}\right)_{\!g}\)；Ledinegg 失稳：\(\frac{\partial\Delta p_{\rm int}}{\partial G}\lt\frac{\partial\Delta p_{\rm ext}}{\partial G}\)</div>
+      </div></li>
+    </ol>
+    <p class="outcome"><b>完成 B 层后你应能：</b>从界面跃迁条件出发说明 Young–Laplace、Marangoni 流和蒸发反冲各自来自哪一项；在 x、β、α、S 之间自由换算并说明物理含义；说清均相、分相、漂移通量、双流体四种模型各自丢掉了什么物理，并为给定问题选择模型。</p>
+  </section>
+
+  <section class="sec level" id="lv-c">
+    <div class="level-head">
+      <div class="part-label">C 高级层 · 10 讲</div>
+      <h3>气泡、液滴、颗粒、界面热质传递与电场作用</h3>
+      <p class="muted small">目标：能推导并求解气泡动力学方程，分析界面稳定性，区分各类界面传热阻力，写出电场作用下的界面应力条件，并理解数值方法的适用边界。</p>
+    </div>
+    <ol class="lessons">
+      <li><span class="code">C1</span><div class="body">
+        <div class="t">汽泡成核与生长：临界半径、过热度、均相与非均相成核 <span class="tag approx">经典成核理论定量精度有限</span></div>
+        <div class="m"><span><b>前置</b> A7、B3</span><span><b>课件</b> 第 4 章 4.1 一、二</span></div>
+        <div class="eqs">\(R_c=\frac{2\sigma}{p_v(T_l)-p_l}\)，\(\ J=J_0\exp\!\left[-\frac{16\pi\sigma^3}{3k_BT\,(p_v-p_l)^2}\right]\)</div>
+      </div></li>
+      <li><span class="code">C2</span><div class="body">
+        <div class="t">Rayleigh–Plesset 方程：完整推导、线性振荡与 Minnaert 频率、塌缩与空化</div>
+        <div class="m"><span><b>前置</b> A4、B5、C1</span><span><b>课件</b> 第 4 章 4.1</span></div>
+        <div class="eqs">\(\rho_l\left(R\ddot R+\tfrac32\dot R^2\right)=p_B-p_\infty-\frac{2\sigma}{R}-\frac{4\mu\dot R}{R}\)，\(\ f_M=\frac{1}{2\pi R_0}\sqrt{\frac{3\kappa p_0}{\rho_l}}\)</div>
+      </div></li>
+      <li><span class="code">C3</span><div class="body">
+        <div class="t">气泡脱离、上升、变形、聚并与破碎：力平衡、终端速度、Eo–Mo–Re 图</div>
+        <div class="m"><span><b>前置</b> B6、C2</span><span><b>课件</b> 第 4 章 4.1 三、四；4.2；4.3</span></div>
+        <div class="eqs">\(V_d\approx\frac{2\pi r_n\sigma}{\Delta\rho g}\) <span class="tag approx">Tate 静力估计</span>，\(\ D_d=0.0208\,\theta\sqrt{\frac{\sigma}{g\Delta\rho}}\) <span class="tag emp">Fritz，θ 取度</span></div>
+      </div></li>
+      <li><span class="code">C4</span><div class="body">
+        <div class="t">界面不稳定性：Rayleigh–Taylor、Kelvin–Helmholtz、Rayleigh–Plateau</div>
+        <div class="m"><span><b>前置</b> A6、B5</span><span><b>课件</b> 第 3 章 3.1 五；第 5 章 5.1 一</span></div>
+        <div class="eqs">\(L_c=2\pi\sqrt{\frac{\sigma}{g(\rho_1-\rho_2)}}\)，\(\ (U_1-U_2)^2\gt\frac{\rho_1+\rho_2}{\rho_1\rho_2}\left[\frac{g(\rho_1-\rho_2)}{k}+\sigma k\right]\)</div>
+      </div></li>
+      <li><span class="code">C5</span><div class="body">
+        <div class="t">液滴雾化、夹带与撞击：射流断裂、液滴变形、飞溅与反弹</div>
+        <div class="m"><span><b>前置</b> C4</span><span><b>课件</b> 第 5 章</span></div>
+        <div class="eqs">\(t_{\rm b}\approx2.91\sqrt{\rho R^3/\sigma}\)（无黏射流最快增长模式的 e 倍时间），\(\ \mathrm{Oh}=\frac{\mu}{\sqrt{\rho\sigma L}}\)</div>
+      </div></li>
+      <li><span class="code">C6</span><div class="body">
+        <div class="t">颗粒系统：颗粒物性与尺寸分布、受力、Stokes 数、传热传质</div>
+        <div class="m"><span><b>前置</b> B6</span><span><b>课件</b> 第 6 章</span></div>
+        <div class="eqs">\(\tau_p=\frac{\rho_pd_p^2}{18\mu}\)，\(\ \mathrm{St}=\tau_p/\tau_f\)，\(\ \mathrm{Nu}=2+0.6\,\mathrm{Re}^{1/2}\mathrm{Pr}^{1/3}\) <span class="tag emp">Ranz–Marshall</span></div>
+      </div></li>
+      <li><span class="code">C7</span><div class="body">
+        <div class="t">气液界面热质传递：热/浓度边界层、Nu/Sh/Pe、蒸发与冷凝动力学、界面热阻与 Kapitza 热阻、非平衡传热</div>
+        <div class="m"><span><b>前置</b> A7、B5</span><span><b>课件</b> 扩展（联系第 4、7 章）</span></div>
+        <div class="eqs">\(\dot m=\frac{2\hat\sigma}{2-\hat\sigma}\sqrt{\frac{M}{2\pi R_u}}\left[\frac{p_{\rm sat}(T_i)}{\sqrt{T_i}}-\frac{p_v}{\sqrt{T_v}}\right]\)，\(\ R_K=\frac{\Delta T_i}{q}\)，\(\ R(t)=2\sqrt{\tfrac{3}{\pi}}\,\mathrm{Ja}\sqrt{\alpha_lt}\)</div>
+      </div></li>
+      <li><span class="code">C8</span><div class="body">
+        <div class="t">电流体动力学 I：静电场、电荷守恒、电荷弛豫、介电常数与电导率、Maxwell 应力张量</div>
+        <div class="m"><span><b>前置</b> A4、电磁学</span><span><b>课件</b> 扩展</span></div>
+        <div class="eqs">\(\nabla\cdot(\varepsilon\vE)=\rho_e\)，\(\ \partial_t\rho_e+\nabla\cdot(\sigma_e\vE)=0\)，\(\ \tau_e=\frac{\varepsilon}{\sigma_e}\)，\(\ \tT_M=\varepsilon\left(\vE\vE-\tfrac12E^2\tI\right)\)</div>
+      </div></li>
+      <li><span class="code">C9</span><div class="body">
+        <div class="t">电流体动力学 II：泄漏介质模型（Taylor–Melcher）、电场中气泡变形与脱离、介电泳、电润湿</div>
+        <div class="m"><span><b>前置</b> C8、B4</span><span><b>课件</b> 扩展</span></div>
+        <div class="eqs">\(\vF_{\rm DEP}=2\pi R^3\varepsilon_lK\nabla|\vE|^2,\ K=\frac{\varepsilon_b-\varepsilon_l}{\varepsilon_b+2\varepsilon_l}\)，\(\ \mathrm{Ca}_E=\frac{\varepsilon E^2R}{\sigma}\)，\(\ \cos\theta(V)=\cos\theta_0+\frac{\varepsilon_dV^2}{2d\,\sigma_{lg}}\)</div>
+      </div></li>
+      <li><span class="code">C10</span><div class="body">
+        <div class="t">数值方法：有限差分/体积/元、VOF、Level set、前沿追踪、相场、CSF 模型、欧拉–欧拉与欧拉–拉格朗日、网格无关性与伪速度流</div>
+        <div class="m"><span><b>前置</b> B5、B7</span><span><b>课件</b> 第 8 章五</span></div>
+        <div class="eqs">\(\partial_tF+\vu\cdot\nabla F=0\)，\(\ \vF_\sigma=\sigma\kappa\nabla F\)，\(\ \Delta t\lt\sqrt{\frac{\bar\rho\,\Delta x^3}{2\pi\sigma}}\) <span class="tag ok">毛细时间步约束</span></div>
+      </div></li>
+    </ol>
+    <p class="outcome"><b>完成 C 层后你应能：</b>独立推导 Rayleigh–Plesset 方程并说明每一项何时可忽略；区分气相传热阻力、液相热边界层阻力、界面动力学热阻和 Kapitza 热阻；根据电荷弛豫时间判断液体在给定时间尺度上是电介质还是导体，并写出相应的界面电应力条件；为给定问题选择界面数值方法并说明其失效情形。</p>
+  </section>
+
+  <section class="sec level" id="lv-d">
+    <div class="level-head">
+      <div class="part-label">D 科研层 · 8 讲</div>
+      <h3>液态甲醇中针—板电极等离子体气泡的多物理场建模</h3>
+      <p class="muted small">目标：把前三层的理论组装成可检验的模型，明确哪些环节是已确立的物理、哪些是假设、哪些必须靠实验确定。</p>
+    </div>
+    <ol class="lessons">
+      <li><span class="code">D1</span><div class="body">
+        <div class="t">钨针尖附着气泡：形成、接触线钉扎、准静态力平衡与脱离判据（含电场力）</div>
+        <div class="m"><span><b>前置</b> B4、C3、C9</span></div>
+        <div class="eqs">\(\sum\vF=\vF_b+\vF_\sigma+\vF_p+\vF_{E}+\vF_{\rm dyn}\)；电场对脱离直径的修正 <span class="tag open">需实验标定</span></div>
+      </div></li>
+      <li><span class="code">D2</span><div class="body">
+        <div class="t">液体与气泡中的放电物理：击穿、流注、气泡内放电，Paschen 关系的适用范围</div>
+        <div class="m"><span><b>前置</b> C8</span></div>
+        <div class="eqs">\(V_b=\frac{B\,pd}{\ln(A\,pd)-\ln\ln(1+1/\gamma_{se})}\) <span class="tag ok">均匀场气隙</span>；用于弯曲带电气泡壁 <span class="tag open">适用性有争议</span></div>
+      </div></li>
+      <li><span class="code">D3</span><div class="body">
+        <div class="t">能量沉积与气泡热力学：加热驱动的 Keller–Miksis 方程与气泡内能量方程</div>
+        <div class="m"><span><b>前置</b> C2、D2</span></div>
+        <div class="eqs">\(\frac{\dd}{\dd t}\!\left(\frac{p_BV}{\gamma-1}\right)=P_{\rm dep}(t)-p_B\frac{\dd V}{\dd t}-\dot Q_{\rm i}+\dot m_{\rm ev}h_v\) <span class="tag approx">气泡内均匀、理想气体</span></div>
+      </div></li>
+      <li><span class="code">D4</span><div class="body">
+        <div class="t">高温气泡与液态甲醇之间的界面传热：气相导热、液相热边界层、界面动力学热阻、Kapitza 热阻的区分与量级</div>
+        <div class="m"><span><b>前置</b> C7、D3</span></div>
+        <div class="eqs">串联热阻图景 \(\Delta T_{\rm tot}=q\left(\frac{1}{h_g}+R_{\rm kin}+\frac{1}{h_l}\right)\) <span class="tag approx">仅准稳态成立</span></div>
+      </div></li>
+      <li><span class="code">D5</span><div class="body">
+        <div class="t">界面电荷输运与弛豫：泄漏介质模型在 ns–μs 放电中的适用性，等离子体沉积的面电荷</div>
+        <div class="m"><span><b>前置</b> C8、C9</span></div>
+        <div class="eqs">\(\jump{\varepsilon\vE}\cdot\vn=q_s\)，\(\ \partial_tq_s+\nabla_s\cdot(q_s\vu_s)=-\jump{\sigma_e\vE}\cdot\vn+\dot q_{s,\rm plasma}\) <span class="tag open">等离子体源项待建模</span></div>
+      </div></li>
+      <li><span class="code">D6</span><div class="body">
+        <div class="t">活性粒子跨界面传质与甲醇转化化学</div>
+        <div class="m"><span><b>前置</b> C7</span></div>
+        <div class="eqs">\(\partial_tc_i+\vu\cdot\nabla c_i=D_i\nabla^2c_i+\dot\omega_i\)，\(\ c_i=H_ip_i\)；总包反应 \(\mathrm{CH_3OH(g)\to CO+2H_2}\)，\(\Delta H^\circ_{298}\approx+91\ \mathrm{kJ/mol}\)</div>
+      </div></li>
+      <li><span class="code">D7</span><div class="body">
+        <div class="t">多物理场耦合模型：时间尺度分离、模型降阶、模块耦合策略与数值实现</div>
+        <div class="m"><span><b>前置</b> D1–D6、C10</span></div>
+        <div class="eqs">电场 \(\to P_{\rm dep}\to p_B,T_B\to R(t)\to\dot m_{\rm ev}\to\) 气泡内组成 \(\to\) 产氢速率</div>
+      </div></li>
+      <li><span class="code">D8</span><div class="body">
+        <div class="t">实验诊断与模型验证：高速成像、纹影、发射光谱测温、电学测量、产物色谱；参数辨识与不确定度</div>
+        <div class="m"><span><b>前置</b> D7</span></div>
+        <div class="eqs">\(E_{\rm pulse}=\int u(t)\,i(t)\,\dd t\)；模型—实验比对量：\(R(t)\)、振荡周期、脱离直径、产氢能效</div>
+      </div></li>
+    </ol>
+    <p class="outcome"><b>完成 D 层后你应能：</b>为你的实验写出一组封闭的控制方程与定解条件，指明每个参数来自物性表、实验测量还是拟合；用时间尺度分析决定哪些过程可以解耦；设计能区分不同机理假说的实验。</p>
+  </section>
+
+  <section class="sec" id="syl-slides">
+    <h3><span class="no">0.4</span>课件对照与勘误</h3>
+    <div class="tbl"><table>
+      <thead><tr><th>课件章节</th><th>主要内容</th><th>对应讲次</th></tr></thead>
+      <tbody>
+        <tr><td>第 1 章 绪论</td><td>相与两相流定义、分类、研究方法、基本参数</td><td>A1、B1、B7</td></tr>
+        <tr><td>第 2 章 相场空间结构与相分布</td><td>多相流特征、流型及转变、相速度与相含率分布</td><td>B2</td></tr>
+        <tr><td>第 3 章 界面现象</td><td>界面条件、Young–Laplace、剪切应力场、泰勒不稳定性、润湿、接触角、测量</td><td>A1、B3、B4、B5、C4</td></tr>
+        <tr><td>第 4 章 气泡动力学</td><td>成核与生长、脱离、聚合、浸没鼓泡、微尺度鼓泡</td><td>C1、C2、C3、D1</td></tr>
+        <tr><td>第 5 章 液滴雾化、夹带与形变</td><td>射流稳定性、雾化、夹带、液滴撞击</td><td>C4、C5</td></tr>
+        <tr><td>第 6 章 颗粒系统</td><td>颗粒物性、受力、传热传质、稠密与稀疏悬浮体</td><td>B6、C6</td></tr>
+        <tr><td>第 7 章 沸腾系统气液两相流</td><td>非平衡含汽率、空泡份额、压降、流动不稳定性</td><td>B7、B8</td></tr>
+        <tr><td>第 8 章 数理模化</td><td>均相、分相、漂移、两流体模型、数值模拟</td><td>B7、C10</td></tr>
+      </tbody>
+    </table></div>
+    <div class="note caution">
+      <b>第 2 章课件中值得留意的地方</b>
+      <ol style="margin:0;padding-left:1.4em;display:grid;gap:6px">
+        <li>第 65 页牛顿区带出速度 \(u_t=[3.1d_p(\rho_p-\rho_f)g/\rho_f]^{1/2}\) 的适用范围误写为 0.4 &lt; Re_p &lt; 500，应为 500 &lt; Re_p &lt; 2×10⁵。</li>
+        <li>第 100 页把竖直上升管 \(\alpha_{\rm cr}=0.25\) 判据标为 Taitel 等（1976 年）。1976 年的 Taitel–Dukler 论文研究水平管；竖直上升管的这一判据出自 Taitel、Bornea、Dukler（1980 年）。</li>
+        <li>第 6 页把界面变形的随机性归因于“界面微层内分子随机运动”。热涨落幅度只有约 \(\sqrt{k_BT/\sigma}\sim0.3\) nm；宏观随机性主要来自失稳对各种扰动的放大（第 2 章第 1 讲 4.1 节）。</li>
+      </ol>
+    </div>
+    <div class="note caution">
+      <b>第 1、3 章课件中值得留意的地方</b>
+      <ol style="margin:0;padding-left:1.4em;display:grid;gap:6px">
+        <li>第 3 章第 24–26、40 页 “Young-Lapalace”应为 Young–Laplace。</li>
+        <li>第 3 章第 31 页毛细上升：管内液面高于槽液面 h 时，弯月面下方液体压力 \(p_l=p_0-\rho_lgh\)，上方蒸气压力 \(p_v=p_0-\rho_vgh\)，所以 \(p_v-p_l=(\rho_l-\rho_v)gh\)。课件写作 \((\rho_v-\rho_l)gh\)，代入会得到负的 σ。</li>
+        <li>第 3 章第 38 页一维动量方程：汽相方程中相间剪切项与液相同为“+”。当 \(v_g\gt v_f\) 时，界面剪切使汽相减速、液相加速，两式中该项应异号（液相取 +，汽相取 −）。以课堂讲解的符号约定为准。</li>
+        <li>第 3 章第 32、36 页 “Silrer / Silree and Wallis”是同一组作者（图 3-7 中文作“西尔维和沃利斯”）；“Kutatelade and Leonter”疑为 Kutateladze 与 Leontiev；第 63 页 “Baster” 应为 Baxter。</li>
+        <li>第 3 章第 33 页切向应力条件 \(\tau_1+\nabla\sigma=\tau_2\) 的正负号依赖图 3-6 中 τ 的正方向。第 1 讲第六部分给出不依赖约定的矢量形式。</li>
+        <li>第 1 章第 31 页比容公式中的 \(v_l,v_g\) 表示比容（m³/kg），与前面各页的速度 \(v\) 用了同一个字母。</li>
+      </ol>
+    </div>
+  </section>
+</article>
+
+<article class="part" id="lesson-2-1">
+  <div class="part-label">第二部分 · 第 2 章 第 1 讲（B2a）</div>
+  <h2>多相流的特征与流型：界面结构为什么只自组织成少数几种形态</h2>
+  <p class="read muted">对应课件第 2 章 2.1–2.2（第 4–86 页）。课件用大量照片列出了各种管道中的流型；本讲不重复目录，而是回答目录背后的三个问题：流型为什么存在，流型图的坐标为什么这样取，以及能否从力平衡出发预测流型转变。2.3（转变机理）与 2.4（相速度与相含率分布）分别在第 2、3 讲展开。</p>
+
+  <section class="sec" id="l21-goal">
+    <h3><span class="no">一</span>本节课的学习目标</h3>
+    <div class="read">
+      <p>学完本讲，你应当能够：</p>
+      <ol>
+        <li>用相指示函数和统计量（时均、截面平均、概率密度）定量描述多相流的“不均匀性、多值性与随机性、不可逆性”，并说明它们各自的物理来源。</li>
+        <li>说清“流型”的定义，以及它为什么决定压降、传热、稳定性和模型选择。</li>
+        <li>对每一种主要流型说出主导的力平衡，并解释同一组流量在竖直上升、竖直下降、水平、微通道中为什么会得到不同流型。</li>
+        <li>用 π 定理说明流型图为什么必然是高维参数空间的投影，解释 Hewitt–Roberts 动量通量坐标和 Baker 修正因子的含义与局限。</li>
+        <li>从第一性原理推导四个结果：泡状→弹状的临界含气率与边界方程、Taylor 气弹上升速度及其表面张力极限、环状流维持的 Kutateladze 判据、流化床的最小流化速度与带出速度。</li>
+        <li>把“主导力分析 + 无量纲相图 + 信号统计判别”这套方法迁移到针尖放电气泡的行为分类上。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-phen">
+    <h3><span class="no">二</span>物理现象导入</h3>
+    <div class="read">
+      <p>取一根内径 25 mm 的竖直玻璃管，底部同时通入空气和水。固定水的折算速度 \(J_l=0.3\) m/s，把空气的折算速度 \(J_g\) 从 0.01 m/s 逐渐加到 30 m/s，你会依次看到（课件第 15–21 页）：散布的小气泡；直径接近管径、头部浑圆的“子弹形”气弹；气弹破碎后的剧烈搅混；中心走气、管壁一层液膜向上爬的环状流；最后液膜被撕碎，只剩气流中的液滴。</p>
+      <p>这里有四个值得追问的事实：</p>
+      <ol>
+        <li><b>形态是离散的。</b>\(J_g\) 连续变化，界面结构却只在少数几种形态之间跳转。</li>
+        <li><b>转变是突然的。</b>在某个 \(J_g\) 附近，很小的增量就让结构从泡变成弹。</li>
+        <li><b>同样的流量，不同的结果。</b>把管子放平，同一组 \((J_g,J_l)\) 可能是分层流；管径换成 0.5 mm，可能根本看不到分层。</li>
+        <li><b>同样的宏观参数，不同的内部状态。</b>课件第 5 页的微通道实验中，气、液流量都固定（0.4 和 0.1 ml/min），不同时刻、不同位置看到的气泡长度和分布并不相同。</li>
+      </ol>
+      <p>本讲的答案是：每一种流型对应一种主导的力平衡。只要这种平衡稳定，界面结构就停留在这种形态；一旦某种失稳机制（聚并、波增长、液膜破裂、液滴夹带）启动，结构就跳到另一种平衡。形态离散，是因为稳定的力平衡只有少数几种；转变突然，是因为失稳一旦发生就自我放大。</p>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 760 340" role="img" aria-label="竖直上升管中随气相折算速度增大依次出现泡状流、弹状流、搅混流、环状流、雾状流；每种流型下方是截面含气率信号的概率密度：泡状流单峰在低含气率，弹状流双峰，搅混流宽峰，环状流和雾状流单峰在高含气率。">
+        <defs>
+          <marker id="f21a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+        </defs>
+        <g fill="currentColor" font-size="12" font-family="var(--font-body)">
+          <line x1="40" y1="14" x2="710" y2="14" stroke="currentColor" stroke-width="1.2" marker-end="url(#f21a)"/>
+          <text x="375" y="10" text-anchor="middle" font-size="11.5">气相折算速度 J_g 增大（J_l 固定）</text>
+
+          <!-- bubbly -->
+          <rect x="40" y="26" width="70" height="214" fill="var(--accent)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"/>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="0.9">
+            <circle cx="55" cy="44" r="4"/><circle cx="88" cy="58" r="5"/><circle cx="70" cy="80" r="3.5"/><circle cx="97" cy="98" r="4"/>
+            <circle cx="52" cy="112" r="5"/><circle cx="78" cy="128" r="4"/><circle cx="60" cy="152" r="3.5"/><circle cx="94" cy="160" r="5"/>
+            <circle cx="72" cy="184" r="4"/><circle cx="50" cy="200" r="4.5"/><circle cx="90" cy="214" r="3.5"/><circle cx="66" cy="228" r="4"/>
+          </g>
+          <!-- slug -->
+          <rect x="190" y="26" width="70" height="214" fill="var(--accent)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M198,128 L198,62 Q198,34 225,34 Q252,34 252,62 L252,128 Q225,136 198,128 Z" fill="var(--panel)" stroke="currentColor" stroke-width="1"/>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="0.9">
+            <circle cx="205" cy="150" r="3"/><circle cx="240" cy="160" r="3.5"/><circle cx="222" cy="172" r="2.5"/><circle cx="210" cy="190" r="3"/>
+          </g>
+          <path d="M198,236 L198,214 Q198,200 225,200 Q252,200 252,214 L252,236 Z" fill="var(--panel)" stroke="currentColor" stroke-width="1"/>
+          <!-- churn -->
+          <rect x="340" y="26" width="70" height="214" fill="var(--accent)" fill-opacity="0.22" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M350,40 Q362,30 380,38 Q402,34 400,58 Q406,80 392,92 Q398,112 378,118 Q358,124 352,104 Q342,86 352,72 Q344,54 350,40 Z" fill="var(--panel)" stroke="currentColor" stroke-width="1"/>
+          <path d="M356,140 Q372,130 392,142 Q404,160 396,178 Q404,198 384,210 Q362,218 352,198 Q344,176 352,162 Q346,148 356,140 Z" fill="var(--panel)" stroke="currentColor" stroke-width="1"/>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="0.9"><circle cx="372" cy="128" r="3"/><circle cx="360" cy="226" r="3"/><circle cx="394" cy="228" r="2.5"/></g>
+          <!-- annular -->
+          <rect x="490" y="26" width="70" height="214" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M490,26 L497,26 Q501,48 496,70 Q501,94 497,118 Q502,142 496,166 Q501,190 497,214 Q500,228 497,240 L490,240 Z" fill="var(--accent)" fill-opacity="0.55"/>
+          <path d="M560,26 L553,26 Q549,50 554,74 Q549,98 553,122 Q548,146 554,170 Q549,194 553,218 Q550,230 553,240 L560,240 Z" fill="var(--accent)" fill-opacity="0.55"/>
+          <g fill="var(--accent)"><circle cx="515" cy="50" r="1.8"/><circle cx="533" cy="86" r="1.6"/><circle cx="520" cy="130" r="1.8"/><circle cx="538" cy="170" r="1.6"/><circle cx="512" cy="204" r="1.8"/><circle cx="530" cy="226" r="1.5"/></g>
+          <!-- mist -->
+          <rect x="640" y="26" width="70" height="214" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <g fill="var(--accent)"><circle cx="652" cy="40" r="1.6"/><circle cx="690" cy="52" r="1.8"/><circle cx="668" cy="72" r="1.5"/><circle cx="700" cy="94" r="1.6"/><circle cx="655" cy="110" r="1.8"/><circle cx="682" cy="126" r="1.5"/><circle cx="664" cy="150" r="1.7"/><circle cx="698" cy="166" r="1.6"/><circle cx="650" cy="188" r="1.5"/><circle cx="676" cy="200" r="1.8"/><circle cx="694" cy="222" r="1.6"/><circle cx="660" cy="232" r="1.5"/></g>
+
+          <g text-anchor="middle" font-weight="500">
+            <text x="75" y="258">泡状流</text><text x="225" y="258">弹状流</text><text x="375" y="258">搅混流</text><text x="525" y="258">环状流</text><text x="675" y="258">雾状流</text>
+          </g>
+          <text x="4" y="300" font-size="11" opacity="0.75" transform="rotate(-90 10 300)" text-anchor="middle">α 的概率密度</text>
+          <g stroke="currentColor" stroke-width="0.8" opacity="0.6">
+            <line x1="40" y1="318" x2="110" y2="318"/><line x1="190" y1="318" x2="260" y2="318"/><line x1="340" y1="318" x2="410" y2="318"/><line x1="490" y1="318" x2="560" y2="318"/><line x1="640" y1="318" x2="710" y2="318"/>
+          </g>
+          <g font-family="var(--font-mono)" font-size="10" opacity="0.7" text-anchor="middle">
+            <text x="40" y="331">0</text><text x="110" y="331">1</text><text x="190" y="331">0</text><text x="260" y="331">1</text><text x="340" y="331">0</text><text x="410" y="331">1</text><text x="490" y="331">0</text><text x="560" y="331">1</text><text x="640" y="331">0</text><text x="710" y="331">1</text>
+          </g>
+          <g fill="none" stroke="var(--accent)" stroke-width="2">
+            <polyline points="40.0,313.4 41.2,309.5 42.3,304.0 43.5,297.4 44.7,290.8 45.8,285.8 47.0,284.0 48.2,285.8 49.3,290.8 50.5,297.4 51.7,304.0 52.8,309.5 54.0,313.4 55.2,315.8 56.3,317.0 57.5,317.6 58.7,317.9 59.8,318.0 110.0,318.0"/>
+            <polyline points="190.0,316.8 192.3,313.9 194.7,307.6 197.0,298.8 199.3,291.8 200.5,290.8 201.7,291.8 204.0,298.8 206.3,307.6 208.7,313.9 211.0,316.8 213.3,317.7 215.7,318.0 230.8,317.9 233.2,317.7 235.5,316.5 237.8,312.9 240.2,305.0 242.5,294.0 244.8,285.3 246.0,284.0 247.2,285.3 249.5,294.0 251.8,305.0 254.2,312.9 256.5,316.5 258.8,317.7 260.0,317.9"/>
+            <polyline points="340.0,318.0 345.8,317.8 351.7,316.9 356.3,314.5 359.8,311.2 363.3,306.8 366.8,302.6 370.3,299.8 373.8,298.8 377.3,298.3 380.8,295.6 384.3,290.1 387.8,284.9 390.2,284.0 392.5,286.1 394.8,291.0 397.2,297.5 399.5,304.0 401.8,309.4 404.2,313.3 406.5,315.7 408.8,317.0 410.0,317.4"/>
+            <polyline points="490.0,318.0 542.5,318.0 543.7,317.8 544.8,317.2 546.0,315.5 547.2,311.4 548.3,304.0 549.5,294.3 550.7,286.2 551.8,284.0 553.0,289.0 554.2,298.3 555.3,307.3 556.5,313.4 557.7,316.4 558.8,317.6 560.0,317.9"/>
+            <polyline points="640.0,318.0 703.0,318.0 704.2,317.9 705.3,316.2 706.5,303.7 707.7,284.0 708.8,294.5 710.0,313.3"/>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-1　竖直上升管中的流型序列及其“指纹”。</b>上排为示意结构（浅色为液，空白为气）；下排为截面含气率信号 \(\alpha_A(t)\) 的概率密度示意。泡状流单峰在低 α，弹状流在“液弹”与“气弹”两种状态之间切换，所以双峰；搅混流宽而不规则；环状流和雾状流单峰在高 α。用信号的概率密度而不是肉眼判断流型，是客观判别流型的常用方法 <span class="tag ok">已确立的判别思路</span>；峰位只是示意。</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec" id="l21-concept">
+    <h3><span class="no">三</span>基本概念教学</h3>
+    <div class="read"><p>折算速度 \(J_k=Q_k/A\)、截面含气率 α、滑动比 S 和漂移流率 \(j_D\) 在第 1 章已经学过，这里直接使用。下面七个概念是本讲新引入的。</p></div>
+
+    <div class="concept" id="c21-indicator">
+      <h4>1. 相指示函数与平均 <span class="en">phase indicator function</span></h4>
+      <dl>
+        <dt>定义</dt><dd>\(X_k(\vx,t)=1\)，若时刻 t 空间点 \(\vx\) 被相 k 占据；否则 \(X_k=0\)。在此基础上定义三种常用平均：局部时均相含率 \(\alpha_k(\vx)=\frac1T\int_0^TX_k\,\dd t\)；瞬时截面相含率 \(\alpha_A(t)=\frac1A\int_AX_g\,\dd A\)；时均截面相含率 \(\langle\alpha\rangle=\frac1T\int_0^T\alpha_A(t)\,\dd t\)。</dd>
+        <dt>为何需要</dt><dd>两相流中每一点、每一时刻只存在一种相，场量在界面处断开；工程关心的含气率、相速度都是平均量。不同仪器测到的是不同的平均：光纤或电导探针测“点的时均”，γ 射线测“线平均”，电容或阻抗传感器测“截面平均”。不先说清是哪种平均，数据之间无法比较。</dd>
+        <dt>对应现象</dt><dd>课件第 4–5 页：同一时刻不同位置、同一位置不同时刻，相含率都不同。</dd>
+        <dt>物理机制</dt><dd>平均抹掉了界面尺度的细节，代价是乘积的平均不等于平均的乘积：\(\langle\alpha u\rangle\neq\langle\alpha\rangle\langle u\rangle\)。这个差异就是第 3 讲漂移通量模型中分布系数 \(C_0\) 的来源。</dd>
+        <dt>数学描述</dt><dd>交换积分次序可得 \(\langle\alpha\rangle=\frac1A\int_A\alpha_g(\vx)\,\dd A\)，即“截面平均的时均”等于“时均的截面平均”。信号统计用概率密度 \(p(\alpha)\)：\(p(\alpha)\,\dd\alpha\) 是 \(\alpha_A(t)\) 落在 \([\alpha,\alpha+\dd\alpha]\) 内的时间比例。</dd>
+        <dt>符号与单位</dt><dd>\(X_k\)、α 无量纲；T 平均时间（s）；A 截面积（m²）；\(p(\alpha)\) 无量纲（α 本身无量纲）。</dd>
+        <dt>来源与推导</dt><dd>定义本身；交换次序用的是 Fubini 定理，要求被积函数有界可测，\(X_k\) 满足。</dd>
+        <dt>成立条件</dt><dd>统计平稳，且平均时间远大于结构通过时间（例如弹状流中一个“气弹+液弹”单元的周期），又远小于宏观工况变化时间。</dd>
+        <dt>失效条件</dt><dd>非平稳过程（启动、放电脉冲后的瞬态）中时均没有意义，必须用系综平均（同一工况重复多次再平均）；结构尺度与平均尺度不分离时（一个气弹几乎占满测量段），平均值波动很大。</dd>
+        <dt>与已学联系</dt><dd>第 1 章的 \(\alpha=A_g/A\) 正是瞬时截面相含率 \(\alpha_A(t)\)；β 与 x 是按通量定义的，不是按占据空间定义的。</dd>
+        <dt>多相流中的应用</dt><dd>用 \(p(\alpha)\) 的形状客观判别流型（图 2-1）。对你的实验：放电是脉冲过程，气泡半径、发光强度都应在大量脉冲上做系综平均和概率密度统计。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-regime">
+      <h4>2. 流型 <span class="en">flow pattern / flow regime</span></h4>
+      <dl>
+        <dt>定义</dt><dd>两相流中相界面宏观几何结构（形状、尺寸、空间分布）的典型类别（课件第 11 页）。</dd>
+        <dt>为何需要</dt><dd>课件第 11 页列出四个理由：流型影响压降、换热、流动稳定性，并决定该用什么流动模型。根本原因是不同流型中动量和热量的传递路径不同：泡状流里液相包围气泡，壁面被液体冷却；环状流里液膜贴壁、气芯高速，换热由薄液膜的导热和蒸发主导。</dd>
+        <dt>对应现象</dt><dd>竖直上升管中随 \(J_g\) 增大依次出现泡状、弹状、搅混、环状、雾状流（图 2-1）。</dd>
+        <dt>物理机制</dt><dd>每个流型对应一种稳定的主导力平衡；流型转变是这种平衡失稳、结构跳到另一种平衡的过程（第四部分）。</dd>
+        <dt>数学描述</dt><dd>没有统一的方程。流型表示为无量纲数空间中的区域：流型 = \(\mathcal R(\Pi_1,\Pi_2,\dots,\Pi_n)\)；边界是失稳判据给出的超曲面。</dd>
+        <dt>符号与单位</dt><dd>\(\Pi_i\) 为无量纲数（见 6.1 节）。</dd>
+        <dt>来源与推导</dt><dd>实验观察（高速摄影、探针信号）加上稳定性分析。</dd>
+        <dt>成立条件</dt><dd>充分发展段（远离入口），统计平稳。</dd>
+        <dt>失效条件</dt><dd>入口发展段、瞬态、强加热时流型沿程变化（课件第 23–26 页）；流型命名有主观性，不同作者的分类数量不同（课件第 49 页列出十种名称），边界实为过渡带（课件第 28 页）。</dd>
+        <dt>与已学联系</dt><dd>第 1 章的三类模型：分散泡状流接近均质模型的假设；环状流、分层流必须用分相或双流体模型。</dd>
+        <dt>多相流中的应用</dt><dd>按流型选择压降、传热关联式和数值模型（第 8 章）；也是对放电气泡“行为模式”分类的模板（第八部分）。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-map">
+      <h4>3. 流型图 <span class="en">flow regime map</span></h4>
+      <dl>
+        <dt>定义</dt><dd>以两个（组合）参数为坐标，标出各流型存在区域及其边界的二维图（课件第 28 页）。</dd>
+        <dt>为何需要</dt><dd>两种用途（课件第 32 页）：已知运行参数预测流型；为达到目标流型反推运行参数。</dd>
+        <dt>对应现象</dt><dd>Baker 图（1954，第一张气液流型图）、Hewitt–Roberts 图、Mandhane 图、Taitel–Dukler 图（课件第 12、33、42–44 页）。</dd>
+        <dt>物理机制</dt><dd>决定流型的独立无量纲数有五六个，二维图只能显示其中两个，其余被实验条件“冻结”。流型图因而是高维空间的二维切片或投影（6.1 节）。坐标选得好，能把不同工质、管径的数据压到同一张图上；选得不好，换个工况边界就移动。</dd>
+        <dt>数学描述</dt><dd>常用坐标：\((J_g,J_l)\)；动量通量 \((\rho_gJ_g^2,\ \rho_lJ_l^2)\)；Baker 坐标 \(\left(G_g/\lambda,\ G_l\lambda\psi/G_g\right)\)。</dd>
+        <dt>符号与单位</dt><dd>J：m/s；\(\rho J^2\)：kg/(m·s²)，即 Pa；G：kg/(m²·s)；λ、ψ 无量纲。</dd>
+        <dt>来源与推导</dt><dd>实验数据拟合边界 <span class="tag emp">经验</span>，或由失稳机理推导边界 <span class="tag approx">半理论</span>（课件 2.3，第 2 讲）。</dd>
+        <dt>成立条件</dt><dd>工质、管径、方向、压力与原始实验相近。</dd>
+        <dt>失效条件</dt><dd>外推到微通道、螺旋管、受热管或非牛顿流体；靠近边界时（过渡带内）无法给出确定答案。</dd>
+        <dt>与已学联系</dt><dd>课件第 29–32 页微通道流型图与常规管差别很大，原因见 Eo 数卡片和 6.3 节。</dd>
+        <dt>多相流中的应用</dt><dd>先选对图（工质、几何、方向匹配），再计算坐标，再读区域；读出的结论要用机理判据交叉检验。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-fr">
+      <h4>4. Froude 数 <span class="en">Froude number</span></h4>
+      <dl>
+        <dt>定义</dt><dd>惯性与重力之比。课件第 90 页写作 \(\mathrm{Fr}=U^2/(gL)\)；文献中也常用其平方根 \(U/\sqrt{gL}\)。两相流中通常用“密度修正”形式 \(\mathrm{Fr}=\rho U^2/(\Delta\rho\,gL)\)。使用时必须看清定义。</dd>
+        <dt>为何需要</dt><dd>判断流体的惯性能否克服重力造成的分层。水平管中，重力把液体压到管底；气流惯性要把液体掀起来。</dd>
+        <dt>对应现象</dt><dd>水平管中低流速分层流、高流速弹状流或环状流（课件第 37–40 页）；Taylor 气弹以 \(0.35\sqrt{gD}\) 上升，即气弹的 Fr 是常数（6.3 节）。</dd>
+        <dt>物理机制</dt><dd>流体以速度 U 运动时具有动压 \(\sim\rho U^2\)；高度差 L 上的两相静压差是 \(\Delta\rho gL\)。前者远大于后者，惯性能把重的流体推到高处；反之重力把两相分开。</dd>
+        <dt>数学描述</dt><dd>\(\mathrm{Fr}=\dfrac{\rho U^2}{\Delta\rho\,gL}\)。Taitel 用的修正 Froude 数（课件第 90 页）：\(F=\sqrt{\dfrac{\rho_g}{\rho_l-\rho_g}}\,\dfrac{J_g}{\sqrt{Dg\cos\theta}}\)。</dd>
+        <dt>符号与单位</dt><dd>U 速度（m/s）；L 特征长度（m）；g 重力加速度（m/s²）；θ 管道倾角；Fr 无量纲。</dd>
+        <dt>来源与推导</dt><dd>动量方程中对流惯性项 \(\rho\vu\cdot\nabla\vu\sim\rho U^2/L\) 与浮力项 \(\Delta\rho g\) 之比。</dd>
+        <dt>成立条件</dt><dd>存在自由面或密度分层，重力是主要的恢复力。</dd>
+        <dt>失效条件</dt><dd>表面张力主导（Eo ≪ 1）或黏性主导时，Fr 不再是控制参数。</dd>
+        <dt>与已学联系</dt><dd>课件第 36 页 Oshinowo–Charles 图、第 90 页 Taitel 判据都用 Fr。</dd>
+        <dt>多相流中的应用</dt><dd>水平与倾斜管的分层判据；气弹上升速度。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-eo">
+      <h4>5. Eötvös 数与毛细长度 <span class="en">Eötvös (Bond) number, capillary length</span></h4>
+      <dl>
+        <dt>定义</dt><dd>\(\mathrm{Eo}=\dfrac{\Delta\rho\,gL^2}{\sigma}\)，浮力（静压差）与表面张力之比；欧洲文献多称 Bond 数 Bo。毛细长度 \(\ell_c=\sqrt{\sigma/(\Delta\rho g)}\)，于是 \(\mathrm{Eo}=(L/\ell_c)^2\)。</dd>
+        <dt>为何需要</dt><dd>判断界面形状由重力还是表面张力决定。在管道中取 L = D，它决定重力是否还“看得见”；对单个气泡取 L = d，它决定气泡是否偏离球形。</dd>
+        <dt>对应现象</dt><dd>小气泡近乎正球，大气泡变成球冠；毛细管中气泡被“卡住”不上升；微通道流型几乎与管道朝向无关。</dd>
+        <dt>物理机制</dt><dd>在尺度 L 上，重力造成的静压差约 \(\Delta\rho gL\)，表面张力造成的 Laplace 压力约 \(\sigma/L\)。两者之比即 Eo。L 小于 \(\ell_c\) 时，表面张力足以把界面维持成曲率均匀的形状。</dd>
+        <dt>数学描述</dt><dd>\(\mathrm{Eo}=\Delta\rho gL^2/\sigma\)，\(\ell_c=\sqrt{\sigma/(\Delta\rho g)}\)。</dd>
+        <dt>符号与单位</dt><dd>Δρ 密度差（kg/m³）；σ 表面张力（N/m）；\(\ell_c\)：空气–水约 2.7 mm，7 MPa 汽–水约 1.6 mm，20 °C 液态甲醇约 1.7 mm。</dd>
+        <dt>来源与推导</dt><dd>界面法向应力平衡中静压项与表面张力项之比。</dd>
+        <dt>成立条件</dt><dd>准静态或慢速界面（We 小）。</dd>
+        <dt>失效条件</dt><dd>动力学主导时要同时看 We；有电场时还要看电毛细数 \(\mathrm{Ca}_E\)。</dd>
+        <dt>与已学联系</dt><dd>课件第 100 页 Brodkey 的临界直径 \(d_{\rm crit}=K\sqrt{\sigma/(\Delta\rho g)}=K\ell_c\)：气泡开始明显变形的尺寸就是毛细长度的量级。</dd>
+        <dt>多相流中的应用</dt><dd>常规管与微通道的分界（6.3 节 Bretherton 判据）；针尖气泡形状偏离球形的程度。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-we">
+      <h4>6. Weber 数 <span class="en">Weber number</span></h4>
+      <dl>
+        <dt>定义</dt><dd>\(\mathrm{We}=\dfrac{\rho U^2L}{\sigma}\)，流体惯性（动压）与表面张力（Laplace 压力）之比。</dd>
+        <dt>为何需要</dt><dd>判断流动能否使气泡或液滴变形、破碎。</dd>
+        <dt>对应现象</dt><dd>湍流中的大气泡被撕碎（分散泡状流）；环状流气芯里液滴的最大尺寸；雾化。</dd>
+        <dt>物理机制</dt><dd><b>惯性效应</b>：流体有质量，要改变它的速度就需要力；绕过气泡的流体在迎流点减速、在两侧加速，按 Bernoulli 关系产生量级为 \(\tfrac12\rho U^2\) 的压力差，而且沿气泡表面分布不均，倾向于把气泡压扁或拉长。<b>表面张力</b>：界面变形会改变曲率，从而改变 Laplace 压力 \(\sim\sigma/L\)，倾向于恢复球形。两者竞争，比值决定结果：We ≪ 1 近球形；We ~ O(1) 明显变形；We 超过某个临界值破碎。</dd>
+        <dt>数学描述</dt><dd>\(\mathrm{We}=\rho U^2L/\sigma\)。ρ 取“推动变形的那一相”的密度：液中上升的气泡取 \(\rho_l\)（液体绕流），气流中的液滴取 \(\rho_g\)（气体冲击）。U 取两相的相对速度，L 取气泡或液滴直径。用半径还是直径会差一倍，引用临界值时必须对照定义。</dd>
+        <dt>符号与单位</dt><dd>ρ（kg/m³）；U（m/s）；L（m）；σ（N/m）；We 无量纲。</dd>
+        <dt>来源与推导</dt><dd>法向应力平衡中动压项 \(\rho U^2\) 与 \(\sigma/L\) 之比。为什么是 \(U^2\)：动压来自 Bernoulli 关系 \(p+\tfrac12\rho u^2=\)常数，压力变化正比于速度平方。</dd>
+        <dt>成立条件</dt><dd>惯性主导（Re ≫ 1）。黏性显著时还要看 Oh 或 Ca。</dd>
+        <dt>失效条件</dt><dd>临界 We 不是普适常数：液滴在气流中袋式破碎约在 We ≈ 12（经验值）；湍流中破碎用基于湍流速度脉动的 We（Hinze 理论）<span class="tag emp">临界值依赖定义与流动类型</span>。加热会降低 σ，电场会额外施加 \(\sim\tfrac12\varepsilon E^2\) 的法向电应力，此时只看 We 会低估变形；强烈蒸发还有反冲压力 \(\dot m^2/\rho_v\)。</dd>
+        <dt>与已学联系</dt><dd>课件第 99 页 Barnea 的最大稳定气泡直径 \(d_{\max}\)，本质是“湍流 We 等于临界值”的条件。</dd>
+        <dt>多相流中的应用</dt><dd>6.4 节用液滴的临界 We 推出环状流判据。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c21-ku">
+      <h4>7. Kutateladze 数 <span class="en">Kutateladze number</span></h4>
+      <dl>
+        <dt>定义</dt><dd>\(\mathrm{Ku}=\dfrac{\rho_g^{1/2}J_g}{\left[\sigma g(\rho_l-\rho_g)\right]^{1/4}}\)（课件第 97 页）。</dd>
+        <dt>为何需要</dt><dd>判断气流能否把液体（液滴或液膜）向上托住，从而维持环状流。</dd>
+        <dt>对应现象</dt><dd>竖直管中气速足够大时液膜向上爬；气速不够时液膜回落，变成搅混流。</dd>
+        <dt>物理机制</dt><dd>把分母改写：\(\sqrt{\sigma g\Delta\rho}=\Delta\rho g\,\ell_c\)，正是高度为一个毛细长度的液体元的静压。所以 \(\mathrm{Ku}^2=\rho_gJ_g^2/(\Delta\rho g\ell_c)\)：气流动压与“表面张力所能维持的最大液体元”的重量压力之比。</dd>
+        <dt>数学描述</dt><dd>环状流维持条件 \(\mathrm{Ku}\ge3.2\)（课件第 97 页），6.4 节推导给出约 3.1。</dd>
+        <dt>符号与单位</dt><dd>\(J_g\) 气相折算速度（m/s）；其余同上；Ku 无量纲。</dd>
+        <dt>来源与推导</dt><dd>液滴受力平衡加临界 We（6.4 节）。</dd>
+        <dt>成立条件</dt><dd>竖直上升流，常规尺寸管道（D 远大于 \(\ell_c\)）。</dd>
+        <dt>失效条件</dt><dd>小管径中液膜的影响和管径效应变强；有些研究者用基于液膜倒流的判据，结果依赖 D <span class="tag open">两种机理的适用范围仍有讨论</span>。</dd>
+        <dt>与已学联系</dt><dd>Ku 与管径无关：这是 Taitel 机理给出的一个可检验预测。</dd>
+        <dt>多相流中的应用</dt><dd>蒸发管中环状流起始点的估算（第 7 章）。</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-mech">
+    <h3><span class="no">四</span>物理机制分析</h3>
+    <h4>4.1 多相流三大特征的物理来源</h4>
+    <div class="read">
+      <p>课件第 4–9 页列出多相流的三个特征。它们不是三条独立的经验观察，而是同一个事实的三个侧面：界面是一个可以变形、可以失稳的自由面。</p>
+      <p><b>（1）时空不均匀性。</b>两相密度不同，重力和离心力会把它们分开（水平管中气在上、液在下；螺旋管中液在外侧，课件第 55 页）；横向力（升力、湍流弥散）让气泡在截面上重新分布。竖直上升流中，小气泡受剪切升力被推向壁面；竖直下降流中升力方向反转，气泡集中到管芯（课件第 34 页）<span class="tag ok">小球形气泡的剪切升力</span>。</p>
+      <p><b>（2）多值性与随机性。</b>课件第 6 页把随机性归因于“相界面微层结构内分子随机运动”。可以定量检验这一说法：热涨落引起的界面起伏幅度约为 \(\sqrt{k_BT/\sigma}\)，对 20 °C 甲醇约 0.42 nm，对水约 0.24 nm。这个幅度比宏观的气泡尺寸小六个数量级以上。所以分子运动最多提供“种子”；宏观上能看到的随机性，来自失稳机制把各种微小扰动（来流脉动、湍流、入口条件、残余气泡）指数放大。多值性则来自非线性系统的多稳态：同一组参数下可能存在不止一种稳定状态，系统落在哪一个取决于历史，这就是迟滞。</p>
+      <p><b>（3）不可逆性。</b>界面变形、破碎、聚并都伴随黏性耗散：聚并时释放的表面能 \(\sigma\Delta A\) 以毛细波和涡的形式耗散为热；破碎则需要流动提供能量。课件第 8 页称之为“熵增过程”。实际后果是路径依赖：升高流量和降低流量时，流型转变点往往不重合。</p>
+    </div>
+    <h4>4.2 每种流型的主导力平衡</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>流型</th><th>维持它的力平衡</th><th>让它失稳的机制</th><th>主要无量纲数</th></tr></thead>
+      <tbody>
+        <tr><td>泡状流</td><td>表面张力使气泡保持小而圆（\(d\lt d_{\rm crit}\sim\ell_c\)）；气泡稀疏，很少碰撞</td><td>含气率升高，气泡间距缩小，碰撞聚并频率陡增</td><td>α、Eo</td></tr>
+        <tr><td>分散泡状流</td><td>湍流把大气泡撕碎（\(d_{\max}\lt d_{\rm crit}\)），破碎速率压过聚并</td><td>液速下降，湍流不足以撕碎</td><td>湍流 We、Re</td></tr>
+        <tr><td>弹状流</td><td>管壁约束：大于管径的气泡只能沿轴向伸长，以 \(0.35\sqrt{gD}\) 上升</td><td>气量再增，气弹尾部液膜下落与气芯上冲剧烈冲突</td><td>Fr、Eo</td></tr>
+        <tr><td>搅混流</td><td>无稳定结构，介于气弹解体和环状流建立之间</td><td>（过渡流型）</td><td>Ku</td></tr>
+        <tr><td>环状流</td><td>气芯动压托住液膜和液滴，抵抗重力</td><td>低气速：液膜回落；高气速：液膜被撕裂、夹带</td><td>Ku、We</td></tr>
+        <tr><td>分层流（水平）</td><td>重力把轻相压在上方，界面平整</td><td>气液速度差引起 Kelvin–Helmholtz 波增长（第 2 讲）</td><td>Fr、Martinelli X</td></tr>
+        <tr><td>微通道流型</td><td>表面张力主导，重力可忽略（Eo ≪ 1）；气泡被壁面约束成长气泡</td><td>惯性增大到 We ~ O(1) 后出现环状或“平行流”</td><td>Eo、We、Ca</td></tr>
+      </tbody>
+    </table></div>
+    <div class="read">
+      <p>用这张表可以回答“同样流量为何流型不同”：</p>
+      <ul>
+        <li><b>竖直上升 vs 水平：</b>竖直时重力沿管轴，只影响两相相对速度，不造成横向分离，所以没有分层流；水平时重力垂直于流动，横向分层是首先出现的结构（课件第 37–40 页）。</li>
+        <li><b>竖直上升 vs 下降：</b>下降流中浮力与流动方向相反，液膜在重力作用下自然沿壁下流，于是出现上升流中没有的“下降液膜流型”；气弹也更稳定（课件第 34–35 页）。</li>
+        <li><b>常规管 vs 微通道：</b>D = 0.5 mm 时空气–水的 Eo ≈ 0.034，重力几乎不起作用，分层流不存在，流型图也几乎不随方向变化（课件第 29–31 页）。</li>
+        <li><b>倾斜管：</b>只要偏离水平几度，重力沿管轴的分量就足以改变液体滞留量。课件第 45 页：−10° 向下时多为分层流，+10° 向上时转为间歇流。</li>
+        <li><b>受热管：</b>沿程不断产汽，干度 x 沿管长增加，流型随位置依次演变；热流越大，沸腾起点越靠近入口（课件第 23–26 页）。这里流型由“位置”而不是“工况”决定，详见第 7 章。</li>
+      </ul>
+    </div>
+    <h4>4.3 气固流态化：曳力与重力的竞争</h4>
+    <div class="read">
+      <p>课件第 63–77 页的气固流型可以用一个更简单的力平衡串起来。颗粒受到气流曳力和重力（减浮力）。表观气速 \(u_g\) 低于最小流化速度 \(u_{mf}\) 时，曳力不足以托起颗粒，床层是固定床，压降随气速上升；达到 \(u_{mf}\)，床层压降恰好等于单位截面上颗粒的有效重量，床层开始流化；继续增大气速，多余的气体以气泡形式穿过床层（鼓泡床），气泡长到接近床径时形成节涌；气速接近单颗粒终端速度 \(u_t\) 时，颗粒开始被带出（快速床、气力输送）。所以 \(u_{mf}\) 和 \(u_t\) 是气固流型的两个“锚点”，6.5 节从力平衡推导它们。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-model">
+    <h3><span class="no">五</span>数学模型建立：预测流型需要哪三件东西</h3>
+    <div class="read">
+      <p>流型预测没有一个“流型方程”可解，它由三部分组成：</p>
+      <ol>
+        <li><b>坐标</b>：用量纲分析找出控制流型的全部无量纲数，并选出能让数据“塌缩”的组合（6.1 节）。</li>
+        <li><b>边界</b>：对每一条边界找出失稳机理，写出对应的力平衡或几何条件，得到判据（6.2–6.5 节；更系统的稳定性分析在第 2 讲）。</li>
+        <li><b>判别</b>：用相指示函数统计（概率密度、功率谱）客观地标定实验中的流型，再与判据比较。</li>
+      </ol>
+      <p>下面的推导都基于这些共同假设：充分发展、绝热、牛顿流体、光滑管壁、统计平稳。每个推导结束时会说明哪条假设最先失效。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-deriv">
+    <h3><span class="no">六</span>完整数学推导</h3>
+
+    <div class="deriv" id="d21-pi">
+      <h4>6.1 流型图坐标的量纲分析</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>竖直上升、绝热、充分发展的气液两相流，管径 D。要问的是：流型由哪些独立参数决定？</p></div></li>
+        <li><div><p><b>基本原理：Buckingham π 定理。</b>物理规律不能依赖单位的选择。若一个关系涉及 n 个有量纲变量，它们包含 k 个独立基本量纲，则该关系可以改写为 n − k 个独立无量纲数之间的关系。</p></div></li>
+        <li><div><p><b>列出变量。</b>\(J_g,J_l\)（m/s），\(\rho_g,\rho_l\)（kg/m³），\(\mu_g,\mu_l\)（Pa·s），σ（N/m），g（m/s²），D（m），共 n = 9 个；基本量纲 M、L、T，k = 3。于是有 6 个独立无量纲数。</p></div></li>
+        <li><div><p><b>构造一组无量纲数。</b>取 \(\rho_l,g,D\) 为重复变量（它们恰好包含 M、L、T 且相互独立），得到</p>
+          \[ \mathrm{Fr}_g=\frac{J_g}{\sqrt{gD}},\quad \mathrm{Fr}_l=\frac{J_l}{\sqrt{gD}},\quad \frac{\rho_g}{\rho_l},\quad \frac{\mu_g}{\mu_l},\quad \mathrm{Eo}=\frac{\Delta\rho\,gD^2}{\sigma},\quad N_f=\frac{\rho_l\sqrt{gD^3}}{\mu_l}. \]
+          <p>前两个是两相各自的 Froude 数；Eo 衡量浮力与表面张力；\(N_f\) 是“黏度数”，衡量重力驱动的惯性与黏性之比。</p></div></li>
+        <li><div><p><b>说明省略的变量。</b>壁面润湿性（接触角）、粗糙度、入口长度 L/D、加热（Jakob 数）都被假设不重要。它们一旦重要，就各自增加一个无量纲数。</p></div></li>
+        <li><div><p><b>关键结论。</b>流型 = \(\mathcal R(\mathrm{Fr}_g,\mathrm{Fr}_l,\rho_g/\rho_l,\mu_g/\mu_l,\mathrm{Eo},N_f)\)。一张以 \((J_g,J_l)\) 为坐标、用常压空气–水在 D = 25 mm 管中测得的流型图，等于把后四个数固定在某组值上的二维切片。换管径时 Eo 和 \(N_f\) 同时改变，换工质或压力时密度比也变，切片就换了，边界自然移动。</p></div></li>
+        <li><div><p><b>Hewitt–Roberts 坐标为什么有效。</b>动量通量可以写成 \(\rho_gJ_g^2=\rho_lgD\cdot(\rho_g/\rho_l)\,\mathrm{Fr}_g^2\)。用 \(\rho_gJ_g^2\) 作坐标，等于把密度比吸收进坐标里。如果某个转变由“气流动压”控制，这样取坐标就能让不同压力下的数据重合。6.4 节将证明环状流转变正是这样：转变发生在 \(\rho_gJ_g^2=\mathrm{Ku}^2\sqrt{\sigma g\Delta\rho}\)，与密度比无关。这解释了课件第 33 页的观察：同一张图能同时拟合 0.14–0.54 MPa 空气–水和 3.45–6.9 MPa 汽–水的数据。</p></div></li>
+        <li><div><p><b>量纲检查。</b>\(J/\sqrt{gD}\)：(m/s)/(m/s)；\(\Delta\rho gD^2/\sigma\)：(kg/m³·m/s²·m²)/(kg/s²) = 1；\(\rho\sqrt{gD^3}/\mu\)：(kg/m³·m²/s)/(kg/(m·s)) = 1。全部无量纲。</p></div></li>
+        <li><div><p><b>Baker 因子的地位。</b>课件第 42–43 页的 \(\lambda=[(\rho_g/\rho_A)(\rho_l/\rho_W)]^{1/2}\)、\(\psi=(\sigma_W/\sigma)[(\mu_l/\mu_W)(\rho_W/\rho_l)^2]^{1/3}\) 以 20 °C、0.1 MPa 的空气和水为参照，对空气–水两者都等于 1。λ 修正密度（即动压）的影响，ψ 修正表面张力和黏度的影响；但指数是拟合出来的 <span class="tag emp">经验修正</span>，没有从力平衡推导。</p></div></li>
+        <li><div><p><b>局限。</b>π 定理只告诉你“有几个数”，不告诉你“哪个组合起作用”。哪个组合出现，要由机理决定：6.4 节的 Ku 判据与管径无关，这个信息量纲分析给不出来。</p></div></li>
+      </ol>
+    </div>
+
+    <div class="deriv" id="d21-bs">
+      <h4>6.2 泡状流 → 弹状流：临界含气率与边界方程</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>竖直上升的泡状流，气泡尺寸相近，直径 d。问题：含气率达到多少时聚并会主导，这个含气率对应怎样的 \((J_g,J_l)\)？</p></div></li>
+        <li><div><p><b>几何模型。</b>把气泡理想化为排在边长 s 的立方点阵上，每个点阵元胞 \(s^3\) 中一个气泡：</p>
+          \[ \alpha=\frac{\pi d^3/6}{s^3}=\frac{\pi}{6}\left(\frac{d}{s}\right)^3\quad\Longrightarrow\quad \frac{s}{d}=\left(\frac{\pi}{6\alpha}\right)^{1/3}. \]</div></li>
+        <li><div><p><b>代入数值。</b>α = 0.10 时 s/d = 1.74；α = 0.25 时 s/d = 1.28，相邻气泡之间的空隙只剩 0.28d；α = π/6 ≈ 0.52 时气泡相互接触（立方堆积的上限）。气泡上升时有量级为 d 的横向摆动，空隙小到 0.3d 以下时碰撞几乎不可避免。所以临界含气率在 0.25–0.3 之间 <span class="tag approx">几何论证给出量级</span>。Taitel 等取 \(\alpha_{\rm cr}=0.25\)（课件第 100 页）。</p></div></li>
+        <li><div><p><b>运动学关系（第 1 章）。</b>需要把 α 与流量联系起来。由 \(v_g=J_g/\alpha\)、\(v_l=J_l/(1-\alpha)\)，并假设气泡群相对液体以单个气泡的上升速度 \(U_0\) 运动（滑移速度 \(v_g-v_l=U_0\)）：</p>
+          \[ \frac{J_g}{\alpha}-\frac{J_l}{1-\alpha}=U_0. \]</div></li>
+        <li><div><p><b>气泡上升速度 \(U_0\)。</b>几毫米的变形气泡在低黏度液体中，上升速度几乎与尺寸无关，常用 Harmathy（1960）关系 <span class="tag emp">经验关联式</span>：</p>
+          \[ U_0=1.53\left[\frac{g(\rho_l-\rho_g)\sigma}{\rho_l^2}\right]^{1/4}. \]
+          <p>它的物理含义：\(\rho_lU_0^2\sim\sqrt{\sigma g\Delta\rho}=\Delta\rho g\ell_c\)，即气泡上升的动压与一个毛细长度高的液柱静压同量级，与“这类气泡的尺寸就是 \(\ell_c\) 的量级”一致。空气–水 \(U_0\approx0.25\) m/s。</p></div></li>
+        <li><div><p><b>变换。</b>两边同乘 \(\alpha(1-\alpha)\)：</p>
+          \[ J_g(1-\alpha)-J_l\,\alpha=U_0\,\alpha(1-\alpha). \]
+          <p>左边正是第 1 章的漂移流率 \(j_D=\alpha(1-\alpha)(v_g-v_l)\)。令 \(\alpha=\alpha_{\rm cr}\)，解出 \(J_l\)：</p>
+          \[ J_l=\frac{1-\alpha_{\rm cr}}{\alpha_{\rm cr}}\,J_g-(1-\alpha_{\rm cr})\,U_0. \]</div></li>
+        <li><div><p><b>最终边界方程。</b>代入 \(\alpha_{\rm cr}=0.25\)，\((1-\alpha_{\rm cr})\times1.53=1.15\)：</p>
+          <div class="eq-key">\[ J_l=3.0\,J_g-1.15\left[\frac{g(\rho_l-\rho_g)\sigma}{\rho_l^2}\right]^{1/4} \]</div>
+          <p>这就是课件第 100 页的边界方程（倾斜管中浮力只有沿管轴的分量起作用，课件乘了 sin β；竖直管 sin β = 1）。</p></div></li>
+        <li><div><p><b>量纲检查。</b>\([g\Delta\rho\sigma/\rho_l^2]^{1/4}\)：(m/s²·kg/m³·kg/s²·m⁶/kg²)^{1/4} = (m⁴/s⁴)^{1/4} = m/s，与 \(J_l\)、\(J_g\) 一致。</p></div></li>
+        <li><div><p><b>物理意义与极限检验。</b>在 \((J_g,J_l)\) 平面上这是斜率为 3 的直线：要在加气的同时把 α 压在 0.25 以下，液体必须以三倍速度增加来稀释气体。高液速极限 \(J\gg U_0\)：边界趋于 \(J_g/(J_g+J_l)=0.25\)，即 β = α = 0.25，回到无滑移，合理。\(J_l=0\) 时 \(J_g=0.25U_0\)，空气–水约 0.06 m/s。</p></div></li>
+        <li><div><p><b>局限。</b>假设气泡尺寸均匀、截面分布均匀（实际有壁面峰）；忽略高液速下湍流破碎维持的分散泡状流（课件第 99 页，第 2 讲）；还忽略了管径的影响。Taitel 等（1980）指出，若 Taylor 气弹的上升速度 \(0.35\sqrt{gD}\) 小于 \(U_0\)，小气泡会追上前方气弹的尾部而被吞并，低液速下的泡状流不能稳定存在。由 \(0.35\sqrt{gD}=U_0\) 得临界管径</p>
+          \[ D_{\rm crit}=19\left[\frac{(\rho_l-\rho_g)\sigma}{\rho_l^2g}\right]^{1/2}, \]
+          <p>空气–水约 5 cm <span class="tag approx">半理论</span>。所以在常见的 2–3 cm 实验管中，低液速时直接从“泡—弹过渡”进入弹状流。</p></div></li>
+      </ol>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 520 250" role="img" aria-label="立方点阵中的气泡：含气率 0.10 时间距与直径之比 1.74，0.25 时为 1.28，气泡之间只剩约 0.28 倍直径的空隙。">
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <rect x="20" y="15" width="220" height="200" fill="var(--accent)" fill-opacity="0.15" rx="4"/>
+          <rect x="280" y="15" width="220" height="200" fill="var(--accent)" fill-opacity="0.15" rx="4"/>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="1.1">
+            <circle cx="61" cy="46" r="20"/><circle cx="130.4" cy="46" r="20"/><circle cx="199.8" cy="46" r="20"/>
+            <circle cx="61" cy="115.4" r="20"/><circle cx="130.4" cy="115.4" r="20"/><circle cx="199.8" cy="115.4" r="20"/>
+            <circle cx="61" cy="184.8" r="20"/><circle cx="130.4" cy="184.8" r="20"/><circle cx="199.8" cy="184.8" r="20"/>
+            <circle cx="338.8" cy="64" r="20"/><circle cx="390" cy="64" r="20"/><circle cx="441.2" cy="64" r="20"/>
+            <circle cx="338.8" cy="115.2" r="20"/><circle cx="390" cy="115.2" r="20"/><circle cx="441.2" cy="115.2" r="20"/>
+            <circle cx="338.8" cy="166.4" r="20"/><circle cx="390" cy="166.4" r="20"/><circle cx="441.2" cy="166.4" r="20"/>
+          </g>
+          <g stroke="var(--accent)" stroke-width="1.4">
+            <line x1="338.8" y1="196" x2="390" y2="196"/><line x1="338.8" y1="191" x2="338.8" y2="201"/><line x1="390" y1="191" x2="390" y2="201"/>
+            <line x1="410" y1="40" x2="410" y2="44"/><line x1="421.2" y1="40" x2="421.2" y2="44"/><line x1="410" y1="42" x2="421.2" y2="42"/>
+          </g>
+          <text x="364.4" y="210" text-anchor="middle" fill="var(--accent)" font-family="var(--font-mono)" font-size="11">s</text>
+          <text x="415.6" y="34" text-anchor="middle" fill="var(--accent)" font-size="11">空隙 0.28d</text>
+          <text x="130" y="236" text-anchor="middle">α = 0.10，s/d = 1.74</text>
+          <text x="390" y="236" text-anchor="middle" font-weight="500" fill="var(--accent)">α = 0.25，s/d = 1.28</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-2　临界含气率的几何来源。</b>同样直径的气泡，含气率从 0.10 增到 0.25，间距从 1.74d 缩到 1.28d。气泡上升时的横向摆动幅度与 d 同量级，所以在 α ≈ 0.25–0.3 附近碰撞聚并的频率急剧上升。</figcaption>
+    </figure>
+
+    <div class="deriv" id="d21-tb">
+      <h4>6.3 Taylor 气弹的上升速度与表面张力极限</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>竖直管中静止液体里的一个长气泡（长度大于约 1.5D），液体黏度低，管径远大于毛细长度。</p></div></li>
+        <li><div><p><b>量纲分析。</b>\(U_{TB}=f(g,D,\rho_l,\rho_g,\mu_l,\sigma)\)，7 个变量、3 个量纲，得 \(U_{TB}/\sqrt{gD}=F(\mathrm{Eo},N_f,\rho_g/\rho_l)\)。在无黏、无表面张力、\(\rho_g/\rho_l\to0\) 的极限下 F 趋于常数 C，于是 \(U_{TB}=C\sqrt{gD}\)：气弹的 Froude 数是常数。</p></div></li>
+        <li><div><p><b>建立随泡坐标系。</b>在随气弹上升的坐标系中，远处液体以 \(U_{TB}\) 向下流来，气弹头部是驻点。头部附近边界层很薄，液体流动可视为无黏、无旋（势流）。气体密度可忽略，气弹内部压力处处相等，记为 \(p_g\)。</p></div></li>
+        <li><div><p><b>沿自由面写 Bernoulli 方程。</b>取 z 为从头部向下量的距离，界面上液体流速为 q。界面上液体压力等于 \(p_g\)（忽略表面张力），Bernoulli 常数在驻点处为 \(p_g\)：</p>
+          \[ p_g+\tfrac12\rho_lq^2-\rho_lgz=p_g\quad\Longrightarrow\quad q=\sqrt{2gz}. \]
+          <p>液体沿气弹表面像自由落体一样加速下落。</p></div></li>
+        <li><div><p><b>Davies–Taylor 近似（1950）。</b>假设头部近似为半径 \(R_n\) 的球冠，并用绕球势流近似头部附近的流动：表面速度 \(q=\tfrac32U\sin\theta\)，θ 是从驻点量起的极角，对应高度 \(z=R_n(1-\cos\theta)\)。代入上式：</p>
+          \[ \tfrac94U^2\sin^2\theta=2gR_n(1-\cos\theta). \]</div></li>
+        <li><div><p><b>小角度展开。</b>\(\sin^2\theta\approx\theta^2\)，\(1-\cos\theta\approx\theta^2/2\)，两边的 \(\theta^2\) 约去：</p>
+          \[ \tfrac94U^2=gR_n\quad\Longrightarrow\quad U=\tfrac23\sqrt{gR_n}. \]
+          <p>这是无界液体中球冠气泡的经典结果 <span class="tag ok">Davies–Taylor</span>。</p></div></li>
+        <li><div><p><b>管内的结果。</b>管内的头部半径由管径决定。Dumitrescu（1943）求解了管内势流，得到 C = 0.351；实验值约 0.345–0.35：</p>
+          <div class="eq-key">\[ U_{TB}\approx0.35\sqrt{gD} \]</div>
+          <p>与第 6 步对照：\(\tfrac23\sqrt{gR_n}=0.35\sqrt{gD}\) 要求 \(R_n\approx0.28D\)，即头部曲率半径约为管半径的一半多，与照片相符。</p></div></li>
+        <li><div><p><b>量纲检查。</b>\(\sqrt{gD}\)：\(\sqrt{\mathrm{m/s^2\cdot m}}\) = m/s。</p></div></li>
+        <li><div><p><b>物理意义。</b>气弹上升有多快，取决于液体能多快地从气弹与管壁之间的环隙中落下去。这由管径和重力决定，与气弹长度无关。所以长气弹和短气弹以同样速度上升。D = 25 mm 时 \(U_{TB}\approx0.17\) m/s，比同一液体中小气泡的 \(U_0\approx0.25\) m/s 还慢，这正是 6.2 节第 10 步 \(D_{\rm crit}\) 论证的出发点。</p></div></li>
+        <li><div><p><b>表面张力极限与局限。</b>Eo 减小时 C 减小。Bretherton（1961）证明，当 \(\mathrm{Eo}=\Delta\rho gD^2/\sigma\lt3.37\) 时，封闭竖直管中的长气泡根本不上升：表面张力能把上方液柱托住 <span class="tag ok">已确立</span>。空气–水对应 D ≈ 5 mm。这就是微通道流型与方向无关的原因。另外：高黏度液体中 C 随 \(N_f\) 减小而减小；液体流动时 \(U=C_0J+0.35\sqrt{gD}\)（Nicklin，1962，\(C_0\approx1.2\)），这是第 3 讲漂移通量模型的原型。</p></div></li>
+      </ol>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 440 300" role="img" aria-label="随气弹坐标系中的 Taylor 气弹：远处液体以气弹上升速度向下流来，头部为驻点，液体沿气弹表面以根号 2gz 的速度加速下落，形成贴壁下落液膜。">
+        <defs>
+          <marker id="f23a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="f23b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        </defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <rect x="110" y="14" width="200" height="276" fill="var(--accent)" fill-opacity="0.2"/>
+          <line x1="110" y1="14" x2="110" y2="290" stroke="currentColor" stroke-width="2"/>
+          <line x1="310" y1="14" x2="310" y2="290" stroke="currentColor" stroke-width="2"/>
+          <path d="M128,290 L128,150 Q128,72 210,70 Q292,72 292,150 L292,290 Z" fill="var(--panel)" stroke="currentColor" stroke-width="1.3"/>
+          <g stroke="currentColor" stroke-width="1.2">
+            <line x1="160" y1="20" x2="160" y2="48" marker-end="url(#f23a)"/>
+            <line x1="210" y1="20" x2="210" y2="48" marker-end="url(#f23a)"/>
+            <line x1="260" y1="20" x2="260" y2="48" marker-end="url(#f23a)"/>
+          </g>
+          <circle cx="210" cy="70" r="3.5" fill="var(--accent)"/>
+          <text x="222" y="64" font-size="11.5">驻点 q = 0</text>
+          <line x1="300" y1="170" x2="300" y2="250" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#f23b)"/>
+          <line x1="120" y1="170" x2="120" y2="250" stroke="var(--accent)" stroke-width="1.8" marker-end="url(#f23b)"/>
+          <text x="320" y="200" fill="var(--accent)">液膜下落</text>
+          <text x="320" y="216" fill="var(--accent)" font-family="var(--font-mono)" font-size="11.5">q = √(2gz)</text>
+          <line x1="210" y1="80" x2="210" y2="160" stroke="currentColor" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#f23a)"/>
+          <text x="216" y="128" font-family="var(--font-mono)" font-size="11.5">z</text>
+          <text x="210" y="205" text-anchor="middle">气弹内 p_g ≈ 常数</text>
+          <text x="320" y="36">来流 U_TB</text>
+          <text x="320" y="52" font-size="11" opacity="0.75">（随泡坐标系）</text>
+          <line x1="110" y1="282" x2="310" y2="282" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>
+          <text x="210" y="278" text-anchor="middle" font-size="11" font-family="var(--font-mono)">D</text>
+          <text x="98" y="110" text-anchor="end">管壁</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-3　随气弹坐标系中的 Taylor 气弹。</b>头部是驻点；液体沿等压的自由面像自由落体一样加速，通过气弹与管壁之间的环隙流下去。上升速度由“液体能多快让路”决定，因此只依赖 g 和 D。</figcaption>
+    </figure>
+
+    <div class="deriv" id="d21-ku">
+      <h4>6.4 环状流维持条件：Kutateladze 判据</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象与机理假设。</b>竖直上升流中，高速气芯从液膜上夹带液滴。Taitel 等（1980）的论点：只有当气流能把夹带出的最大液滴托住向上运动时，液体才能整体向上输送，环状流才能维持；否则液滴回落、液膜堆积，结构退化为搅混流。</p></div></li>
+        <li><div><p><b>力平衡（牛顿第二定律，液滴恰好悬浮）。</b>直径 d 的液滴所受曳力等于重力减浮力：</p>
+          \[ \tfrac12C_D\,\rho_gJ_g^2\,\frac{\pi d^2}{4}=\frac{\pi d^3}{6}(\rho_l-\rho_g)g. \]
+          <p>α 接近 1，气芯速度取 \(J_g\)。</p></div></li>
+        <li><div><p><b>解出所需气速。</b></p>
+          \[ J_g^2=\frac{4(\rho_l-\rho_g)gd}{3C_D\rho_g}. \]
+          <p>液滴越大，需要的气速越高。所以关键是“最大能有多大”。</p></div></li>
+        <li><div><p><b>最大液滴由 We 决定。</b>气流动压试图把液滴撕碎，表面张力维持它。液滴 We 超过临界值 k 就破碎，所以</p>
+          \[ d_{\max}=\frac{k\,\sigma}{\rho_gJ_g^2}. \]</div></li>
+        <li><div><p><b>代入消去 d。</b></p>
+          \[ J_g^2=\frac{4(\rho_l-\rho_g)g}{3C_D\rho_g}\cdot\frac{k\sigma}{\rho_gJ_g^2}\quad\Longrightarrow\quad J_g^4=\frac{4k}{3C_D}\,\frac{\sigma g(\rho_l-\rho_g)}{\rho_g^2}. \]</div></li>
+        <li><div><p><b>写成无量纲形式。</b>两边开四次方：</p>
+          <div class="eq-key">\[ \mathrm{Ku}=\frac{\rho_g^{1/2}J_g}{\left[\sigma g(\rho_l-\rho_g)\right]^{1/4}}=\left(\frac{4k}{3C_D}\right)^{1/4} \]</div></div></li>
+        <li><div><p><b>代入数值。</b>取 k ≈ 30、\(C_D\approx0.44\)，Ku ≈ 3.1；课件第 97 页给出 3.2。四次方根让结果对不确定参数很不敏感：k 从 30 降到 20，Ku 只从 3.09 降到 2.79。</p></div></li>
+        <li><div><p><b>量纲检查。</b>分子 \(\rho_g^{1/2}J_g\)：kg^{1/2}·m^{−1/2}·s^{−1}；分母 \((\sigma g\Delta\rho)^{1/4}\)：(kg·s⁻²·m·s⁻²·kg·m⁻³)^{1/4} = kg^{1/2}·m^{−1/2}·s^{−1}。一致。</p></div></li>
+        <li><div><p><b>物理意义。</b>判据中没有 D：转变由气流动压 \(\rho_gJ_g^2\) 是否超过 \(\mathrm{Ku}^2\sqrt{\sigma g\Delta\rho}\) 决定。空气–水约需 \(J_g\approx15\) m/s，7 MPa 汽–水只需约 1.7 m/s（第七部分案例 2），因为气相密度大 30 倍。这也从理论上解释了 6.1 节第 7 步动量通量坐标为什么好用。</p></div></li>
+        <li><div><p><b>局限。</b>假设气芯速度均匀且等于 \(J_g\)；液滴取球形阻力系数；没有考虑液膜倒流（flooding）机理，小管径中后者可能主导，从而使判据依赖 D <span class="tag open">两种机理的适用范围仍有讨论</span>。</p></div></li>
+      </ol>
+    </div>
+
+    <div class="deriv" id="d21-fl">
+      <h4>6.5 气固流态化的两个特征速度</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>直径 \(d_p\)、密度 \(\rho_p\) 的球形颗粒，处在密度 \(\rho_f\)、黏度 μ 的上升气流中。</p></div></li>
+        <li><div><p><b>单颗粒带出速度 \(u_t\)：力平衡。</b>颗粒悬停时曳力等于重力减浮力：</p>
+          \[ \tfrac12C_D\rho_fu_t^2\frac{\pi d_p^2}{4}=\frac{\pi d_p^3}{6}(\rho_p-\rho_f)g\quad\Longrightarrow\quad u_t=\sqrt{\frac{4d_p(\rho_p-\rho_f)g}{3C_D\rho_f}}. \]</div></li>
+        <li><div><p><b>三个阻力区。</b>\(C_D\) 依赖颗粒雷诺数 \(\mathrm{Re}_p=\rho_fu_td_p/\mu\)：</p>
+          <ul>
+            <li>Stokes 区 \(C_D=24/\mathrm{Re}_p\)（\(\mathrm{Re}_p\lt0.4\)）：\(u_t=\dfrac{d_p^2(\rho_p-\rho_f)g}{18\mu}\) <span class="tag ok">Stokes 解</span>。</li>
+            <li>过渡区 \(C_D\approx10/\mathrm{Re}_p^{1/2}\)（\(0.4\lt\mathrm{Re}_p\lt500\)）：代入并解 \(u_t^{3/2}\)，得 \(u_t=\left[\dfrac{4(\rho_p-\rho_f)^2g^2}{225\,\mu\rho_f}\right]^{1/3}d_p\) <span class="tag emp">Allen 区拟合</span>。</li>
+            <li>牛顿区 \(C_D\approx0.43\)（\(500\lt\mathrm{Re}_p\lt2\times10^5\)）：\(u_t=\left[\dfrac{3.1\,d_p(\rho_p-\rho_f)g}{\rho_f}\right]^{1/2}\)，因为 \(4/(3\times0.43)=3.1\)。</li>
+          </ul></div></li>
+        <li><div><p><b>最小流化速度 \(u_{mf}\)：守恒律。</b>床层刚流化时，床层压降等于单位截面上颗粒的有效重量（课件第 64 页）：</p>
+          \[ \frac{\Delta p}{L_{mf}}=(1-\varepsilon_{mf})(\rho_p-\rho_f)g. \]</div></li>
+        <li><div><p><b>床层阻力：Ergun 方程</b> <span class="tag emp">半经验</span>：</p>
+          \[ \frac{\Delta p}{L}=150\frac{(1-\varepsilon)^2}{\varepsilon^3}\frac{\mu U}{d_p^2}+1.75\frac{1-\varepsilon}{\varepsilon^3}\frac{\rho_fU^2}{d_p}. \]
+          <p>第一项是颗粒间隙中的黏性摩擦（Kozeny–Carman），第二项是惯性损失。</p></div></li>
+        <li><div><p><b>小颗粒极限（黏性项主导）。</b>令两式相等、只保留第一项：</p>
+          \[ u_{mf}=\frac{\varepsilon_{mf}^3}{150(1-\varepsilon_{mf})}\,\frac{d_p^2(\rho_p-\rho_f)g}{\mu}. \]
+          <p>若 \(\varepsilon_{mf}\approx0.38\)，系数 \(\varepsilon^3/[150(1-\varepsilon)]\approx1/1650\)，正是课件第 65 页的 \(u_{mf}=d_p^2(\rho_p-\rho_f)g/(1650\mu)\)。</p></div></li>
+        <li><div><p><b>大颗粒极限（惯性项主导）。</b>只保留第二项：</p>
+          \[ u_{mf}^2=\frac{\varepsilon_{mf}^3}{1.75}\,\frac{d_p(\rho_p-\rho_f)g}{\rho_f}, \]
+          <p>\(\varepsilon_{mf}\approx0.415\) 时系数为 1/24.5，即课件的大颗粒公式。Wen 与 Yu（1966）实际上是用实验数据拟合了空隙率和形状因子，所以 1650 和 24.5 里藏着“典型床层空隙率约 0.4”这个经验信息。</p></div></li>
+        <li><div><p><b>量纲检查。</b>\(d_p^2\Delta\rho g/\mu\)：m²·kg·m⁻³·m·s⁻²/(kg·m⁻¹·s⁻¹) = m/s；\(d_p\Delta\rho g/\rho_f\)：m²/s²，开方为 m/s。</p></div></li>
+        <li><div><p><b>物理意义。</b>流化操作窗口 \(u_t/u_{mf}\)：小颗粒为 1650/18 ≈ 92，大颗粒为 \(\sqrt{3.1\times24.5}\approx8.7\)。细颗粒床的可操作气速范围宽得多。</p></div></li>
+        <li><div><p><b>局限。</b>颗粒群中的沉降相互干扰，带出速度要乘修正系数（课件第 65 页 \(F_0\)）；非球形颗粒需形状因子；Ergun 方程本身是关联式。另注意：课件第 65 页牛顿区公式的适用范围误写为 0.4 &lt; Re_p &lt; 500，应为 500 &lt; Re_p &lt; 2×10⁵。</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-cases">
+    <h3><span class="no">七</span>典型案例</h3>
+    <h4>案例 1　空气–水，竖直上升管 D = 25 mm，\(J_l=0.3\) m/s</h4>
+    <div class="read">
+      <p><b>已知</b>：\(\rho_l=997\) kg/m³，\(\rho_g=1.2\) kg/m³，σ = 0.0725 N/m，g = 9.81 m/s²。<b>求</b>：泡状→弹状与环状流的转变气速，并判断 \(J_g=0.05、0.5、20\) m/s 时的流型。</p>
+      <ol>
+        <li>小气泡上升速度：\[U_0=1.53\,[9.81\times995.8\times0.0725/997^2]^{1/4}=0.250\ \mathrm{m/s}\]</li>
+        <li>泡—弹边界：\[J_g=\frac{J_l+1.15[\cdots]^{1/4}}{3}=\frac{0.3+0.1875}{3}=0.162\ \mathrm{m/s}\]</li>
+        <li>环状流起始：\[J_g=\frac{3.1\,(0.0725\times9.81\times995.8)^{1/4}}{\sqrt{1.2}}=14.6\ \mathrm{m/s}\]</li>
+        <li>管径检查：\[D_{\rm crit}=19\left[\frac{995.8\times0.0725}{997^2\times9.81}\right]^{1/2}=0.052\ \mathrm{m}\gt0.025\ \mathrm{m}\]</li>
+        <li>由滑移关系解 α：\(J_g=0.05\) 时 α = 0.086；0.5 时 α = 0.55；20 m/s 时 Ku = 4.2 &gt; 3.1。</li>
+      </ol>
+      <p><b>结论</b>：\(J_g=0.05\) m/s 时含气率低于 0.25，但管径小于 \(D_{\rm crit}\)，按 Taitel 理论低液速泡状流不稳定，预期为泡—弹过渡；0.5 m/s 为弹状或搅混流；20 m/s 为环状流。两个判据在第一种工况下给出不同答案，提醒我们每个判据都有自己的前提。</p>
+    </div>
+    <h4>案例 2　为什么高压汽–水更早进入环状流</h4>
+    <div class="read">
+      <p>7 MPa 饱和汽–水：\(\rho_l\approx740\)，\(\rho_g\approx36.5\) kg/m³，σ ≈ 0.0175 N/m（近似值）。Ku = 3.1 给出 \(J_g\approx1.7\) m/s，比常压空气–水的 14.6 m/s 低近 9 倍。但换成动量通量，转变点 \(\rho_gJ_g^2\) 分别为 106 Pa 和 256 Pa，只差 2.4 倍。这就是 Hewitt–Roberts 坐标能同时拟合两种工况的原因（6.1 节第 7 步）。</p>
+    </div>
+    <h4>案例 3　微通道：重力何时退场</h4>
+    <div class="read">
+      <p>空气–水在 D = 0.5 mm 管中 Eo = 997×9.81×(5×10⁻⁴)²/0.0725 ≈ 0.034，远小于 Bretherton 极限 3.37；20 °C 甲醇约 0.086。气泡不能靠浮力上升，只能被液体推着走，所以课件第 29–31 页微通道流型图中没有分层流，流型几乎不随方向变化。</p>
+    </div>
+    <h4>案例 4　流化床：课件第 76 页的砂粒</h4>
+    <div class="read">
+      <p>\(d_p=450\) μm，\(\rho_p=2640\) kg/m³，空气 \(\rho_f=1.2\) kg/m³、\(\mu=1.81\times10^{-5}\) Pa·s。</p>
+      <ol>
+        <li>\(u_{mf}=d_p^2\Delta\rho g/(1650\mu)=0.176\) m/s，校核 \(\mathrm{Re}_p=5.2\lt20\)，公式适用。</li>
+        <li>先试 Stokes 区：\(u_t=16.1\) m/s，但 \(\mathrm{Re}_p=480\)，远超 0.4，不适用。</li>
+        <li>改用过渡区公式：\(u_t=3.7\) m/s，\(\mathrm{Re}_p=110\)，落在 0.4–500 内，自洽。</li>
+      </ol>
+      <p><b>结论</b>：操作窗口约 0.18–3.7 m/s，比值约 21。这个例子的要点是“先假设阻力区、再校核 Re”：用错阻力区会把带出速度高估 4 倍。</p>
+    </div>
+
+    <div class="calc" id="regime-calc">
+      <h4 style="margin:0">竖直上升管流型判据估算器</h4>
+      <p class="small muted">基于 6.2–6.4 节的判据，只适用于绝热、充分发展的竖直上升流；未包含高液速下的分散泡状流边界（第 2 讲）。可以直接改数值，或选一个预设工况。</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button class="reset" type="button" data-preset="aw">空气–水 D=25 mm</button>
+        <button class="reset" type="button" data-preset="sw">汽–水 7 MPa D=20 mm</button>
+        <button class="reset" type="button" data-preset="mc">空气–水 D=0.5 mm</button>
+      </div>
+      <div class="calc-grid">
+        <label for="rc-rl">液相密度 ρ_l（kg/m³）<input id="rc-rl" type="number" step="any" value="997"></label>
+        <label for="rc-rg">气相密度 ρ_g（kg/m³）<input id="rc-rg" type="number" step="any" value="1.2"></label>
+        <label for="rc-sig">表面张力 σ（N/m）<input id="rc-sig" type="number" step="any" value="0.0725"></label>
+        <label for="rc-d">管径 D（mm）<input id="rc-d" type="number" step="any" value="25"></label>
+        <label for="rc-jg">气相折算速度 J_g（m/s）<input id="rc-jg" type="number" step="any" value="0.5"></label>
+        <label for="rc-jl">液相折算速度 J_l（m/s）<input id="rc-jl" type="number" step="any" value="0.3"></label>
+      </div>
+      <div class="calc-out" id="rc-out"></div>
+      <div class="verdict" id="rc-verdict"></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-research">
+    <h3><span class="no">八</span>科研应用：把流型方法用到针尖放电气泡上</h3>
+    <h4>8.1 管内流型图为什么不能直接用</h4>
+    <div class="read">
+      <p>针尖气泡没有管壁约束，也就没有 Taylor 气弹机制；系统没有被强加的 \((J_g,J_l)\)，气体来自放电加热造成的汽化和分解，而不是外部注气；控制输入是电学量（电压、脉冲能量、重复频率）和几何量（针尖半径、间隙）。所以 6.2–6.4 节的判据一个都不能照搬。</p>
+      <p>能迁移的是方法：主导力分析 → π 定理选坐标 → 用信号统计客观分类 → 为每条边界找机理。</p>
+    </div>
+    <h4>8.2 一个可检验的研究方案 <span class="tag open">建议，待实验检验</span></h4>
+    <div class="read">
+      <ol>
+        <li><b>列出力学子问题的变量。</b>脉冲沉积进气泡的能量 \(E_p\)、脉宽 \(\tau_p\)、重复频率 f、针尖半径 \(r_t\)、环境压力 \(p_\infty\)、\(\rho_l\)、\(\mu_l\)、σ、g：9 个变量、3 个量纲，6 个无量纲数。电学（ε、\(\sigma_e\)）和热学（\(h_{lv}\)、过冷度）参数之后再加入。</li>
+        <li><b>选特征尺度。</b>能量等效半径 \(R_E=\left(\dfrac{3E_p}{4\pi p_\infty}\right)^{1/3}\)：若沉积能量全部转为克服环境压力做的功，气泡能长到的半径。Rayleigh 塌缩时间 \(t_R=0.915\,R_E\sqrt{\rho_l/p_\infty}\) <span class="tag ok">Rayleigh 塌缩解</span>。</li>
+        <li><b>候选坐标。</b>\(R_E/r_t\)（气泡与针尖的尺度比，决定附着几何）；\(\mathrm{Bo}=\rho_lgR_E^2/\sigma\)（浮力能否使气泡脱离）；\(p_\infty R_E/\sigma\)（环境压力与表面张力）；\(\tau_p/t_R\)（能量是“瞬时”注入还是边注入边膨胀）；\(f\,t_R\)（下一个脉冲到来时上一个气泡是否还在）；\(\mathrm{Oh}=\mu_l/\sqrt{\rho_l\sigma R_E}\)。</li>
+        <li><b>示例量级。</b>假设每个脉冲有 1 mJ 进入气泡（上限估计，实际比例需测量）：\(R_E\approx1.3\) mm，\(t_R\approx110\) μs。重复频率 1 kHz 时 \(f\,t_R\approx0.1\)，气泡在下个脉冲前基本塌缩；10 kHz 时 \(f\,t_R\approx1\)，相邻脉冲的气泡相互重叠。后一种情况下系统有“记忆”，最可能出现 4.1 节说的多值性和迟滞。</li>
+        <li><b>客观分类。</b>对每个脉冲从高速图像提取 \(R(t)\)、最大半径、脱离时刻，统计其概率密度。分布由单峰变成双峰的位置，就是两种行为模式共存的区域（类比图 2-1 中弹状流的双峰）。</li>
+        <li><b>迟滞检验。</b>电压（或频率）先升后降扫描，记录行为模式。若升降两条路径的转变点不重合，说明残余气体或局部加热造成了历史依赖。这一点决定后续建模能否用“每个脉冲独立”的假设。</li>
+        <li><b>为每条边界找机理。</b>就像 Taitel 为每条流型边界找到一个力平衡，观察到的每条行为边界都应对应一个可写成方程的机理（浮力脱离、界面失稳、电应力拉伸），并用独立实验验证。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-errors">
+    <h3><span class="no">九</span>常见错误与理论局限</h3>
+    <div class="read">
+      <ol>
+        <li><b>把流型边界当成一条清晰的线。</b>边界是过渡带（课件第 28 页），在带内同一工况可能交替出现两种结构。</li>
+        <li><b>跨工质、管径、方向直接套用流型图。</b>6.1 节说明二维图只是六维空间的一个切片。至少要换用合适的坐标（动量通量、Baker 修正），最好用机理判据交叉检验。</li>
+        <li><b>把折算速度当成真实速度。</b>\(v_g=J_g/\alpha\)。在 α = 0.1 的泡状流中，气泡真实速度是折算速度的 10 倍。</li>
+        <li><b>认为流型只由当地参数决定。</b>入口段、加热历史、迟滞都会让同一组当地参数对应不同流型。</li>
+        <li><b>把经验修正当成物理定律。</b>Baker 的 λ、ψ，Harmathy 的 1.53，Ergun 的 150 和 1.75 都是拟合值，外推需谨慎。</li>
+        <li><b>在微通道中仍按重力思维分析。</b>Eo ≪ 1 时浮力退场，表面张力、黏性和润湿性主导。</li>
+        <li><b>不校核阻力区。</b>案例 4 中用错阻力区会把带出速度高估 4 倍。</li>
+        <li><b>把相关当因果。</b>流型转变与 \(J_g\) 相关，但直接原因是聚并频率、波增长或液滴悬浮这类机理；同一个 \(J_g\) 在不同管径、压力下对应完全不同的机理状态。</li>
+        <li><b>把宏观随机性归因于分子热运动。</b>热涨落幅度只有亚纳米量级（4.1 节），宏观随机性来自失稳对扰动的放大。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l21-check">
+    <h3><span class="no">十</span>理解检验</h3>
+    <div class="read"><p>先自己回答，再展开参考答案。</p></div>
+    <details class="qa">
+      <summary>问题 1（物理推理）：同一组较小的 \((J_g,J_l)\)，竖直上升管中是弹状流，水平管中是分层流，竖直下降管中是下降液膜流。请只用各个力的方向解释这三种结果。</summary>
+      <div>
+        <p>关键是重力相对流动方向的取向。竖直上升：重力沿管轴，只造成两相的轴向相对运动（气体比液体快），不造成横向分离；气泡被管壁约束后只能沿轴伸长，于是形成气弹。水平：重力垂直于流动，在流速低、惯性不足以混合时（Fr 小），重力直接把气体压到上方、液体沉到下方，横向分离成为第一位的结构。竖直下降：重力与流动同向，液体在重力作用下自然沿壁面成膜下流，气体占据管芯；浮力与流动反向，使气弹更难被冲走，也更稳定。</p>
+      </div>
+    </details>
+    <details class="qa">
+      <summary>问题 2（计算 + 推理）：在内径 1 mm、一端封闭的竖直玻璃管中注水后留一个长气泡，它会以 \(0.35\sqrt{gD}\) 上升吗？这对微通道流型研究意味着什么？</summary>
+      <div>
+        <p>Eo = 997×9.81×(10⁻³)²/0.0725 ≈ 0.13，远小于 Bretherton 极限 3.37，所以气泡不会上升，表面张力托住了液柱。若误用 \(0.35\sqrt{gD}\)，会得到 0.035 m/s 的虚假速度。含义：微通道中气泡的运动由液体流动、压差、表面张力和润湿性决定，浮力可以忽略；流型图因此几乎与方向无关，坐标宜选 We、Ca、Re 之类不含重力的组合（课件第 31 页右图用 Ca 和 Re 比值作坐标，正是这个原因）。</p>
+      </div>
+    </details>
+    <details class="qa">
+      <summary>问题 3（科研设计）：你打算用“每个放电脉冲相互独立”的假设来建立第一个气泡动力学模型。设计一个实验来检验这个假设，并说明需要测哪些量、判据是什么。</summary>
+      <div>
+        <p>（1）估算 \(f\,t_R\)：用实测的最大气泡半径 \(R_{\max}\) 代替 \(R_E\)，算 \(t_R=0.915R_{\max}\sqrt{\rho_l/p_\infty}\)。若 \(f\,t_R\ll1\)，独立假设在力学上可能成立。（2）测量：高速成像得到每个脉冲的 \(R(t)\)；电压、电流波形得到每个脉冲的能量；可能的话测针尖附近液体温度。（3）判据：统计相邻脉冲之间 \(R_{\max}\) 的相关系数，若显著不为零，说明存在记忆；做频率或电压的升降扫描，若行为转变点不重合，说明存在迟滞。（4）还需注意热记忆：即使气泡完全塌缩，液体局部温升的扩散时间 \(R^2/\alpha_l\) 可达 0.1 s 量级（R ~ 0.1 mm），远长于力学时间。所以“力学独立”不等于“热学独立”，两者要分别检验。</p>
+      </div>
+    </details>
+  </section>
+
+  <section class="sec" id="l21-next">
+    <h3><span class="no">下一讲</span>第 2 章第 2 讲：流型转变机理（课件 2.3）</h3>
+    <div class="read">
+      <p>内容：水平分层流的动量平衡与 Lockhart–Martinelli 参数 X 的来源；无因次几何量 \(\tilde h_L,\tilde A_L,\tilde P_i\) 的推导；Kelvin–Helmholtz 不稳定性的线性稳定性分析（从势流方程推出色散关系）；Taitel–Dukler 的有限振幅修正 \((1-\tilde h_L)\)；四条转变曲线 A–D 的物理含义；Barnea 最大稳定气泡直径与分散泡状流边界。</p>
+      <p>为了把后续内容接到你的课题上，请告诉我：</p>
+      <ol>
+        <li>钨针针尖曲率半径、针—板间隙、针的朝向（针尖朝上还是朝下）。</li>
+        <li>电源类型与波形：直流、交流还是脉冲；幅值、上升时间、脉宽、重复频率。</li>
+        <li>甲醇纯度、含水量，是否测过电导率；液温和环境压力。</li>
+        <li>现有诊断手段：高速相机帧率与空间分辨率、电学测量带宽、是否有光谱或纹影。</li>
+      </ol>
+    </div>
+  </section>
+</article>
+
+</main>
+</div>
+<footer class="foot">
+  <p>讲义依据朱恂教授《多相流动力学》课件（重庆大学，2025）编写。物性数据取常用手册的近似值，仅用于量级估计；标为“待验证”的内容是研究假设，不应作为定论引用。</p>
+</footer>
+<script>
+(function () {
+  var toc = document.getElementById('tocd');
+  var narrow = window.matchMedia('(max-width: 980px)');
+  if (toc && narrow.matches) toc.open = false;
+  if (toc) toc.addEventListener('click', function (e) {
+    if (e.target.tagName === 'A' && narrow.matches) toc.open = false;
+  });
+
+  var $ = function (id) { return document.getElementById(id); };
+  var SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function fmt(x, unit) {
+    if (!isFinite(x)) return '—';
+    var a = Math.abs(x), s;
+    if (a !== 0 && (a < 1e-3 || a >= 1e4)) {
+      var e = Math.floor(Math.log10(a));
+      s = (x / Math.pow(10, e)).toFixed(2) + '×10' + String(e).split('').map(function (c) { return SUP[c]; }).join('');
+    } else if (a >= 100) { s = x.toFixed(0); }
+    else if (a >= 10) { s = x.toFixed(1); }
+    else { s = x.toPrecision(3); }
+    return unit ? s + ' ' + unit : s;
+  }
+  var presets = {
+    aw: { rl: 997, rg: 1.2, sig: 0.0725, d: 25, jg: 0.5, jl: 0.3 },
+    sw: { rl: 740, rg: 36.5, sig: 0.0175, d: 20, jg: 1.0, jl: 0.5 },
+    mc: { rl: 997, rg: 1.2, sig: 0.0725, d: 0.5, jg: 0.2, jl: 0.1 }
+  };
+  var keys = ['rl', 'rg', 'sig', 'd', 'jg', 'jl'];
+  function val(k) { return parseFloat($('rc-' + k).value); }
+  function row(label, value, flag) {
+    return '<div><span>' + label + '</span><span' + (flag ? ' class="flag"' : '') + '>' + value + '</span></div>';
+  }
+  function calc() {
+    var out = $('rc-out'), ver = $('rc-verdict');
+    if (!out) return;
+    var rl = val('rl'), rg = val('rg'), sig = val('sig'), D = val('d') / 1000, jg = val('jg'), jl = val('jl');
+    var bad = [rl, rg, sig, D, jg, jl].some(function (v) { return !isFinite(v) || v <= 0; }) || rg >= rl;
+    if (bad) {
+      out.innerHTML = '';
+      ver.innerHTML = '<p class="flag">请输入正数，并保证液相密度大于气相密度。</p>';
+      return;
+    }
+    var g = 9.81, dr = rl - rg, J = jg + jl;
+    var U0 = 1.53 * Math.pow(g * dr * sig / (rl * rl), 0.25);
+    var B = U0 + J;
+    var alpha = (B - Math.sqrt(B * B - 4 * U0 * jg)) / (2 * U0);
+    var beta = jg / J;
+    var jgBS = (jl + 0.75 * U0) / 3;
+    var cap = Math.pow(sig * g * dr, 0.25);
+    var Ku = Math.sqrt(rg) * jg / cap;
+    var jgAN = 3.1 * cap / Math.sqrt(rg);
+    var Eo = dr * g * D * D / sig;
+    var lc = Math.sqrt(sig / (dr * g));
+    var Utb = 0.35 * Math.sqrt(g * D);
+    var Dcrit = 19 * Math.sqrt(dr * sig / (rl * rl * g));
+    out.innerHTML =
+      row('小气泡上升速度 U₀', fmt(U0, 'm/s')) +
+      row('截面含气率 α（滑移关系）', fmt(alpha), alpha >= 0.25) +
+      row('容积含气率 β', fmt(beta)) +
+      row('泡—弹边界 J_g（此 J_l 下）', fmt(jgBS, 'm/s')) +
+      row('Kutateladze 数 Ku', fmt(Ku), Ku >= 3.1) +
+      row('环状流起始 J_g（Ku = 3.1）', fmt(jgAN, 'm/s')) +
+      row('Taylor 气弹速度 0.35√(gD)', Eo < 3.37 ? '不上升（Eo < 3.37）' : fmt(Utb, 'm/s'), Eo < 3.37) +
+      row('Eötvös 数 Eo', fmt(Eo), Eo < 3.37) +
+      row('毛细长度 ℓ_c', fmt(lc * 1000, 'mm')) +
+      row('临界管径 D_crit', fmt(Dcrit * 1000, 'mm'), D < Dcrit);
+    var v;
+    if (Eo < 3.37) {
+      v = '<b>表面张力主导。</b>Eo = ' + fmt(Eo) + ' &lt; 3.37，浮力不能驱动气泡上升，常规管判据不适用；应改用以 We、Ca 等为坐标的微通道流型图。';
+    } else if (Ku >= 3.1) {
+      v = '<b>预期为环状流。</b>Ku = ' + fmt(Ku) + ' ≥ 3.1，气流能托住最大的液滴。';
+    } else if (alpha < 0.25) {
+      v = D >= Dcrit
+        ? '<b>预期为泡状流。</b>α = ' + fmt(alpha) + ' &lt; 0.25，且管径不小于 D_crit。'
+        : '<b>泡—弹过渡。</b>α = ' + fmt(alpha) + ' &lt; 0.25，但 D &lt; D_crit = ' + fmt(Dcrit * 1000, 'mm') + '：小管径中低液速泡状流不稳定。若液速很高，湍流破碎可能维持分散泡状流（第 2 讲）。';
+    } else {
+      v = '<b>预期为间歇流（弹状或搅混流）。</b>α = ' + fmt(alpha) + ' ≥ 0.25，Ku = ' + fmt(Ku) + ' &lt; 3.1。';
+    }
+    ver.innerHTML = '<p>' + v + '</p><p class="small muted">判据取自 Taitel 等（1980）的半理论模型；靠近边界时实际为过渡带。</p>';
+  }
+  keys.forEach(function (k) { var el = $('rc-' + k); if (el) el.addEventListener('input', calc); });
+  document.querySelectorAll('[data-preset]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var p = presets[btn.getAttribute('data-preset')];
+      keys.forEach(function (k) { $('rc-' + k).value = p[k]; });
+      calc();
+    });
+  });
+  calc();
+})();
+</script>

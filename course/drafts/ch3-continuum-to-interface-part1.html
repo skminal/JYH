@@ -1,0 +1,260 @@
+
+<article class="part" id="lesson-1">
+  <div class="part-label">第二部分 · 第 1 讲（A1）</div>
+  <h2>多相流动力学的物理本质：从单相连续介质到气液两相界面</h2>
+  <p class="read muted">本讲回答一个问题：两相流比单相流多出来的物理到底是什么。答案是界面。我们先把单相流体的守恒方程从第一性原理推出来，再看这些方程在界面处为什么失效，最后从同样的守恒定律得到界面上必须满足的条件。</p>
+
+  <section class="sec" id="l1-goal">
+    <h3><span class="no">一</span>本节课的学习目标</h3>
+    <div class="read">
+      <p>学完本讲，你应当能够：</p>
+      <ol>
+        <li>说清连续介质假设的定义、量化判据 Kn，以及它在小气泡和高温等离子体气体中何时失效。</li>
+        <li>从雷诺输运定理出发，独立推导质量守恒方程和动量守恒方程（Cauchy 方程、Navier–Stokes 方程），并解释每一项代表流体正在发生什么。</li>
+        <li>区分“相”与“组分”，说明为什么两相流的根本新特征是界面。</li>
+        <li>解释表面张力的分子起源，以及力学定义、功的定义和热力学定义为什么等价。</li>
+        <li>用“扁盒控制体”推导界面的质量和动量跃迁条件，并从中得到 Young–Laplace 方程、Marangoni 切向条件、黏性法向应力修正和蒸发反冲压力。</li>
+        <li>对液态甲醇中的针尖气泡估算 Laplace 压力、Bond 数、毛细长度、Knudsen 数和电荷弛豫时间，判断哪些经典结论在放电条件下需要修正。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l1-phen">
+    <h3><span class="no">二</span>物理现象导入</h3>
+    <div class="read">
+      <p>设想你的实验：钨针浸在液态甲醇中，针尖对着接地平板。加上高压后，针尖处出现一个附着的小气泡。放电发生时，气泡被照亮，在微秒内膨胀，随后振荡，最后脱离或碎裂。</p>
+      <p>这一幕里至少有五个问题，单相流体力学一个都回答不了：</p>
+      <ol>
+        <li>气泡为什么几乎是球形？</li>
+        <li>气泡内部的压力为什么比外面高，高多少？</li>
+        <li>气泡为什么能“挂”在针尖上而不立刻浮走？</li>
+        <li>放电向气泡里注入能量后，气泡为什么会膨胀和振荡，而不只是变热？</li>
+        <li>甲醇为什么会从液体进入气泡，又以什么速率进入？</li>
+      </ol>
+      <p>问题的根源在于：气泡内外是两种性质差别极大的介质，而分隔它们的界面只有几个分子厚。下表给出量级对比。</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>物性</th><th class="num">液态甲醇（20 °C）</th><th class="num">甲醇蒸气（1 atm，64.7 °C）</th><th class="num">比值</th></tr></thead>
+      <tbody>
+        <tr><td>密度 ρ（kg/m³）</td><td class="num">791</td><td class="num">1.16</td><td class="num">≈ 680</td></tr>
+        <tr><td>动力黏度 μ（Pa·s）</td><td class="num">5.9×10⁻⁴</td><td class="num">≈ 1×10⁻⁵（量级）</td><td class="num">≈ 50</td></tr>
+        <tr><td>导热系数 k（W/(m·K)）</td><td class="num">0.20</td><td class="num">≈ 0.02（量级）</td><td class="num">≈ 10</td></tr>
+        <tr><td>相对介电常数 εᵣ</td><td class="num">32.7（25 °C）</td><td class="num">≈ 1.0</td><td class="num">≈ 33</td></tr>
+        <tr><td>电导率 σₑ（S/m）</td><td class="num">10⁻⁷–10⁻⁴，取决于纯度与含水量，需实测</td><td class="num">放电前近似绝缘</td><td class="num">—</td></tr>
+      </tbody>
+    </table></div>
+    <div class="read">
+      <p>密度相差近三个数量级，介电常数相差 30 多倍，而这些跳变发生在约 1 nm 的距离上。从宏观看，物理量在界面上“断开”了。单相方程要求物理量可微，在这里不再适用。于是两相流的完整描述是：</p>
+    </div>
+    <div class="eq-key"><p class="cap">本讲的核心命题</p><p>两相流 = 两个各自满足单相守恒方程的连续介质区域 + 一个随流动运动、变形、可能有质量穿过的界面；界面上的条件由同样的守恒定律以积分形式给出。</p></div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 760 230" role="img" aria-label="对数尺度阶梯：分子直径约 0.4 纳米，界面厚度约 1 纳米，蒸气平均自由程约 65 纳米，加热到 3000 K 时约 0.58 微米；针尖气泡 10 微米到 1 毫米，比界面厚度大 4 到 6 个数量级。">
+        <defs>
+          <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        </defs>
+        <g fill="currentColor" font-size="12" font-family="var(--font-body)">
+          <line x1="125" y1="36" x2="465" y2="36" stroke="var(--accent)" stroke-width="1.5" marker-start="url(#f1a)" marker-end="url(#f1a)"/>
+          <text x="295" y="27" text-anchor="middle" fill="var(--accent)" font-weight="500">界面厚度 ≪ 气泡尺寸：相差 4–6 个数量级</text>
+          <line x1="40" y1="110" x2="720" y2="110" stroke="currentColor" stroke-width="1.2"/>
+          <g stroke="currentColor" stroke-width="1">
+            <line x1="40" y1="105" x2="40" y2="115"/><line x1="125" y1="105" x2="125" y2="115"/><line x1="210" y1="105" x2="210" y2="115"/>
+            <line x1="295" y1="105" x2="295" y2="115"/><line x1="380" y1="105" x2="380" y2="115"/><line x1="465" y1="105" x2="465" y2="115"/>
+            <line x1="550" y1="105" x2="550" y2="115"/><line x1="635" y1="105" x2="635" y2="115"/><line x1="720" y1="105" x2="720" y2="115"/>
+          </g>
+          <g font-family="var(--font-mono)" font-size="11" text-anchor="middle" opacity="0.75">
+            <text x="40" y="130">0.1 nm</text><text x="125" y="130">1 nm</text><text x="210" y="130">10 nm</text><text x="295" y="130">100 nm</text>
+            <text x="380" y="130">1 μm</text><text x="465" y="130">10 μm</text><text x="550" y="130">100 μm</text><text x="635" y="130">1 mm</text><text x="720" y="130">1 cm</text>
+          </g>
+          <line x1="91" y1="62" x2="91" y2="106" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="91" cy="110" r="4" fill="currentColor"/>
+          <text x="91" y="58" text-anchor="middle">分子直径 ≈ 0.4 nm</text>
+          <line x1="125" y1="86" x2="125" y2="106" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="125" cy="110" r="4" fill="var(--accent)"/>
+          <text x="140" y="82" text-anchor="middle" fill="var(--accent)">界面厚度 ≈ 1 nm</text>
+          <line x1="279" y1="62" x2="279" y2="106" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="279" cy="110" r="4" fill="currentColor"/>
+          <text x="279" y="58" text-anchor="middle">蒸气平均自由程 65 nm（338 K）</text>
+          <line x1="360" y1="86" x2="360" y2="106" stroke="currentColor" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="360" cy="110" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/>
+          <text x="372" y="82" text-anchor="middle">3000 K 时 0.58 μm</text>
+          <text x="457" y="160" text-anchor="end">针尖曲率半径</text>
+          <rect x="465" y="151" width="85" height="12" rx="2" fill="currentColor" opacity="0.45"/>
+          <text x="457" y="182" text-anchor="end" fill="var(--accent)" font-weight="500">针尖附着气泡</text>
+          <rect x="465" y="173" width="170" height="12" rx="2" fill="var(--accent)"/>
+          <text x="627" y="204" text-anchor="end">针—板间隙</text>
+          <rect x="635" y="195" width="85" height="12" rx="2" fill="currentColor" opacity="0.45"/>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 1　尺度阶梯（对数坐标）。</b>界面厚度与气泡尺寸相差 4–6 个数量级，所以可以把界面当作零厚度的面。但放电加热后的气体平均自由程会逼近最小气泡的尺寸，届时气泡内气体的连续介质描述需要检验。平均自由程按硬球模型、分子直径 0.4 nm、1 atm 估算；针尖与间隙尺寸为典型范围，请换成你的实验值。</figcaption>
+    </figure>
+  </section>
+
+  <section class="sec" id="l1-concept">
+    <h3><span class="no">三</span>基本概念教学</h3>
+    <div class="read"><p>下面六个概念是本讲的地基。每个都按十二问展开。第一次出现的数学算子会在卡片里解释。</p></div>
+
+    <div class="concept" id="c-continuum">
+      <h4>1. 连续介质假设 <span class="en">continuum hypothesis</span></h4>
+      <dl>
+        <dt>定义</dt><dd>把流体看成连续充满所占空间的介质：密度、速度、压力、温度都是空间位置和时间的（分片）光滑函数，不再追踪单个分子。</dd>
+        <dt>为何需要</dt><dd>1 mm³ 液态甲醇约含 1.5×10¹⁹ 个分子，逐个求解牛顿方程不可能，也不必要：压力计、热电偶、高速相机读到的都是大量分子的平均值。</dd>
+        <dt>对应现象</dt><dd>压力表读数平稳；绕流的流线光滑；黏性和导热这类分子输运在宏观上表现为“梯度驱动的通量”。</dd>
+        <dt>物理机制</dt><dd>取一个代表性体积 δV。它要足够大，使其中分子数 N 很大、统计涨落（相对大小约 \(1/\sqrt N\)）可以忽略；又要足够小，远小于流动特征长度 L，使平均值能代表“一点”。两个要求能同时满足，靠的是尺度分离：分子尺度 ≪ δV 的边长 ≪ L。</dd>
+        <dt>数学描述</dt><dd>\(\rho(\vx,t)=\lim_{\delta V\to\delta V^*}\frac{1}{\delta V}\sum_i m_i\)；判据 \(\mathrm{Kn}=\lambda/L\)；硬球气体 \(\lambda=\dfrac{k_BT}{\sqrt2\,\pi d^2p}\)。</dd>
+        <dt>符号与单位</dt><dd>\(m_i\) 分子质量（kg）；\(\delta V^*\) 代表性体积（m³）；λ 气体分子平均自由程，即两次碰撞之间的平均飞行距离（m）；L 特征长度（m）；\(k_B=1.381\times10^{-23}\) J/K；d 分子有效直径（m）；p 压力（Pa）；Kn 无量纲。</dd>
+        <dt>来源与推导</dt><dd>一个分子在时间 t 内扫过截面积 \(\pi d^2\)、长度 \(\bar v_{\rm rel}t\) 的圆柱，圆柱内的分子都会被碰到，碰撞次数为 \(n\pi d^2\bar v_{\rm rel}t\)。对 Maxwell 分布，平均相对速度 \(\bar v_{\rm rel}=\sqrt2\,\bar v\)。分子在 t 内飞过的路程是 \(\bar vt\)，所以 \(\lambda=\bar vt/(n\pi d^2\sqrt2\bar vt)=1/(\sqrt2\pi d^2n)\)，再代入理想气体数密度 \(n=p/(k_BT)\)。</dd>
+        <dt>成立条件</dt><dd>气体：Kn &lt; 0.01 时连续介质加无滑移壁面条件可用 <span class="tag approx">分区界限为经验划分</span>。液体没有“平均自由程”，分子间距约 0.3–0.5 nm；分子动力学研究表明，简单液体在约十个分子直径以上的尺度上 N–S 方程通常仍可用。</dd>
+        <dt>失效条件</dt><dd>0.01 &lt; Kn &lt; 0.1：滑移区，需速度滑移和温度跳跃边界条件；0.1 &lt; Kn &lt; 10：过渡区，需 Boltzmann 方程或直接模拟蒙特卡洛（DSMC）；Kn &gt; 10：自由分子流。此外，激波内部、相界面本身、近临界点都不满足尺度分离。</dd>
+        <dt>与已学联系</dt><dd>课件第 1 章 1.2 把理论研究分为“微观：分子运动论、Boltzmann 方程”和“宏观：连续介质理论”。Kn 就是这两种描述的分界线。</dd>
+        <dt>多相流中的应用</dt><dd>判断针尖小气泡内的气体能否用 N–S 方程：338 K 蒸气中 λ ≈ 65 nm，直径 20 μm 的气泡 Kn ≈ 0.003；若放电把气体加热到 3000 K，λ ≈ 0.58 μm，直径 2 μm 的气泡 Kn ≈ 0.3，已进入过渡区（第七部分案例 2）。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c-material">
+      <h4>2. 物质导数 <span class="en">material derivative</span> \(\D/\D t\)</h4>
+      <dl>
+        <dt>定义</dt><dd>跟随同一个流体质点观察到的物理量随时间的变化率。流体质点指包含足够多分子、宏观上又足够小的流体微团，它随流动运动，质量不变。</dd>
+        <dt>为何需要</dt><dd>守恒定律（质量守恒、牛顿第二定律）是对“同一批物质”成立的，即拉格朗日描述（跟踪质点）；但测量和计算在固定空间点上进行，即欧拉描述（场 \(f(\vx,t)\)）。物质导数把“跟着质点看”翻译成“在固定点看”。</dd>
+        <dt>对应现象</dt><dd>稳态时针尖附近的液体温度场不随时间变化，\(\partial T/\partial t=0\)；但流过高温区的液体质点仍在被加热，它自身的温度在变。</dd>
+        <dt>物理机制</dt><dd>质点经历的变化有两个来源：所在位置的场本身随时间变化（局部变化）；质点移动到场值不同的位置（对流变化）。</dd>
+        <dt>数学描述</dt><dd>\(\dfrac{\D f}{\D t}=\dfrac{\partial f}{\partial t}+\vu\cdot\nabla f\)</dd>
+        <dt>符号与单位</dt><dd>f 任意场量；\(\vu\) 速度（m/s）；梯度算子 \(\nabla=(\partial_x,\partial_y,\partial_z)\)，\(\nabla f\) 是一个向量，指向 f 增加最快的方向，大小为单位距离上的增量（[f]/m）；\(\vu\cdot\nabla f\) 的单位是 [f]/s，与 \(\partial f/\partial t\) 一致。</dd>
+        <dt>来源与推导</dt><dd>质点在 Δt 内从 \(\vx\) 移动到 \(\vx+\vu\Delta t\)。一阶 Taylor 展开：\(f(\vx+\vu\Delta t,\,t+\Delta t)-f(\vx,t)\approx\frac{\partial f}{\partial t}\Delta t+(\vu\Delta t)\cdot\nabla f\)。两边除以 Δt 并令 Δt→0 即得。这一步只用了多元函数的链式法则，没有任何物理假设。</dd>
+        <dt>成立条件</dt><dd>f 沿质点路径可微。</dd>
+        <dt>失效条件</dt><dd>质点穿过不连续面（激波、有相变的界面）时 f 有跳跃，导数不存在。此时必须回到积分形式，得到跃迁条件（第六部分）。</dd>
+        <dt>与已学联系</dt><dd>大学物理中的加速度是 \(\dd\vu/\dd t\)（跟踪一个物体）；流体中加速度是 \(\D\vu/\D t=\partial_t\vu+(\vu\cdot\nabla)\vu\)。后一项是 N–S 方程非线性的来源，也是湍流复杂性的根源。</dd>
+        <dt>多相流中的应用</dt><dd>VOF 方法中的体积分数 F 满足 \(\D F/\D t=0\)，意思是“界面随流体一起运动”（C10 讲）。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c-phase">
+      <h4>3. 相与组分 <span class="en">phase / component</span></h4>
+      <dl>
+        <dt>定义</dt><dd>相：系统中化学组成和物理化学性质均匀、与其余部分有明确界面分隔的部分（课件第 1 章 1.1）。组分：可以独立改变其数量的化学物种。</dd>
+        <dt>为何需要</dt><dd>两者决定方程的结构：每个相需要一套守恒方程，相与相之间需要界面跃迁条件；每个组分在其所在相内需要一个组分守恒（扩散—反应）方程。</dd>
+        <dt>对应现象</dt><dd>水—水蒸气是单组分两相流，空气—水是双组分两相流（课件第 1 章第 13 页）。放电后的针尖气泡是一个气相，内含甲醇蒸气、H₂、CO 等多个组分；周围是一个液相，溶有少量气体。</dd>
+        <dt>物理机制</dt><dd>相的区分来自分子聚集状态的突变（凝聚态与稀薄气态），所以相界面上密度跳变；组分的区分来自化学物种，同一相内组分浓度可以连续变化。</dd>
+        <dt>数学描述</dt><dd>Gibbs 相律 \(F=C-P+2\)。</dd>
+        <dt>符号与单位</dt><dd>C 组分数；P 相数；F 自由度，即可以独立改变而不破坏相平衡的强度量（T、p、组成）个数。均为无量纲整数。</dd>
+        <dt>来源与推导</dt><dd>每个相有 C+1 个独立强度量（T、p 及 C−1 个摩尔分数），共 \(P(C+1)\) 个。平衡要求各相温度相等、压力相等、每个组分的化学势相等，共 \((C+2)(P-1)\) 个方程。于是 \(F=P(C+1)-(C+2)(P-1)=C-P+2\)。</dd>
+        <dt>成立条件</dt><dd>热力学平衡。</dd>
+        <dt>失效条件</dt><dd>快速相变、放电加热等强非平衡过程：界面两侧温度可以不相等，气泡内组成也未必是平衡组成。</dd>
+        <dt>与已学联系</dt><dd>课件第 1 章的三相点：C=1、P=3，F=0，所以三相点是唯一的点；两相共存线上 F=1，给定压力就确定了温度。</dd>
+        <dt>多相流中的应用</dt><dd>纯甲醇蒸气泡（C=1、P=2，F=1）：给定压力，平衡界面温度被锁定为饱和温度（1 atm 下 64.7 °C）。气泡里一旦有 H₂（C=2），决定界面饱和温度的是甲醇分压而非总压。这是放电产氢改变界面蒸发条件的一条途径 <span class="tag ok">平衡热力学</span>。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c-interface">
+      <h4>4. 相界面与尖锐界面模型 <span class="en">sharp-interface model</span></h4>
+      <dl>
+        <dt>定义</dt><dd>相界面是两相之间的过渡层，密度、能量、组成沿法向在几个分子直径内连续而急剧地变化（课件第 3 章第 4–6 页）。尖锐界面模型把这一层压缩成零厚度的数学曲面 S(t)，允许物理量在两侧跳跃，过渡层的积分效应用面性质（表面张力 σ）保留下来。</dd>
+        <dt>为何需要</dt><dd>若按真实厚度（约 1 nm）解析界面，计算一个 1 mm 的气泡需要跨越 10⁶ 倍的尺度，不可行；而宏观流动只感受到界面的积分效应。</dd>
+        <dt>对应现象</dt><dd>高速相机里气泡边界清晰锐利；气泡内外压差稳定地等于 2σ/R。</dd>
+        <dt>物理机制</dt><dd>分子间范德华引力随距离按 \(r^{-6}\) 衰减（课件第 3 章第 5 页），离开界面几个分子间距后，分子受力就恢复对称，所以过渡层很薄。</dd>
+        <dt>数学描述</dt><dd>真实分布可近似为 \(\rho(z)=\frac{\rho_l+\rho_v}{2}-\frac{\rho_l-\rho_v}{2}\tanh\frac{2z}{\delta}\)（van der Waals–Cahn–Hilliard 平均场理论的形式，远离临界点时为近似）；尖锐模型中 ρ 在 z=0 处从 \(\rho_l\) 跳到 \(\rho_v\)。见图 2。</dd>
+        <dt>符号与单位</dt><dd>z 界面法向坐标（m）；δ 过渡层厚度（m）；\(\rho_l,\rho_v\) 液相、蒸气相密度（kg/m³）。</dd>
+        <dt>来源与推导</dt><dd>van der Waals（1893）把界面自由能写成局部自由能加密度梯度能 \(\tfrac12\kappa_g|\nabla\rho|^2\)，对 ρ(z) 求极值得到 tanh 形分布。尖锐模型是 δ/L → 0 的极限。</dd>
+        <dt>成立条件</dt><dd>δ/L ≪ 1。对约 1 nm 的界面与 10 μm–1 mm 的气泡，δ/L ~ 10⁻⁴–10⁻⁶。</dd>
+        <dt>失效条件</dt><dd>近临界点（δ 发散、σ → 0）；纳米气泡与成核初期（R 为纳米量级）；移动接触线附近（尖锐界面加无滑移条件导致应力发散，即 Huh–Scriven 佯谬）；界面上有强烈电荷积累或化学反应时，界面层结构本身可能改变 <span class="tag open">放电条件下的界面结构</span>。</dd>
+        <dt>与已学联系</dt><dd>课件第 3 章“相界面厚度为几个平均分子间距或几个分子直径”。数值方法中的相场法有意保留一个有限厚度的界面，正是上面梯度能理论的数值版本（C10 讲）。</dd>
+        <dt>多相流中的应用</dt><dd>本讲所有跃迁条件都建立在尖锐界面模型上。</dd>
+      </dl>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 560 230" role="img" aria-label="界面法向密度分布：真实分布在约一个分子尺度的过渡层内从液相密度平滑降到蒸气密度；尖锐界面模型用一个阶跃代替。">
+        <g fill="currentColor" font-size="12" font-family="var(--font-body)">
+          <rect x="252" y="30" width="76" height="170" fill="var(--accent)" opacity="0.12"/>
+          <text x="290" y="22" text-anchor="middle" fill="var(--accent)">过渡层 δ ≈ 几个分子直径</text>
+          <line x1="60" y1="30" x2="60" y2="200" stroke="currentColor" stroke-width="1.2"/>
+          <line x1="60" y1="200" x2="525" y2="200" stroke="currentColor" stroke-width="1.2"/>
+          <text x="54" y="54" text-anchor="end" font-family="var(--font-mono)">ρ_l</text>
+          <text x="54" y="184" text-anchor="end" font-family="var(--font-mono)">ρ_v</text>
+          <line x1="57" y1="50" x2="63" y2="50" stroke="currentColor"/><line x1="57" y1="180" x2="63" y2="180" stroke="currentColor"/>
+          <text x="290" y="216" text-anchor="middle" font-family="var(--font-mono)">0</text>
+          <text x="525" y="216" text-anchor="end">z（界面法向）</text>
+          <text x="14" y="118" transform="rotate(-90 14 118)" text-anchor="middle">密度 ρ</text>
+          <polyline fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="6 5" points="60,50 290,50 290,180 520,180"/>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="2.6" points="60,50.0 70,50.0 80,50.0 90,50.0 100,50.0 110,50.0 120,50.0 130,50.0 140,50.1 150,50.1 160,50.1 170,50.2 180,50.4 190,50.7 200,51.2 210,52.0 220,53.3 230,55.4 240,58.9 250,64.3 260,72.5 270,83.9 280,98.4 290,115.0 300,131.6 310,146.1 320,157.5 330,165.7 340,171.1 350,174.6 360,176.7 370,178.0 380,178.8 390,179.3 400,179.6 410,179.8 420,179.9 430,179.9 440,179.9 450,180.0 460,180.0 470,180.0 480,180.0 490,180.0 500,180.0 510,180.0 520,180.0"/>
+          <text x="120" y="42" text-anchor="middle">液相（体相）</text>
+          <text x="440" y="170" text-anchor="middle">蒸气相（体相）</text>
+          <text x="336" y="128" fill="var(--accent)">真实分布</text>
+          <text x="298" y="72">尖锐界面模型</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2　界面法向的密度分布。</b>实线是平均场理论给出的光滑过渡，虚线是尖锐界面模型的阶跃。从气泡尺度看，两者的差别只在约 10⁻⁶ 倍的宽度内，所以宏观方程用虚线；但虚线处导数不存在，微分方程在这里失效，必须改用积分形式的守恒律。</figcaption>
+    </figure>
+
+    <div class="concept" id="c-sigma">
+      <h4>5. 表面张力 <span class="en">surface tension</span> σ</h4>
+      <dl>
+        <dt>定义</dt><dd>三种等价定义（课件第 3 章第 14–17 页）：力学上，作用在界面切面内、垂直于界面上任一截线的单位长度收缩力（N/m）；功的意义上，可逆地增加单位界面面积所需的非膨胀功（J/m²）；热力学上，定温定压下 Gibbs 自由能对界面面积的偏导 \(\sigma=(\partial G/\partial A)_{T,p}\)。</dd>
+        <dt>为何需要</dt><dd>界面分子处于能量较高的状态，界面面积本身储存能量。没有 σ，就解释不了液滴为什么是球、气泡内为什么压力高、针尖为什么能挂住气泡。</dd>
+        <dt>对应现象</dt><dd>刺破肥皂膜中棉线圈内侧的膜，线圈立即被绷成圆（课件第 12 页）；水黾站在水面上；小气泡几乎是完美球形。</dd>
+        <dt>物理机制</dt><dd>体相分子四周都是同类分子，吸引力对称抵消；界面分子缺了一侧邻居，受到指向液体内部的净吸引（课件第 10 页）。把分子从体相搬到界面必须克服这部分吸引而做功，所以系统倾向于减少界面面积，宏观上表现为张力。</dd>
+        <dt>数学描述</dt><dd>\(F=\sigma\cdot2L\)（双面液膜），\(\dd W=\sigma\,\dd A\)，\(\sigma=(\partial G/\partial A)_{T,p}\)。</dd>
+        <dt>符号与单位</dt><dd>σ 的单位 N/m 与 J/m² 相同（1 J/m² = 1 N·m/m² = 1 N/m）。20 °C 时：水约 0.0725 N/m，甲醇约 0.0225 N/m，水银（与空气）约 0.49 N/m。</dd>
+        <dt>来源与推导</dt><dd>三种定义等价：课件第 15 页的活动边框移动 dx，外力做功 \(F\,\dd x=\sigma\cdot2L\,\dd x=\sigma\,\dd A\)；若过程定温定压且可逆，这份功全部转为 Gibbs 自由能增量 dG，所以力学定义与热力学定义的 σ 数值相同。<br><b>量级估计</b>：甲醇摩尔汽化焓约 35 kJ/mol，即每个分子与邻居的结合能约 5.8×10⁻²⁰ J；界面分子大约少了 1/4 的邻居，多出约 1.5×10⁻²⁰ J；每个分子占据面积约 (0.4 nm)² = 1.6×10⁻¹⁹ m²，于是 σ ~ 0.09 J/m²。实测 0.0225 J/m²，量级一致但偏大约 4 倍：这种邻居计数忽略了界面分子的重新排列和取向（甲醇分子倾向于让甲基朝外），这些效应都降低界面能。</dd>
+        <dt>成立条件</dt><dd>平衡界面；纯液体或组成稳定的溶液；σ 为标量，即在界面内各向同性。</dd>
+        <dt>失效条件</dt><dd>新生界面或含表面活性剂时，σ 随界面“年龄”变化（动态表面张力）；有强电场和面电荷时，测到的“有效张力”中混入了电应力；纳米尺度上 σ 依赖曲率（Tolman 修正，其大小乃至符号仍有争议 <span class="tag open">有争议</span>）。</dd>
+        <dt>与已学联系</dt><dd>课件第 3 章 3.1 二：温度升高 σ 下降，到临界温度 σ = 0、界面消失；表面活性物质降低 σ。</dd>
+        <dt>多相流中的应用</dt><dd>一切界面力学的源头：Young–Laplace 方程、毛细上升、气泡脱离、Marangoni 流（本讲第六部分）。</dd>
+      </dl>
+    </div>
+
+    <div class="concept" id="c-curv">
+      <h4>6. 界面曲率 <span class="en">curvature</span> κ</h4>
+      <dl>
+        <dt>定义</dt><dd>过曲面上一点取法线，所有包含法线的平面都与曲面交出一条曲线。其中曲率半径最大和最小的两条截线方向互相垂直（主方向），对应主曲率半径 \(R_1,R_2\)。本讲定义 \(\kappa=1/R_1+1/R_2\)（平均曲率的两倍）。</dd>
+        <dt>为何需要</dt><dd>平面上的表面张力处处平衡，合力为零；只有界面弯曲才产生法向合力，而合力大小取决于“弯得多厉害”。</dd>
+        <dt>对应现象</dt><dd>小气泡比大气泡“硬”，内压更高；毛细管越细，液柱升得越高。</dd>
+        <dt>物理机制</dt><dd>一段弯曲弧两端的张力不共线，夹角越大，合力越大（图 4）。</dd>
+        <dt>数学描述</dt><dd>\(\kappa=\dfrac{1}{R_1}+\dfrac{1}{R_2}=\nabla_s\cdot\vn\)。对小斜率曲面 \(z=\eta(x,y)\)、法向取 +z：\(\kappa\approx-\left(\partial_x^2\eta+\partial_y^2\eta\right)\)。</dd>
+        <dt>符号与单位</dt><dd>\(\vn\) 单位法向量，本讲约定从相 1 指向相 2；表面梯度算子 \(\nabla_s=(\tI-\vn\vn)\cdot\nabla\)，即把普通梯度中垂直于界面的分量去掉，只留沿界面的变化；\(\nabla_s\cdot\vn\) 是法向量沿界面的“发散程度”；κ 单位 1/m。</dd>
+        <dt>来源与推导</dt><dd>微分几何。球面 \(R_1=R_2=R\)，κ = 2/R；圆柱面 \(R_2\to\infty\)，κ = 1/R；平面 κ = 0。符号约定：相 1 向相 2 一侧凸出时 κ &gt; 0（例如相 1 为气泡内气体、\(\vn\) 向外）。</dd>
+        <dt>成立条件</dt><dd>曲面光滑（二阶可微）。</dd>
+        <dt>失效条件</dt><dd>尖角、接触线、破碎与聚并瞬间曲率发散；数值计算中曲率由离散界面估计，误差会造成非物理的“伪速度流”（C10 讲）。</dd>
+        <dt>与已学联系</dt><dd>课件第 3 章第 25–26 页用 R₁、R₂ 推导 Young–Laplace 公式；第 42 页泰勒不稳定性写作 \(1/R=\dd^2\eta/\dd x^2\)，那里法向取向与本讲相反，所以差一个负号，物理结论相同。</dd>
+        <dt>多相流中的应用</dt><dd>针尖气泡的形状由 \(\sigma\kappa(z)=\Delta p_0+\Delta\rho g z\) 决定：静压随高度变化，κ 也随高度变化，所以气泡不是正球；Bo 越大，偏离越大。</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="sec" id="l1-mech">
+    <h3><span class="no">四</span>物理机制分析</h3>
+    <h4>4.1 界面在分子层面极其繁忙</h4>
+    <div class="read">
+      <p>课件第 3 章第 6 页说，与饱和蒸汽平衡的 1 cm² 水面每秒进出各约 10²² 个分子。这个数可以从分子运动论推出来，不必死记。</p>
+      <p>理想气体中，单位时间撞击单位面积的分子数等于 \(\tfrac14n\bar v\)，其中数密度 \(n=p/(k_BT)\)，平均热运动速率 \(\bar v=\sqrt{8k_BT/(\pi m)}\)。代入得</p>
+      \[ j=\frac14\,\frac{p}{k_BT}\sqrt{\frac{8k_BT}{\pi m}}=\frac{p}{\sqrt{2\pi mk_BT}}. \]
+      <p>20 °C 水的饱和蒸气压 2.34 kPa，分子质量 \(m=2.99\times10^{-26}\) kg，算得 \(j=8.5\times10^{25}\ \mathrm{m^{-2}s^{-1}}\)，即每平方厘米每秒 8.5×10²¹ 个分子，与课件一致。平衡时这些撞击分子基本都凝结（这里假设凝结系数为 1，是上限），而同样多的分子从液面蒸发出去。对 20 °C 甲醇（饱和蒸气压约 12.9 kPa），这个数约为 3.5×10²² cm⁻²s⁻¹。</p>
+      <p>物理含义：宏观上静止的界面，是两股巨大分子流的差。净蒸发量只是这两股流的微小不平衡，所以界面只需偏离平衡一点点就能产生可观的净通量。这就是工程上常假设界面温度等于饱和温度的原因 <span class="tag approx">界面局部平衡</span>。反过来，当热流极大时，所需净通量逼近单向通量本身，这个假设就会失效（第七部分案例 4）。</p>
+    </div>
+    <h4>4.2 界面上相互竞争的应力</h4>
+    <div class="read">
+      <p>界面是一张没有质量的面，作用在它上面的所有应力必须时刻平衡。下面列出作用在界面上的应力，以及它们各自的量级（U 为速度尺度，L 为长度尺度）：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>应力来源</th><th>方向</th><th>量级</th><th>作用</th></tr></thead>
+      <tbody>
+        <tr><td>流体动压（惯性）</td><td>法向</td><td>\(\rho U^2\)</td><td>使界面变形</td></tr>
+        <tr><td>黏性应力</td><td>法向与切向</td><td>\(\mu U/L\)</td><td>传递切向动量、阻尼变形</td></tr>
+        <tr><td>表面张力（曲率项）</td><td>法向</td><td>\(\sigma/L\)</td><td>抵抗弯曲，恢复球形</td></tr>
+        <tr><td>表面张力梯度（Marangoni）</td><td>切向</td><td>\(\Delta\sigma/L\)</td><td>沿界面把液体拉向 σ 高处</td></tr>
+        <tr><td>重力造成的静压差</td><td>法向</td><td>\(\Delta\rho gL\)</td><td>使气泡上下不对称、驱动上浮</td></tr>
+        <tr><td>蒸发反冲</td><td>法向</td><td>\(\dot m^2/\rho_v\)</td><td>蒸气喷出时反推液面</td></tr>
+        <tr><td>电应力（C8 讲）</td><td>法向与切向</td><td>\(\tfrac12\varepsilon E^2\)</td><td>拉伸或压扁界面</td></tr>
+      </tbody>
+    </table></div>
+    <div class="read">
+      <p>后面会看到，每两种应力之比就是一个无量纲数：动压比张力是 We，黏性比张力是 Ca，静压比张力是 Bo，电应力比张力是电毛细数 Ca_E。判断“谁主导”，就是比较这些比值。</p>
+    </div>
+    <h4>4.3 为什么压力可以跳变，而切向速度通常连续</h4>
+    <div class="read">
+      <p>压力跳变：界面上有一个集中在“面”上的力，即表面张力的法向合力 σκ。一个无质量的面要平衡，两侧压力之差必须恰好抵消它。所以压力跳变不违反任何定律，它就是界面力平衡本身。</p>
+      <p>切向速度连续：这不是守恒定律的推论，而是关于分子动量交换的物理假设。界面两侧的分子不断碰撞交换切向动量，任何相对滑移都会被迅速抹平，与固壁无滑移条件同理 <span class="tag approx">无滑移假设</span>。当气相稀薄（Kn 不小）、有强烈相变、或在移动接触线附近时，这个假设需要修正。课件第 3 章第 8 页把它列为“相容性条件”，就是这个意思。</p>
+    </div>
+  </section>

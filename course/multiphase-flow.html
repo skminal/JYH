@@ -75,9 +75,9 @@ p { margin: 0; }
 
 main { min-width: 0; display: grid; gap: 0; }
 .part > *, section.sec > *, .level > *, figure > *, .calc > *, .read > *, .read li, .note > * { min-width: 0; }
+.deriv ol.steps > li > div > *, .eq-key > *, .quiz > *, .quiz .fb > *, .concept dd > *, .td-left > *, .td-right > * { min-width: 0; }
 pre.mermaid { margin: 0; font-size: 12px; line-height: 1.4; }
 .part { display: grid; gap: 22px; padding-block: 8px 48px; }
-.part + .part { border-top: 2px solid var(--ink); padding-top: 40px; }
 .part-label { font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; color: var(--accent); }
 .part > h2 { font-size: clamp(24px, 3vw, 32px); }
 section.sec { display: grid; gap: 16px; padding-top: 18px; scroll-margin-top: 16px; }
@@ -135,6 +135,7 @@ figure { margin: 6px 0; max-width: 52em; display: grid; gap: 8px; }
 .figbox > svg { width: 100%; height: auto; display: block; }
 .figbox { overflow-x: auto; background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
 .figbox > svg { min-width: 560px; }
+.figbox > svg.narrow { min-width: 0; max-width: 340px; margin: 0 auto; }
 figcaption { font-size: 13.5px; color: var(--muted); line-height: 1.65; }
 figcaption b { color: var(--ink); font-weight: 500; }
 
@@ -178,6 +179,35 @@ details.qa > div { padding-top: 10px; display: grid; gap: 10px; }
 .calc .verdict { font-size: 14.5px; display: grid; gap: 4px; }
 button.reset { justify-self: start; font: inherit; font-size: 13px; color: var(--accent); background: transparent; border: 1px solid var(--accent); border-radius: 5px; padding: 4px 12px; cursor: pointer; }
 
+
+/* views (tabs) */
+.view.off { height: 0; overflow: hidden; visibility: hidden; padding: 0 !important; margin: 0 !important; border: 0 !important; }
+.tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.tabs a { text-decoration: none; font-size: 14px; color: var(--ink); border: 1px solid var(--rule); border-radius: 999px; padding: 5px 14px; background: var(--panel); }
+.tabs a:hover { border-color: var(--accent); }
+.tabs a[aria-current="page"] { background: var(--accent); border-color: var(--accent); color: var(--panel); }
+/* slow-lesson devices */
+.qhead { color: var(--muted); font-size: 14.5px; max-width: 46em; }
+.oneline { font-weight: 500; font-size: 16.5px; line-height: 1.75; border-left: 3px solid var(--accent); padding: 2px 0 2px 14px; max-width: 46em; }
+.quiz { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; max-width: 50em; display: grid; gap: 10px; }
+.quiz .q { font-weight: 500; }
+.quiz .opts { display: grid; gap: 6px; }
+.quiz button.opt { text-align: left; font: inherit; font-size: 15px; line-height: 1.6; color: var(--ink); background: var(--paper); border: 1px solid var(--rule); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+.quiz button.opt:hover { border-color: var(--accent); }
+.quiz button.opt.right { border-color: var(--ok); background: var(--ok-soft); }
+.quiz button.opt.wrong { border-color: var(--caution); background: var(--caution-soft); }
+.quiz .fb { font-size: 15px; display: grid; gap: 6px; }
+.quiz .fb.closed { height: 0; overflow: hidden; visibility: hidden; }
+.quiz .fb-head.good { color: var(--ok); font-weight: 500; }
+.quiz .fb-head.bad { color: var(--caution); font-weight: 500; }
+.td-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 760px) { .td-layout { grid-template-columns: minmax(0, 1fr); } }
+.td-left, .td-right { min-width: 0; display: grid; gap: 12px; }
+#td-map { width: 100%; height: auto; display: block; border: 1px solid var(--rule); border-radius: 6px; background: var(--paper); }
+.legend .chip { font-size: 12.5px; color: var(--muted); }
+.legend .chip::before { content: ""; display: inline-block; width: 11px; height: 11px; border-radius: 2px; background: var(--c); margin-right: 5px; vertical-align: -1px; }
+.flag { color: var(--caution); }
+
 .foot { max-width: 1160px; margin: 0 auto; border-top: 1px solid var(--rule); padding-top: 20px; font-size: 13px; color: var(--muted); }
 
 @media (max-width: 980px) {
@@ -186,6 +216,11 @@ button.reset { justify-self: start; font: inherit; font-size: 13px; color: var(-
   .toc details > summary { padding: 4px 0; }
   .toc details[open] > summary { padding-bottom: 8px; }
 }
+</style>
+<style>
+:root { --rg-ss: #A9C8E6; --rg-sw: #6E9BD0; --rg-i: #E6AE66; --rg-an: #AE93D6; --rg-db: #7FC09A; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --rg-ss: #2F5072; --rg-sw: #2D5C94; --rg-i: #8C6123; --rg-an: #5E4A8E; --rg-db: #376F50; } }
+:root[data-theme="dark"] { --rg-ss: #2F5072; --rg-sw: #2D5C94; --rg-i: #8C6123; --rg-an: #5E4A8E; --rg-db: #376F50; }
 </style>
 <script>
 window.MathJax = {
@@ -210,16 +245,19 @@ window.MathJax = {
   <div class="eyebrow">重庆大学 能源与动力工程学院 · 研究生课程《多相流动力学》（朱恂）· 研习讲义</div>
   <h1>多相流动力学研习课</h1>
   <p class="lede">以课件第 1–8 章为主干，向下补齐流体力学、热力学与数学基础，向上延伸到界面热质传递、电流体动力学和等离子体气泡的多物理场建模。最终目标：能为液态甲醇中针—板电极放电气泡独立建立“电场—能量沉积—界面热质传递—气泡动力学—化学反应”耦合模型。</p>
-  <div class="meta"><span><b>第一部分</b> 课程体系与授课顺序</span><span><b>第二部分</b> 第 2 章第 1 讲：多相流的特征与流型</span><span>第 1 章已自学，授课从第 2 章开始</span></div>
+  <nav class="tabs" aria-label="讲次">
+    <a href="#syllabus">课程体系</a>
+    <a href="#lesson-2-1">第 2 章 第 1 讲 · 流型</a>
+    <a href="#lesson-2-2">第 2 章 第 2 讲 · 流型转变机理</a>
+  </nav>
   <div class="legend">结论标注：<span class="tag ok">已确立</span>经过充分实验检验的理论 <span class="tag approx">合理近似</span>有明确前提的简化 <span class="tag emp">经验关联式</span>拟合数据，非普适定律 <span class="tag open">待验证</span>假说或有争议</div>
 </header>
 
 <div class="shell">
 <nav class="toc" aria-label="目录">
   <details id="tocd" open>
-    <summary>目录</summary>
-    <ol>
-      <li class="grp">第一部分 · 课程体系</li>
+    <summary>本讲目录</summary>
+    <ol class="tocv" data-view="syllabus">
       <li><a href="#syl-intro">课程定位与使用方法</a></li>
       <li><a href="#syl-order">授课顺序</a></li>
       <li><a href="#syl-map">知识依赖关系</a></li>
@@ -228,7 +266,8 @@ window.MathJax = {
       <li><a href="#lv-c">C 高级层</a></li>
       <li><a href="#lv-d">D 科研层</a></li>
       <li><a href="#syl-slides">课件对照与勘误</a></li>
-      <li class="grp">第二部分 · 第 2 章第 1 讲</li>
+    </ol>
+    <ol class="tocv" data-view="lesson-2-1" hidden>
       <li><a href="#l21-goal">一、学习目标</a></li>
       <li><a href="#l21-phen">二、物理现象导入</a></li>
       <li><a href="#l21-concept">三、基本概念</a></li>
@@ -253,12 +292,25 @@ window.MathJax = {
       <li><a href="#l21-check">十、理解检验</a></li>
       <li><a href="#l21-next">下一讲与所需实验参数</a></li>
     </ol>
+    <ol class="tocv" data-view="lesson-2-2" hidden>
+      <li><a href="#l22-goal">一、这一讲要解决什么</a></li>
+      <li><a href="#l22-strat">二、液层有多高</a></li>
+      <li><a href="#l22-c">三、什么时候起波（C 线）</a></li>
+      <li><a href="#l22-a">四、波会不会失控（A 线）</a></li>
+      <li><a href="#l22-d">五、液塞还是环状（D 线）</a></li>
+      <li><a href="#l22-b">六、湍流打散（B 线）</a></li>
+      <li><a href="#l22-map">七、流型图与判别器</a></li>
+      <li><a href="#l22-research">八、和你课题的联系</a></li>
+      <li><a href="#l22-errors">九、常见误解与局限</a></li>
+      <li><a href="#l22-check">十、总结与自测</a></li>
+      <li><a href="#l22-next">下一讲</a></li>
+    </ol>
   </details>
 </nav>
 <main>
 
-<article class="part" id="syllabus">
-  <div class="part-label">第一部分</div>
+<article class="part view" id="syllabus">
+  <div class="part-label">课程体系</div>
   <h2>课程体系：从连续介质到等离子体气泡多物理场模型</h2>
 
   <section class="sec" id="syl-intro">
@@ -279,9 +331,9 @@ window.MathJax = {
       <thead><tr><th>次序</th><th>课件</th><th>内容</th><th>知识层代码</th><th>状态</th></tr></thead>
       <tbody>
         <tr><td class="num">—</td><td>第 1 章</td><td>绪论：相、分类、研究方法、两相流参数</td><td>A1、B1</td><td>已自学</td></tr>
-        <tr><td class="num">1</td><td>第 2 章 2.1–2.2</td><td><a href="#lesson-2-1">多相流的特征与流型</a></td><td>B2a（补 A5 量纲分析）</td><td><span class="tag approx">本页</span></td></tr>
-        <tr><td class="num">2</td><td>第 2 章 2.3</td><td>流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 判据</td><td>B2b（补 A6 线性稳定性）</td><td>下一讲</td></tr>
-        <tr><td class="num">3</td><td>第 2 章 2.4</td><td>相速度与相含率分布：微分分析、积分分析、Bankoff 模型、漂移通量</td><td>B2c、B7（补 A4 N–S 与混合长度）</td><td></td></tr>
+        <tr><td class="num">1</td><td>第 2 章 2.1–2.2</td><td><a href="#lesson-2-1">多相流的特征与流型</a></td><td>B2a（补 A5 量纲分析）</td><td>已发布</td></tr>
+        <tr><td class="num">2</td><td>第 2 章 2.3</td><td><a href="#lesson-2-2">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 判据</a></td><td>B2b（补 A6 线性稳定性）</td><td><span class="tag approx">最新</span></td></tr>
+        <tr><td class="num">3</td><td>第 2 章 2.4</td><td>相速度与相含率分布：微分分析、积分分析、Bankoff 模型、漂移通量</td><td>B2c、B7（补 A4 N–S 与混合长度）</td><td>下一讲</td></tr>
         <tr><td class="num">4–6</td><td>第 3 章</td><td>界面跃迁条件（连续介质到界面）、润湿与接触线、泰勒不稳定性与测量</td><td>A1、B3、B4、B5、C4</td><td></td></tr>
         <tr><td class="num">7–9</td><td>第 4 章</td><td>成核与生长、Rayleigh–Plesset、脱离与鼓泡</td><td>C1、C2、C3</td><td></td></tr>
         <tr><td class="num">10–11</td><td>第 5 章</td><td>射流稳定性与雾化、液滴撞击</td><td>C4、C5</td><td></td></tr>
@@ -433,13 +485,13 @@ flowchart LR
         <div class="m"><span><b>前置</b> A1</span><span><b>课件</b> 第 1 章 1.3</span></div>
         <div class="eqs">\(\alpha=\left[1+S\,\frac{1-x}{x}\,\frac{\rho_g}{\rho_l}\right]^{-1}\)，\(\ j_D=\alpha(1-\alpha)(v_g-v_l)=\alpha(v_g-J)\)</div>
       </div></li>
-      <li class="now"><span class="code">B2a</span><div class="body">
-        <div class="t"><a href="#lesson-2-1">多相流的特征与流型：主导力分析、流型图坐标、四个转变判据的推导</a>（本页第二部分）</div>
+      <li><span class="code">B2a</span><div class="body">
+        <div class="t"><a href="#lesson-2-1">多相流的特征与流型：主导力分析、流型图坐标、四个转变判据的推导</a></div>
         <div class="m"><span><b>前置</b> B1、A5</span><span><b>课件</b> 第 2 章 2.1–2.2</span></div>
         <div class="eqs">\(J_l=3.0J_g-1.15\left[\frac{g\Delta\rho\sigma}{\rho_l^2}\right]^{1/4}\)，\(\ U_{TB}\approx0.35\sqrt{gD}\)，\(\ \mathrm{Ku}=\frac{\rho_g^{1/2}J_g}{(\sigma g\Delta\rho)^{1/4}}\ge3.1\)</div>
       </div></li>
-      <li><span class="code">B2b</span><div class="body">
-        <div class="t">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 四条判据 <span class="tag approx">半理论</span></div>
+      <li class="now"><span class="code">B2b</span><div class="body">
+        <div class="t"><a href="#lesson-2-2">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 四条判据</a> <span class="tag approx">半理论</span></div>
         <div class="m"><span><b>前置</b> B2a、A6</span><span><b>课件</b> 第 2 章 2.3</span></div>
         <div class="eqs">\(X^2=\frac{(\dd p_F/\dd z)_L}{(\dd p_F/\dd z)_G}\)，\(\ (U_1-U_2)^2\gt\frac{\rho_1+\rho_2}{\rho_1\rho_2}\left[\frac{g\Delta\rho}{k}+\sigma k\right]\)</div>
       </div></li>
@@ -614,6 +666,8 @@ flowchart LR
       <ol style="margin:0;padding-left:1.4em;display:grid;gap:6px">
         <li>第 65 页牛顿区带出速度 \(u_t=[3.1d_p(\rho_p-\rho_f)g/\rho_f]^{1/2}\) 的适用范围误写为 0.4 &lt; Re_p &lt; 500，应为 500 &lt; Re_p &lt; 2×10⁵。</li>
         <li>第 100 页把竖直上升管 \(\alpha_{\rm cr}=0.25\) 判据标为 Taitel 等（1976 年）。1976 年的 Taitel–Dukler 论文研究水平管；竖直上升管的这一判据出自 Taitel、Bornea、Dukler（1980 年）。</li>
+        <li>第 88–90、97–98 页把 Lockhart–Martinelli 参数写成 \(X=(\dd P_F/\dd Z)_L/(\dd P_F/\dd Z)_G\)，缺少平方根。X = 1.6 对应液位在管中心，是开平方后的值（第 2 讲 2.5 节验算）。</li>
+        <li>第 91 页曲线 A 判据中 \(\tilde u_G\) 应为平方 \(\tilde u_G^2\)，它来自 Bernoulli 方程中的 \(u_G^2\)（第 2 讲第四节）。</li>
         <li>第 6 页把界面变形的随机性归因于“界面微层内分子随机运动”。热涨落幅度只有约 \(\sqrt{k_BT/\sigma}\sim0.3\) nm；宏观随机性主要来自失稳对各种扰动的放大（第 2 章第 1 讲 4.1 节）。</li>
       </ol>
     </div>
@@ -631,8 +685,8 @@ flowchart LR
   </section>
 </article>
 
-<article class="part" id="lesson-2-1">
-  <div class="part-label">第二部分 · 第 2 章 第 1 讲（B2a）</div>
+<article class="part view" id="lesson-2-1">
+  <div class="part-label">第 2 章 第 1 讲（B2a）· 对应课件 2.1–2.2</div>
   <h2>多相流的特征与流型：界面结构为什么只自组织成少数几种形态</h2>
   <p class="read muted">对应课件第 2 章 2.1–2.2（第 4–86 页）。课件用大量照片列出了各种管道中的流型；本讲不重复目录，而是回答目录背后的三个问题：流型为什么存在，流型图的坐标为什么这样取，以及能否从力平衡出发预测流型转变。2.3（转变机理）与 2.4（相速度与相含率分布）分别在第 2、3 讲展开。</p>
 
@@ -1218,6 +1272,621 @@ flowchart LR
   </section>
 </article>
 
+<article class="part view" id="lesson-2-2">
+  <div class="part-label">第 2 章 第 2 讲（B2b）· 对应课件 2.3，第 88–100 页</div>
+  <h2>流型为什么会转变：从“分层流站不站得住”讲起</h2>
+  <div class="note link">
+    <b>这一讲怎么读</b>
+    <p>这一讲放慢了速度。每一节先写“这一节要回答的问题”和“一句话答案”，再用生活中的例子建立直觉，最后才推公式。每个公式都先用文字说它在算什么，再代入真实数字。节末有点选题，选完会显示解释。</p>
+    <p>读的时候如果在某一句卡住，记下是第几节、第几步，告诉我，我从那一步重新讲。</p>
+  </div>
+
+  <section class="sec" id="l22-goal">
+    <h3><span class="no">一</span>这一讲要解决什么</h3>
+    <p class="qhead">这一节要回答的问题：课件第 88–100 页那些复杂的无因次参数和四条曲线，到底是在做什么？</p>
+    <p class="oneline">一句话答案：Taitel 和 Dukler（1976）先假设水平管里是最简单的“平稳分层流”，然后一条一条地问“它在什么条件下站不住”，每个“站不住”的条件就是流型图上的一条边界线。</p>
+    <div class="read">
+      <p>先想一个生活中的例子。铅笔平放在桌上，你碰它一下，它晃一晃又停下来，这叫<b>稳定</b>；铅笔用笔尖立在桌上，轻轻一碰就倒，这叫<b>不稳定</b>。判断稳定与否的方法很简单：给它一个很小的扰动，看扰动会自己消失，还是越来越大。</p>
+      <p>Taitel 和 Dukler 用的就是这个方法。在水平管里，气轻液重，最“自然”的状态是液体在下、气体在上、界面平平的分层流。他们问了四个问题，每个问题对应流型图上的一条线：</p>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>线</th><th>问的问题</th><th>如果答案是“是”</th></tr></thead>
+      <tbody>
+        <tr><td><b>C</b></td><td>平静的液面会不会被气流吹起波纹？</td><td>分层平滑流 → 分层波状流</td></tr>
+        <tr><td><b>A</b></td><td>波会不会失控地越长越大？</td><td>波状分层流 → 间歇流或环状流</td></tr>
+        <tr><td><b>D</b></td><td>波长大以后，液体够不够堵满整个管截面？</td><td>够（液位高于管中心）→ 间歇流；不够 → 环状流</td></tr>
+        <tr><td><b>B</b></td><td>液体流得很快时，湍流能不能把顶部的气体打散到整个截面？</td><td>间歇流 → 分散泡状流</td></tr>
+      </tbody>
+    </table></div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 780 270" role="img" aria-label="水平管流型转变路线：分层平滑流经过 C 线起波变成波状分层流；波状分层流经过 A 线波失控，若液位高于管中心变成间歇流，低于管中心变成环状流；间歇流经过 B 线被湍流打散成分散泡状流。">
+        <defs>
+          <marker id="f24a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        </defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <!-- SS -->
+          <rect x="20" y="50" width="140" height="36" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="20" y="72" width="140" height="14" fill="var(--accent)" fill-opacity="0.45"/>
+          <text x="90" y="106" text-anchor="middle" font-weight="500">分层平滑流</text>
+          <!-- SW -->
+          <rect x="215" y="50" width="140" height="36" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M215,86 L215,72 Q230,64 245,72 Q260,80 275,70 Q290,62 305,72 Q320,80 335,70 Q345,65 355,70 L355,86 Z" fill="var(--accent)" fill-opacity="0.45"/>
+          <text x="285" y="106" text-anchor="middle" font-weight="500">波状分层流</text>
+          <!-- I -->
+          <rect x="430" y="50" width="140" height="36" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="430" y="70" width="140" height="16" fill="var(--accent)" fill-opacity="0.45"/>
+          <path d="M488,50 L520,50 Q530,60 524,70 L484,70 Q480,60 488,50 Z" fill="var(--accent)" fill-opacity="0.45"/>
+          <rect x="484" y="50" width="40" height="36" fill="var(--accent)" fill-opacity="0.45"/>
+          <text x="500" y="106" text-anchor="middle" font-weight="500">间歇流（液塞）</text>
+          <!-- DB -->
+          <rect x="625" y="50" width="140" height="36" fill="var(--accent)" fill-opacity="0.45" stroke="currentColor" stroke-width="1.2"/>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="0.7">
+            <circle cx="640" cy="58" r="3"/><circle cx="660" cy="64" r="2.5"/><circle cx="676" cy="57" r="3"/><circle cx="694" cy="70" r="2.5"/><circle cx="712" cy="59" r="3"/><circle cx="730" cy="66" r="2.5"/><circle cx="750" cy="58" r="3"/><circle cx="650" cy="76" r="2.5"/><circle cx="720" cy="78" r="2.5"/><circle cx="684" cy="80" r="2"/>
+          </g>
+          <text x="695" y="106" text-anchor="middle" font-weight="500">分散泡状流</text>
+          <!-- AN -->
+          <rect x="430" y="180" width="140" height="36" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <rect x="430" y="180" width="140" height="4" fill="var(--accent)" fill-opacity="0.45"/>
+          <rect x="430" y="208" width="140" height="8" fill="var(--accent)" fill-opacity="0.45"/>
+          <g fill="var(--accent)"><circle cx="450" cy="196" r="1.6"/><circle cx="480" cy="192" r="1.5"/><circle cx="512" cy="199" r="1.6"/><circle cx="540" cy="193" r="1.5"/><circle cx="560" cy="200" r="1.5"/></g>
+          <text x="500" y="236" text-anchor="middle" font-weight="500">环状流</text>
+          <!-- arrows -->
+          <g stroke="var(--accent)" stroke-width="1.6" fill="none">
+            <line x1="164" y1="68" x2="210" y2="68" marker-end="url(#f24a)"/>
+            <line x1="359" y1="64" x2="425" y2="64" marker-end="url(#f24a)"/>
+            <path d="M359,80 Q400,150 426,192" marker-end="url(#f24a)"/>
+            <line x1="574" y1="68" x2="620" y2="68" marker-end="url(#f24a)"/>
+          </g>
+          <g fill="var(--accent)" font-weight="500">
+            <text x="187" y="40" text-anchor="middle">C 起波</text>
+            <text x="392" y="30" text-anchor="middle">A 波失控</text>
+            <text x="392" y="46" text-anchor="middle" font-size="11">D：液位 &gt; 管中心</text>
+            <text x="380" y="168" text-anchor="end">A 波失控</text>
+            <text x="380" y="184" text-anchor="end" font-size="11">D：液位 &lt; 管中心</text>
+            <text x="597" y="40" text-anchor="middle">B 湍流打散</text>
+          </g>
+          <text x="20" y="262" font-size="11" opacity="0.75">（侧视示意，左→右为气、液流动方向；浅色为液体）</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-4　这一讲的路线图。</b>四条线 A、B、C、D 各回答一个“站不站得住”的问题。本讲按“先算清楚分层流 → C → A → D → B → 合成流型图”的顺序推进。</figcaption>
+    </figure>
+    <div class="read">
+      <p><b>学完这一讲，你应当能够：</b></p>
+      <ol>
+        <li>说清 Taitel–Dukler 理论的思路：先算基础状态，再判断它对小扰动是否稳定。</li>
+        <li>给定气液流量，算出分层流的液位 \(\tilde h_L\)，并说明 Lockhart–Martinelli 参数 X 的物理意义。</li>
+        <li>从能量平衡推出起波条件（C 线），从 Bernoulli 方程推出 Kelvin–Helmholtz 失稳条件（A 线），从力平衡推出湍流分散条件（B 线）。</li>
+        <li>会用 Taitel–Dukler 流型图判断一个工况的流型，并知道这个理论哪些地方是经验性的。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-strat">
+    <h3><span class="no">二</span>第一步：把分层流算清楚——液层有多高？</h3>
+    <p class="qhead">这一节要回答的问题：给定气、液两相的流量，分层流的液层有多厚？为什么所有判据都先要这个数？</p>
+    <p class="oneline">一句话答案：液层高度由“两层流体各自受力平衡”决定；算出来的结果只取决于一个比值 X，即“液体单独流有多难推”除以“气体单独流有多难推”。</p>
+
+    <h4>2.1 为什么先要液位</h4>
+    <div class="read">
+      <p>后面的三个判据都要用到：气体占多大截面（决定气体真实速度）、气液界面有多宽（决定波和湍流作用的面积）、液面离管顶还有多远（决定波会不会碰到管顶）。这些全由液位 \(h_L\) 决定。所以第一步必须先把它算出来。</p>
+    </div>
+
+    <h4>2.2 圆管截面的几何：一条水平弦把圆分成两块</h4>
+    <figure>
+      <div class="figbox">
+      <svg class="narrow" viewBox="0 0 300 250" role="img" aria-label="水平管截面：液面是一条水平弦，液位高 h_L；液体面积 A_L 在弦下方，气体面积 A_G 在弦上方；弦长 S_i 是气液界面宽度，弦下方的圆弧 S_L 是液体湿润的管壁长度；半角 δ 从圆心量起。">
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <circle cx="130" cy="120" r="90" fill="var(--panel)" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M212.5,156 A90,90 0 0 1 47.5,156 Z" fill="var(--accent)" fill-opacity="0.35"/>
+          <path d="M212.5,156 A90,90 0 0 1 47.5,156" fill="none" stroke="var(--accent)" stroke-width="4"/>
+          <line x1="47.5" y1="156" x2="212.5" y2="156" stroke="currentColor" stroke-width="2"/>
+          <line x1="130" y1="120" x2="212.5" y2="156" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 3"/>
+          <line x1="130" y1="120" x2="47.5" y2="156" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 3"/>
+          <line x1="130" y1="120" x2="130" y2="210" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 3"/>
+          <circle cx="130" cy="120" r="2.5"/>
+          <path d="M130,140 A20,20 0 0 0 148.4,127.9" fill="none" stroke="currentColor" stroke-width="1"/>
+          <text x="143" y="148" font-size="12">δ</text>
+          <text x="130" y="72" text-anchor="middle" font-weight="500">A_G（气）</text>
+          <text x="130" y="190" text-anchor="middle" font-weight="500">A_L（液）</text>
+          <text x="92" y="172" text-anchor="middle" font-size="11.5">S_i 界面宽</text>
+          <text x="196" y="214" fill="var(--accent)" font-size="11.5">S_L 湿周</text>
+          <line x1="236" y1="156" x2="236" y2="210" stroke="currentColor" stroke-width="1"/>
+          <line x1="231" y1="156" x2="241" y2="156" stroke="currentColor"/><line x1="231" y1="210" x2="241" y2="210" stroke="currentColor"/>
+          <text x="244" y="187" font-family="var(--font-mono)" font-size="11.5">h_L</text>
+          <line x1="272" y1="30" x2="272" y2="210" stroke="currentColor" stroke-width="1"/>
+          <line x1="267" y1="30" x2="277" y2="30" stroke="currentColor"/><line x1="267" y1="210" x2="277" y2="210" stroke="currentColor"/>
+          <text x="280" y="124" font-family="var(--font-mono)" font-size="11.5">D</text>
+          <text x="130" y="240" text-anchor="middle" font-size="11" opacity="0.75">图中 h̃_L = h_L/D = 0.3</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-5　分层流的截面几何（课件第 88–89 页）。</b>粗色弧是液体接触的管壁，长度 \(S_L\)；水平线是气液界面，宽度 \(S_i\)；δ 是从圆心看湿润弧的半角。</figcaption>
+    </figure>
+    <div class="read">
+      <p>课件第 89 页列了十个无因次量，看起来吓人，其实全是中学几何。先说“无因次”：所有长度都除以管径 D，所有面积都除以 \(D^2\)，记号上加一个波浪线。这样做的好处是结果与管子大小无关，相当于“用管径当尺子”。核心变量只有一个：无因次液位 \(\tilde h_L=h_L/D\)。</p>
+    </div>
+    <div class="deriv">
+      <h4>推导：四个几何量</h4>
+      <ol class="steps">
+        <li><div><p><b>找半角 δ。</b>圆心到液面的距离是 \(R-h_L\)（R = D/2）。在图中由圆心、液面端点构成的直角三角形里：</p>
+          \[ \cos\delta=\frac{R-h_L}{R}=1-2\tilde h_L. \]
+          <p>例：\(\tilde h_L=0.3\) 时 \(\cos\delta=0.4\)，δ = 66.4°。</p></div></li>
+        <li><div><p><b>湿周 \(S_L\)。</b>湿润弧对应圆心角 2δ，弧长 \(=R\cdot2\delta=D\delta\)，所以 \(\tilde S_L=\delta\)。</p></div></li>
+        <li><div><p><b>界面宽 \(S_i\)。</b>弦长 \(=2R\sin\delta=D\sin\delta\)，所以 \(\tilde S_i=\sin\delta=\sqrt{1-(2\tilde h_L-1)^2}\)。</p></div></li>
+        <li><div><p><b>液体面积 \(A_L\)。</b>扇形面积 \(R^2\delta\) 减去三角形面积 \(R^2\sin\delta\cos\delta\)：</p>
+          \[ \tilde A_L=\frac{\delta-\sin\delta\cos\delta}{4},\qquad \tilde A_G=\frac{\pi}{4}-\tilde A_L. \]
+          <p>由于 \(\delta=\pi-\arccos(2\tilde h_L-1)\)、\(\cos\delta=-(2\tilde h_L-1)\)，代入就得到课件第 89 页的那两个长公式。它们只是同一件事换了写法。</p></div></li>
+        <li><div><p><b>检查：液位正好在管中心。</b>\(\tilde h_L=0.5\) 时 δ = 90°，\(\tilde A_L=\pi/8\)，正好是整圆 \(\pi/4\) 的一半；\(\tilde S_i=1\)，界面宽等于管径；\(\tilde S_L=\pi/2\)，湿周是半个圆周。全部符合直觉。</p></div></li>
+        <li><div><p><b>真实速度。</b>第 1 章学过：真实速度 = 折算速度 ÷ 所占面积比例。液体只占 \(\tilde A_L/(\pi/4)\) 的截面，所以 \(u_L=J_L\cdot\frac{\pi/4}{\tilde A_L}\)，记 \(\tilde u_L=u_L/J_L=\frac{\pi/4}{\tilde A_L}\)；气体同理 \(\tilde u_G=\frac{\pi/4}{\tilde A_G}\)。液位在管中心时 \(\tilde u_L=\tilde u_G=2\)：各占一半截面，真实速度都是折算速度的 2 倍。</p></div></li>
+      </ol>
+    </div>
+
+    <h4>2.3 力平衡：液层为什么停在这个高度</h4>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 660 250" role="img" aria-label="一段水平管中分层流的受力：压力差推动两层流体前进；管壁摩擦向后拖住两层；界面上气体向前拖液体，液体向后拖气体。">
+        <defs>
+          <marker id="f26a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="f26b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        </defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <rect x="140" y="40" width="380" height="170" fill="var(--panel)" stroke="none"/>
+          <rect x="140" y="140" width="380" height="70" fill="var(--accent)" fill-opacity="0.3"/>
+          <line x1="120" y1="40" x2="540" y2="40" stroke="currentColor" stroke-width="2.4"/>
+          <line x1="120" y1="210" x2="540" y2="210" stroke="currentColor" stroke-width="2.4"/>
+          <line x1="140" y1="40" x2="140" y2="210" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 3"/>
+          <line x1="520" y1="40" x2="520" y2="210" stroke="currentColor" stroke-width="0.9" stroke-dasharray="4 3"/>
+          <line x1="140" y1="140" x2="520" y2="140" stroke="currentColor" stroke-width="1.2"/>
+          <text x="330" y="78" text-anchor="middle" font-weight="500">气层（A_G）</text>
+          <text x="330" y="190" text-anchor="middle" font-weight="500">液层（A_L）</text>
+          <line x1="70" y1="92" x2="132" y2="92" stroke="currentColor" stroke-width="1.6" marker-end="url(#f26a)"/>
+          <line x1="70" y1="176" x2="132" y2="176" stroke="currentColor" stroke-width="1.6" marker-end="url(#f26a)"/>
+          <text x="68" y="84" text-anchor="end" font-size="11.5">压力 p</text>
+          <text x="68" y="168" text-anchor="end" font-size="11.5">压力 p</text>
+          <line x1="590" y1="92" x2="528" y2="92" stroke="currentColor" stroke-width="1.2" marker-end="url(#f26a)"/>
+          <line x1="590" y1="176" x2="528" y2="176" stroke="currentColor" stroke-width="1.2" marker-end="url(#f26a)"/>
+          <text x="594" y="84" font-size="11.5">p + dp（更小）</text>
+          <text x="594" y="168" font-size="11.5">p + dp</text>
+          <line x1="300" y1="30" x2="240" y2="30" stroke="currentColor" stroke-width="1.4" marker-end="url(#f26a)"/>
+          <text x="306" y="34" font-size="11.5">管壁摩擦 τ_WG·S_G（拖住气）</text>
+          <line x1="300" y1="224" x2="240" y2="224" stroke="currentColor" stroke-width="1.4" marker-end="url(#f26a)"/>
+          <text x="306" y="228" font-size="11.5">管壁摩擦 τ_WL·S_L（拖住液）</text>
+          <line x1="360" y1="130" x2="300" y2="130" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f26b)"/>
+          <text x="366" y="134" font-size="11.5" fill="var(--accent)">液体拖住气体 τ_i·S_i</text>
+          <line x1="300" y1="152" x2="360" y2="152" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f26b)"/>
+          <text x="294" y="156" text-anchor="end" font-size="11.5" fill="var(--accent)">气体拖着液体 τ_i·S_i</text>
+          <text x="330" y="246" text-anchor="middle" font-size="11" opacity="0.75">流动方向 →（长度 dz 的一段管）</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-6　分层流两层流体的受力。</b>压力从高处推向低处；管壁摩擦拖后腿；界面上快的气体拖着慢的液体向前，同时被液体向后拖（作用力与反作用力）。</figcaption>
+    </figure>
+    <div class="deriv">
+      <h4>推导：两层的力平衡</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象与假设。</b>取一段长 dz 的水平管。流动是定常的、充分发展的：沿程每个截面都一样，流体不加速。牛顿第二定律 \(F=ma\) 中 \(a=0\)，所以每一层受的合力为零。</p></div></li>
+        <li><div><p><b>液层受三个力</b>（每单位管长，向前为正）：</p>
+          <ul>
+            <li>压力推动：\(-A_L\,\dfrac{\dd p}{\dd z}\)。沿流动方向压力下降，\(\dd p/\dd z\lt0\)，所以这一项为正，是推力。</li>
+            <li>管壁摩擦：\(-\tau_{WL}S_L\)。τ 是单位面积上的摩擦力（Pa），乘以接触长度得到每米的力。</li>
+            <li>界面拖曳：\(+\tau_iS_i\)。气体比液体快，在界面上拖着液体向前。</li>
+          </ul>
+          \[ -A_L\frac{\dd p}{\dd z}-\tau_{WL}S_L+\tau_iS_i=0. \]</div></li>
+        <li><div><p><b>气层同样受三个力</b>，只是界面力方向相反（液体把气体往后拖）：</p>
+          \[ -A_G\frac{\dd p}{\dd z}-\tau_{WG}S_G-\tau_iS_i=0. \]</div></li>
+        <li><div><p><b>关键假设：两层的压力梯度相同。</b>同一截面上，上下压力只差静压，而静压差不随 z 变化，所以 \(\dd p/\dd z\) 对两层一样。</p></div></li>
+        <li><div><p><b>消去压力梯度。</b>把两式各除以自己的面积再相减，\(\dd p/\dd z\) 就抵消了：</p>
+          <div class="eq-key">\[ \tau_{WL}\frac{S_L}{A_L}-\tau_{WG}\frac{S_G}{A_G}-\tau_iS_i\left(\frac{1}{A_L}+\frac{1}{A_G}\right)=0 \]</div>
+          <p>这个式子的意思：液位会自动调整，直到两层“每单位面积分到的阻力”相等。液层太薄，液体就得跑得很快，壁面摩擦变大，液体会堆积起来；液层太厚，液体走得慢，就会被“放走”一些。</p></div></li>
+      </ol>
+    </div>
+
+    <h4>2.4 摩擦力怎么算</h4>
+    <div class="read">
+      <p>壁面摩擦用单相管流的老办法：\(\tau=f\,\tfrac12\rho u^2\)，其中 \(\tfrac12\rho u^2\) 是动压，f 是摩擦系数。f 由雷诺数决定：湍流时 \(f=0.046\,\mathrm{Re}^{-0.2}\)，层流时 \(f=16/\mathrm{Re}\)。雷诺数要用每一层自己的“水力直径”算：</p>
+      <ul>
+        <li>液层：\(D_L=4A_L/S_L\)。液面是自由面，不算“墙”，所以周长只算湿周。</li>
+        <li>气层：\(D_G=4A_G/(S_G+S_i)\)。气体比液体快得多，液面对气体来说像一堵慢速的墙，所以把界面宽度也算进周长。</li>
+        <li>界面切应力取 \(\tau_i\approx\tau_{WG}\)：气体在液面上的摩擦，按在管壁上的摩擦来估计。</li>
+      </ul>
+      <p>这三条是建模选择，不是定律 <span class="tag approx">合理近似</span>。实际的波状界面比管壁粗糙，界面摩擦往往更大，这是理论误差的来源之一。</p>
+    </div>
+
+    <h4>2.5 从力平衡得到 X：液位只取决于一个数</h4>
+    <div class="read">
+      <p>先定义两个“假想压降”。设想管里只有液体，以 \(J_L\) 流满整根管，每米的摩擦压降记作 \((\dd p/\dd z)_{LS}\)；只有气体时记作 \((\dd p/\dd z)_{GS}\)。它们都可以直接用单相公式算：\(\left|\frac{\dd p}{\dd z}\right|_{S}=\frac{4}{D}f_S\,\tfrac12\rho J^2\)。然后定义 Lockhart–Martinelli 参数：</p>
+    </div>
+    <div class="eq-key">\[ X=\left[\frac{(\dd p/\dd z)_{LS}}{(\dd p/\dd z)_{GS}}\right]^{1/2} \]
+      <p class="cap">X 的白话意思：液体单独流有多难推，除以气体单独流有多难推（再开平方）。</p></div>
+    <div class="deriv">
+      <h4>推导：为什么液位只取决于 X</h4>
+      <ol class="steps">
+        <li><div><p><b>改写液体壁面项。</b>\(\tau_{WL}=C(\tfrac{u_LD_L}{\nu_L})^{-n}\tfrac12\rho_Lu_L^2\)。把真实速度写成 \(u_L=\tilde u_LJ_L\)、水力直径写成 \(D_L=\tilde D_LD\)：</p>
+          \[ \tau_{WL}\frac{S_L}{A_L}=\underbrace{C\left(\frac{J_LD}{\nu_L}\right)^{-n}\frac{\rho_LJ_L^2}{2}}_{=\frac D4\left|\frac{\dd p}{\dd z}\right|_{LS}}\cdot(\tilde u_L\tilde D_L)^{-n}\,\tilde u_L^2\cdot\frac{\tilde S_L}{\tilde A_L\,D}=\frac14\left|\frac{\dd p}{\dd z}\right|_{LS}(\tilde u_L\tilde D_L)^{-n}\tilde u_L^2\frac{\tilde S_L}{\tilde A_L}. \]
+          <p>所有有量纲的量都被“打包”进了单相压降里，剩下的全是 \(\tilde h_L\) 的函数。</p></div></li>
+        <li><div><p><b>气体项同样处理</b>，打包进 \(|\dd p/\dd z|_{GS}\)。界面项含 \(\tau_i\approx\tau_{WG}\)，也一并打包。</p></div></li>
+        <li><div><p><b>两边同除以 \(\tfrac14|\dd p/\dd z|_{GS}\)。</b>水平管中得到：</p>
+          \[ X^2=\frac{(\tilde u_G\tilde D_G)^{-m}\,\tilde u_G^2\left(\dfrac{\tilde S_G}{\tilde A_G}+\dfrac{\tilde S_i}{\tilde A_L}+\dfrac{\tilde S_i}{\tilde A_G}\right)}{(\tilde u_L\tilde D_L)^{-n}\,\tilde u_L^2\,\dfrac{\tilde S_L}{\tilde A_L}}. \]
+          <p>右边只含 \(\tilde h_L\)（n、m 只是层流 1、湍流 0.2 的指数）。所以 <b>给定 X，液位就唯一确定</b>。这就是课件第 89 页红框的意思：“\(\tilde A_L,\tilde A_G,\dots\sim f(\tilde h_L)\sim f(X)\)”。</p></div></li>
+        <li><div><p><b>代数验证。</b>两相均湍流（n = m = 0.2），\(\tilde h_L=0.5\)：\(\tilde u_L=\tilde u_G=2\)，\(\tilde D_L=1\)，\(\tilde D_G=0.611\)。分子与分母分别为</p>\[ (2\times0.611)^{-0.2}\times4\times(4+2.546+2.546)=34.9,\qquad 2^{-0.2}\times4\times4=13.9, \]<p>所以 \(X^2=34.9/13.9=2.51\)，<b>X = 1.58</b>。这就是课件第 97–98 页的 “X = 1.6”：液位正好在管中心。</p></div></li>
+        <li><div><p><b>一个记号问题。</b>上面算出的 1.6 是开过平方根的 X。课件第 88–90、97 页把 X 写成两个压降之比、没有开平方；按那种写法，同一个液位对应的是 \(1.6^2\approx2.5\)。以开平方的定义为准（这也是 Lockhart–Martinelli 的原始定义）。</p></div></li>
+      </ol>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>X（两相均湍流）</th><th class="num">0.07</th><th class="num">0.22</th><th class="num">0.47</th><th class="num">1.58</th><th class="num">5.6</th><th class="num">52</th></tr></thead>
+      <tbody><tr><td>液位 \(\tilde h_L\)</td><td class="num">0.1</td><td class="num">0.2</td><td class="num">0.3</td><td class="num">0.5</td><td class="num">0.7</td><td class="num">0.9</td></tr></tbody>
+    </table></div>
+    <div class="read"><p>规律：X 越大（液体相对越“难推”，或液体越多），液层越厚。X 要从 0.07 涨到 52、跨越近三个数量级，液位才从 0.1 涨到 0.9：液位对 X 很不敏感。</p></div>
+
+    <div class="calc" id="xh-widget">
+      <h4 style="margin:0">动手：拖动 X，看液位怎么变</h4>
+      <p class="small muted">按两相均为湍流（n = m = 0.2）计算，对应课件第 89 页的关系。</p>
+      <label for="xh-slider" class="small muted">Lockhart–Martinelli 参数 X（对数刻度）</label>
+      <input id="xh-slider" type="range" min="-200" max="200" value="0" step="1" style="width:100%">
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+        <svg id="xh-svg" viewBox="0 0 200 200" width="170" height="170" role="img" aria-label="管截面中的液位随 X 变化">
+          <circle cx="100" cy="100" r="80" fill="var(--panel)" stroke="currentColor" stroke-width="1.5"/>
+          <path id="xh-liq" d="" fill="var(--accent)" fill-opacity="0.45"/>
+          <line x1="20" y1="100" x2="180" y2="100" stroke="currentColor" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.5"/>
+        </svg>
+        <div class="calc-out" id="xh-out" style="flex:1;min-width:220px"></div>
+      </div>
+    </div>
+
+    <div class="quiz" data-answer="c">
+      <p class="q">小题 2-1：液位正好在管中心时，气体的真实速度是它折算速度的几倍？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">0.5 倍</button>
+        <button type="button" class="opt" data-opt="b">1 倍</button>
+        <button type="button" class="opt" data-opt="c">2 倍</button>
+        <button type="button" class="opt" data-opt="d">4 倍</button>
+      </div>
+      <div class="fb closed"><p>气体只占一半截面。同样多的气体挤过一半的面积，速度就要翻倍：\(\tilde u_G=(\pi/4)/(\pi/8)=2\)。这和第 1 章 \(v_g=J_g/\alpha\) 是同一个道理，这里 α = 0.5。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-c">
+    <h3><span class="no">三</span>第二步：平静的液面什么时候起波（C 线）</h3>
+    <p class="qhead">这一节要回答的问题：风吹过湖面为什么会起波？风很弱时湖面为什么还是平的？</p>
+    <p class="oneline">一句话答案：风不断给波“推一把”输入能量，液体的黏性不断消耗波的能量；输入大于消耗，波纹就出现。</p>
+    <div class="read">
+      <p>想象推秋千：你在秋千往回荡的那一侧推它，它就越荡越高；同时空气阻力和摩擦在不断让它慢下来。Jeffreys（1925）提出，风对波的作用就像这样：波峰的迎风面受到的气压比背风面高一点（背风面被波峰“遮住”），于是风总在“顺着波的运动方向”推它。这个压力差的大小用一个“遮蔽系数” s 表示。</p>
+    </div>
+    <div class="deriv">
+      <h4>推导：起波条件（能量输入 ≥ 黏性耗散）</h4>
+      <ol class="steps">
+        <li><div><p><b>描述一个小波。</b>液面 \(\eta=a\sin(kx-\omega t)\)。a 是振幅；\(k=2\pi/\lambda\) 叫波数，λ 是波长；波以速度 \(c=\omega/k\) 向前跑。</p></div></li>
+        <li><div><p><b>风的推力（Jeffreys 假设）。</b>迎风坡上的附加气压与坡度成正比：\(p'=s\,\rho_G(u_G-c)^2\,\dfrac{\partial\eta}{\partial x}\)。\(u_G-c\) 是风相对波的速度，s 由实验确定，约 0.01 <span class="tag emp">经验系数</span>。</p></div></li>
+        <li><div><p><b>风每秒给单位面积液面做的功。</b>功率 = 压力 × 液面被压下去的速度 = \(-p'\,\partial\eta/\partial t\)。代入并对一个周期取平均（\(\cos^2\) 的平均值是 1/2）：</p>
+          \[ P_{\rm in}=\tfrac12\,s\,\rho_G(u_G-c)^2\,c\,k^2a^2. \]</div></li>
+        <li><div><p><b>黏性每秒消耗的能量。</b>单位面积液面上，重力波的能量是 \(E=\tfrac12\rho_Lga^2\)；Lamb 的经典结果是黏性使它按 \(\dd E/\dd t=-4\nu_Lk^2E\) 衰减 <span class="tag ok">已确立</span>。所以</p>
+          \[ P_{\rm diss}=4\nu_Lk^2\cdot\tfrac12\rho_Lga^2=2\nu_Lk^2\rho_Lga^2. \]</div></li>
+        <li><div><p><b>输入 ≥ 消耗，波就能出现。</b></p>
+          \[ \tfrac12s\rho_G(u_G-c)^2ck^2a^2\ \ge\ 2\nu_Lk^2\rho_Lga^2\quad\Longrightarrow\quad(u_G-c)^2c\ \ge\ \frac{4\nu_L\rho_Lg}{s\,\rho_G}. \]
+          <p>注意 k 和 a 都约掉了：判据与波的大小、波长无关，只与风速、液体黏度、密度有关。</p></div></li>
+        <li><div><p><b>Taitel–Dukler 的简化。</b>波骑在液体上走，取 \(c\approx u_L\)；气体远快于液体，取 \(u_G-c\approx u_G\)；重力取扣除浮力后的 \((\rho_L-\rho_G)g\)：</p>
+          \[ u_G^2\,u_L\ \ge\ \frac{4\nu_L(\rho_L-\rho_G)g}{s\,\rho_G}. \]</div></li>
+        <li><div><p><b>代入数字。</b>空气–水，液体真实速度 \(u_L=0.1\) m/s，s = 0.01：右边为</p>\[ \frac{4\nu_L(\rho_L-\rho_G)g}{s\rho_G}=\frac{4\times8.9\times10^{-7}\times995.8\times9.81}{0.01\times1.18}=2.96\ \mathrm{m^3/s^3}, \]<p>所以要 \(u_G\ge\sqrt{2.96/0.1}=5.4\) m/s 才会起波。液体越慢（\(u_L\) 越小）需要的风越大：液体慢，波跑得慢，风对它做功的功率也小。</p></div></li>
+        <li><div><p><b>写成无因次形式。</b>用 \(u_G=\tilde u_GJ_G\)、\(u_L=\tilde u_LJ_L\) 代入：\(\tilde u_G^2\tilde u_L\,J_G^2J_L\ge\frac{4\nu_L(\rho_L-\rho_G)g}{s\rho_G}\)。两边同乘 \(\frac{\rho_G}{(\rho_L-\rho_G)g\,\nu_L}\)：</p>
+          \[ \tilde u_G^2\tilde u_L\cdot\underbrace{\frac{\rho_GJ_G^2J_L}{(\rho_L-\rho_G)g\,\nu_L}}_{K^2}\ \ge\ \frac4s. \]
+          <p>两边开平方，就是课件第 91 页的 C 线：</p>
+          <div class="eq-key">\[ K\ \ge\ \frac{2}{\tilde u_G\sqrt{\tilde u_L}\sqrt s}=\frac{20}{\tilde u_G\sqrt{\tilde u_L}},\qquad K^2=F^2\,\mathrm{Re}_{LS}=\frac{\rho_GJ_G^2}{(\rho_L-\rho_G)gD}\cdot\frac{J_LD}{\nu_L}. \]</div>
+          <p>K 把“风的动压与重力之比”（\(F^2\)）和“液体惯性与黏性之比”（\(\mathrm{Re}_{LS}\)）乘在一起，正好对应第 6 步里的 \(u_G^2\) 和 \(u_L/\nu_L\)。</p></div></li>
+      </ol>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 2-2：把水换成黏度大 100 倍的油，其他不变，起波需要的风速会怎样？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">不变</button>
+        <button type="button" class="opt" data-opt="b">变大（约 10 倍）</button>
+        <button type="button" class="opt" data-opt="c">变小</button>
+      </div>
+      <div class="fb closed"><p>判据是 \(u_G^2\ge\frac{4\nu_L(\rho_L-\rho_G)g}{s\rho_Gu_L}\)，所需风速正比于 \(\sqrt{\nu_L}\)。黏度大 100 倍（密度相近时运动黏度也约大 100 倍），风速要大约 10 倍：黏稠液体把风输入的能量更快地耗掉了。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-a">
+    <h3><span class="no">四</span>第三步：小波会不会长成大波（A 线，Kelvin–Helmholtz 不稳定性）</h3>
+    <p class="qhead">这一节要回答的问题：波已经有了，在什么条件下它会失控地越长越大？</p>
+    <p class="oneline">一句话答案：气流越过波峰时被“挤”窄、速度变快、压力变低，这股吸力把波峰往上拉；重力把它往下拉。吸力赢了，波就失控。</p>
+    <div class="read">
+      <p>一个能在桌上做的实验：两张纸平行下垂，中间留一点缝，往缝里吹气，两张纸会<b>往中间靠</b>而不是被吹开。原因是 Bernoulli 原理：流速快的地方压力低。飞机机翼的升力、风吹湖面形成大浪，背后都是这个原理。课件第 93–95 页说的 Kelvin–Helmholtz 不稳定性，在水平管里就是这件事：液面上凸起一个波峰，波峰上方的气道变窄，气流加速，压力下降，波峰被“吸”得更高，气道就更窄……形成正反馈。</p>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 660 230" role="img" aria-label="Kelvin-Helmholtz 机理：液面波峰处气道变窄，气流线变密、流速变快、压力变低，把波峰往上吸；重力把波峰往下拉。">
+        <defs>
+          <marker id="f27a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="f27b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+        </defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <line x1="40" y1="30" x2="620" y2="30" stroke="currentColor" stroke-width="2.4"/>
+          <line x1="40" y1="200" x2="620" y2="200" stroke="currentColor" stroke-width="2.4"/>
+          <path d="M40,200 L40,150 Q140,150 220,148 Q300,146 330,105 Q360,146 440,148 Q520,150 620,150 L620,200 Z" fill="var(--accent)" fill-opacity="0.35"/>
+          <path d="M40,150 Q140,150 220,148 Q300,146 330,105 Q360,146 440,148 Q520,150 620,150" fill="none" stroke="currentColor" stroke-width="1.4"/>
+          <g fill="none" stroke="currentColor" stroke-width="1" opacity="0.7">
+            <path d="M50,58 Q200,58 260,56 Q330,44 400,56 Q470,58 610,58"/>
+            <path d="M50,88 Q200,88 260,86 Q330,66 400,86 Q470,88 610,88"/>
+            <path d="M50,118 Q200,118 250,116 Q330,86 410,116 Q470,118 610,118"/>
+          </g>
+          <line x1="70" y1="102" x2="130" y2="102" stroke="currentColor" stroke-width="1.4" marker-end="url(#f27a)"/>
+          <text x="70" y="96">气流 u_G</text>
+          <line x1="330" y1="100" x2="330" y2="62" stroke="var(--accent)" stroke-width="2" marker-end="url(#f27b)"/>
+          <text x="338" y="76" fill="var(--accent)" font-weight="500">流线变密 → 流速变快 → 压力变低</text>
+          <text x="338" y="92" fill="var(--accent)">波峰被往上吸</text>
+          <line x1="300" y1="122" x2="300" y2="168" stroke="currentColor" stroke-width="2" marker-end="url(#f27a)"/>
+          <text x="292" y="186" text-anchor="end">重力把波峰往下拉</text>
+          <line x1="560" y1="58" x2="560" y2="148" stroke="currentColor" stroke-width="0.9" stroke-dasharray="3 3"/>
+          <text x="566" y="104" font-family="var(--font-mono)" font-size="11.5">h_G</text>
+          <line x1="352" y1="105" x2="380" y2="105" stroke="currentColor" stroke-width="0.8"/>
+          <line x1="352" y1="148" x2="380" y2="148" stroke="currentColor" stroke-width="0.8"/>
+          <line x1="372" y1="105" x2="372" y2="148" stroke="currentColor" stroke-width="0.8"/>
+          <text x="386" y="132" font-family="var(--font-mono)" font-size="11.5">a</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-7　Kelvin–Helmholtz 失稳的机理。</b>波峰高出平均液面 a，把厚度为 \(h_G\) 的气道挤窄。气流在波峰上方加速、压力降低（向上的吸力）；被抬高的液体受重力往下拉（恢复力）。两者谁大，决定波会长大还是消退。</figcaption>
+    </figure>
+    <div class="deriv">
+      <h4>推导：吸力与重力的比赛</h4>
+      <ol class="steps">
+        <li><div><p><b>先看最简单的情形：二维水槽。</b>上方气层厚 \(h_G\)，气速 \(u_G\)；液面上有一个高 a 的小波峰（\(a\ll h_G\)）。忽略液体流速和黏性。</p></div></li>
+        <li><div><p><b>质量守恒：气道变窄，气流变快。</b>每秒流过的气量不变：\(u_Gh_G=u_G'(h_G-a)\)，所以</p>
+          \[ u_G'=u_G\frac{h_G}{h_G-a}\approx u_G\left(1+\frac{a}{h_G}\right). \]
+          <p>近似号用的是 a 很小时的一阶展开：\(1/(1-\epsilon)\approx1+\epsilon\)。</p></div></li>
+        <li><div><p><b>Bernoulli 方程：气流变快，压力变低。</b>沿流线 \(p+\tfrac12\rho_Gu^2=\)常数，所以波峰上方的气压比平坦处低</p>
+          \[ \Delta p_{\text{吸}}=\tfrac12\rho_G\left(u_G'^2-u_G^2\right)\approx\rho_Gu_G^2\,\frac{a}{h_G}. \]
+          <p>这就是把波峰往上吸的“吸力压强”。</p></div></li>
+        <li><div><p><b>重力恢复：</b>波峰处的液体比平均液面高出 a，液柱额外的静压使它有回落的趋势，对应的压强差是 \((\rho_L-\rho_G)ga\)（减去 \(\rho_G\) 是因为上方被替换掉的是气体）。</p></div></li>
+        <li><div><p><b>比较：吸力大于重力，波就长大。</b></p>
+          \[ \rho_Gu_G^2\frac{a}{h_G}\ \gt\ (\rho_L-\rho_G)ga\quad\Longrightarrow\quad u_G^2\ \gt\ \frac{(\rho_L-\rho_G)g\,h_G}{\rho_G}. \]
+          <p>振幅 a 又约掉了：对小波，判据与波多高无关。还能看出：<b>气层越薄越容易失稳</b>，因为同样高的波峰挤掉的气道比例更大。</p></div></li>
+        <li><div><p><b>代入数字。</b>空气–水，气层厚 12.5 mm（半管）：</p>\[ u_G\gt\sqrt{\frac{995.8\times9.81\times0.0125}{1.18}}=10.2\ \mathrm{m/s}; \]<p>气层厚 5 mm 时为 6.4 m/s。</p></div></li>
+        <li><div><p><b>从水槽换到圆管。</b>液面升高 a，气体面积减少 \(S_ia\)，相对减少 \(S_ia/A_G\)。对比水槽中的 \(a/h_G\)，圆管里的“等效气层厚度”就是 \(A_G/S_i\)：</p>
+          \[ u_G^2\ \gt\ \frac{(\rho_L-\rho_G)g\cos\beta}{\rho_G}\cdot\frac{A_G}{\dd A_L/\dd h_L},\qquad \frac{\dd A_L}{\dd h_L}=S_i. \]
+          <p>cos β 是倾斜管中重力垂直于管轴的分量（水平管 β = 0）。课件第 91 页 \(\dd\tilde A_L/\dd\tilde h_L=\sqrt{1-(2\tilde h_L-1)^2}\) 就是界面宽度 \(\tilde S_i\)：液位升高一点点，液体面积增加的量等于液面宽度乘以升高量。</p></div></li>
+        <li><div><p><b>有限振幅修正。</b>上面的推导只对无限小的波成立。真实的波有一定高度；液位越高，波峰离管顶越近，越容易被“吸”到管顶。Taitel–Dukler 在右边乘以 \((1-\tilde h_L)^2\) 来近似这个效应 <span class="tag approx">半经验修正</span>。</p></div></li>
+        <li><div><p><b>写成无因次形式。</b>带上修正系数后判据是 \(u_G^2\ge(1-\tilde h_L)^2\frac{(\rho_L-\rho_G)g\cos\beta}{\rho_G}\frac{A_G}{S_i}\)。代入 \(u_G=\tilde u_GJ_G\)、\(A_G=\tilde A_GD^2\)、\(S_i=\tilde S_iD\)：</p>
+          \[ \tilde u_G^2J_G^2\ \ge\ (1-\tilde h_L)^2\,\frac{(\rho_L-\rho_G)g\cos\beta\,D}{\rho_G}\,\frac{\tilde A_G}{\tilde S_i}. \]
+          <p>两边同除以 \(\frac{(\rho_L-\rho_G)gD\cos\beta}{\rho_G}\)，左边出现 \(\frac{\rho_GJ_G^2}{(\rho_L-\rho_G)gD\cos\beta}\)，这就是课件第 90 页修正 Froude 数的平方 \(F^2\)，其中 \(F=\sqrt{\frac{\rho_G}{\rho_L-\rho_G}}\frac{J_G}{\sqrt{Dg\cos\beta}}\)。移项得：</p>
+          <div class="eq-key">\[ F^2\,\frac{1}{(1-\tilde h_L)^2}\,\frac{\tilde u_G^2\,\tilde S_i}{\tilde A_G}\ \ge\ 1\qquad(\text{A 线：波失控}) \]</div>
+          <p>注意 \(\tilde u_G\) 是平方，因为它来自 Bernoulli 方程中的 \(u_G^2\)。课件第 91 页该式中 \(\tilde u_G\) 没有平方号。</p></div></li>
+        <li><div><p><b>这个推导忽略了什么。</b>表面张力：它会抑制短波，但管道中最危险的是长波，所以影响不大；液体速度和黏性：两相速度差不大时需要用完整的 Kelvin–Helmholtz 色散关系（课程体系 C4 讲）。另外，Taitel–Dukler 理论中完全没有出现表面张力 σ，这是它在微细通道中失效的原因之一。</p></div></li>
+      </ol>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">小题 2-3：同样的气体流量，液体流量增大（液位升高），A 线判据会更容易满足还是更难满足？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">更容易：气道变窄，气体真实速度变大，等效气层变薄，修正系数也变小</button>
+        <button type="button" class="opt" data-opt="b">更难：液体多了，重力更大</button>
+        <button type="button" class="opt" data-opt="c">不受影响：判据里只有气体参数</button>
+      </div>
+      <div class="fb closed"><p>液位升高带来三个同方向的效应：气体面积 \(\tilde A_G\) 变小使 \(\tilde u_G\) 变大；等效气层厚度 \(\tilde A_G/\tilde S_i\) 变小；\((1-\tilde h_L)^2\) 变小。三者都让左边变大。重力恢复项只依赖密度差，不随液量增加。所以液量越多，越早失稳，这正是 Taitel 流型图上 A 线随 X 增大而下降的原因。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-d">
+    <h3><span class="no">五</span>第四步：波长大以后变成什么（D 线，X = 1.6）</h3>
+    <p class="qhead">这一节要回答的问题：A 线只说“波会长大”，长大以后是堵满管子形成液塞，还是被吹散贴在管壁上？</p>
+    <p class="oneline">一句话答案：看液体够不够。平衡液位高于管中心，液体足够堵满截面，形成间歇流；低于管中心，液体不够，长大的波被气流甩到管壁四周，形成环状流。</p>
+    <div class="read">
+      <p>线性稳定性分析（第三步）只能告诉你“小扰动会不会长大”，不能告诉你“长大以后变成什么”。后者属于非线性问题，Taitel–Dukler 用了一个物理论证：一个波要长成堵满管截面的液塞，需要从它前方的液层“吸”来足够多的液体。平衡液位高于管中心（\(\tilde h_L\gt0.5\)）时，液体供应充足，波峰顶到管顶后能维持住，形成间歇流；液位低时，液体不够，波还没堵满就被高速气流撕开，液体被推上管壁，形成环状流（课件第 96 页）。</p>
+      <p>按第二步的结果，\(\tilde h_L=0.5\) 对应 X ≈ 1.6。所以流型图上 D 是一条竖直线 X = 1.6 <span class="tag approx">半经验判据</span>，与 Mandhane 的实验流型图吻合得不错（课件第 92 页）。</p>
+      <p>课件第 98 页说的“环状流失稳”其实是同一条线反过来看：在环状流中增加液量，使 X 超过 1.6，液膜在管底积聚到能形成液桥，环状流就变成间歇流（“自然阻塞”）；而在高气速下，液膜被撕成液滴，环状流变成雾状流（“液膜破裂”）。后者的判据 \(V_{gl}\gt\sqrt{\sigma/(\rho_g\delta_{\min})}\) 是一个 Weber 数判据：气流动压 \(\rho_gV^2\) 超过厚度为 δ 的液膜的表面张力压强 \(\sigma/\delta\)。</p>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 2-4：某工况算得 X = 0.3，且 A 线判据已满足。预期是什么流型？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">间歇流</button>
+        <button type="button" class="opt" data-opt="b">环状流</button>
+        <button type="button" class="opt" data-opt="c">分层平滑流</button>
+      </div>
+      <div class="fb closed"><p>X = 0.3 &lt; 1.6，平衡液位低于管中心（查第二步的表，约 \(\tilde h_L\approx0.24\)）。波已经失控，但液体不够堵满截面，所以是环状流。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-b">
+    <h3><span class="no">六</span>第五步：液体流得很快时，气体被打散（B 线）</h3>
+    <p class="qhead">这一节要回答的问题：间歇流里气体为什么待在管顶？液体流得很快时，为什么又会变成满管的小气泡？</p>
+    <p class="oneline">一句话答案：浮力把气体按在管顶；液体中的湍流涡团像搅拌棒一样到处推挤；当湍流的推挤力超过浮力，气体就被打散到整个截面。</p>
+    <div class="read">
+      <p>想想往杯子里倒水：水流平稳时，气泡很快浮到水面；用力搅拌时，气泡被卷进水里到处跑。管流中“搅拌”来自湍流：液体流得越快，壁面摩擦越大，湍流涡团越强。</p>
+    </div>
+    <div class="deriv">
+      <h4>推导：湍流推挤力 ≥ 浮力</h4>
+      <ol class="steps">
+        <li><div><p><b>浮力（每米管长）。</b>管顶的气体体积每米为 \(A_G\)，受到的净浮力是 \(F_B=(\rho_L-\rho_G)g\cos\beta\,A_G\)。</p></div></li>
+        <li><div><p><b>湍流涡团的速度有多大。</b>壁面摩擦应力 \(\tau_w\) 可以写成 \(\tau_w=\rho_Lu_*^2\)，\(u_*\) 叫摩擦速度，是近壁湍流涡团速度脉动的典型大小 <span class="tag ok">湍流边界层理论</span>。由 \(\tau_w=f_L\tfrac12\rho_Lu_L^2\) 得 \(u_*=u_L\sqrt{f_L/2}\)。</p></div></li>
+        <li><div><p><b>湍流推挤力（每米管长）。</b>涡团以速度 \(u_*\) 撞向界面，动压约 \(\tfrac12\rho_Lu_*^2\)，作用在宽 \(S_i\) 的界面上：\(F_T=\tfrac12\rho_Lu_*^2S_i\)。</p></div></li>
+        <li><div><p><b>推挤力 ≥ 浮力：</b></p>
+          \[ \tfrac12\rho_L\,\frac{f_L}{2}u_L^2\,S_i\ \ge\ (\rho_L-\rho_G)g\cos\beta\,A_G\quad\Longrightarrow\quad u_L^2\ \ge\ \frac{4A_Gg\cos\beta}{S_if_L}\left(1-\frac{\rho_G}{\rho_L}\right). \]</div></li>
+        <li><div><p><b>写成无因次形式。</b>代入 \(u_L=\tilde u_LJ_L\)、\(f_L=f_{LS}(\tilde u_L\tilde D_L)^{-n}\)（\(f_{LS}\) 是液体单独流满管时的摩擦系数）、\(A_G/S_i=\tilde A_GD/\tilde S_i\)：</p>
+          \[ \tilde u_L^2(\tilde u_L\tilde D_L)^{-n}\,f_{LS}J_L^2\ \ge\ \frac{4\tilde A_G\,D\,g\cos\beta\,(\rho_L-\rho_G)}{\tilde S_i\,\rho_L}. \]
+          <p>两边同乘 \(\frac{2\rho_L}{D(\rho_L-\rho_G)g\cos\beta}\)，左边出现 \(\frac{2f_{LS}\rho_LJ_L^2/D}{(\rho_L-\rho_G)g\cos\beta}\)。分子正是液体单独流的压降 \(|\dd p/\dd z|_{LS}=\frac4Df_{LS}\cdot\tfrac12\rho_LJ_L^2\)。定义 \(T=\left[\frac{|\dd p/\dd z|_{LS}}{(\rho_L-\rho_G)g\cos\beta}\right]^{1/2}\)（液体单独流的摩擦压降与重力之比），得课件第 91 页的 B 线：</p>
+          <div class="eq-key">\[ T^2\ \ge\ \frac{8\tilde A_G}{\tilde S_i\,\tilde u_L^2\,(\tilde u_L\tilde D_L)^{-n}}\qquad(\text{B 线：分散泡状流}) \]</div></div></li>
+        <li><div><p><b>代入数字。</b>空气–水，D = 25 mm：\(J_G=1\) m/s 时，液相折算速度超过约 3.1 m/s 进入分散泡状流；\(J_G=5\) m/s 时约 4.6 m/s。气越多，需要越强的湍流才能把它打散。</p></div></li>
+        <li><div><p><b>与课件第 99 页的联系。</b>Barnea 的最大稳定气泡直径 \(d_{\max}\) 是同一思想的另一种写法：湍流把气泡打碎到多小。它的形式可以只用量纲分析得到。气泡大小只取决于两个量：表面张力与密度之比 \(\sigma/\rho_L\)（单位 m³/s²）和单位质量的湍流能量耗散率 ε（单位 m²/s³）。能组合出长度的唯一方式是</p>
+          \[ d_{\max}\propto\left(\frac{\sigma}{\rho_L}\right)^{3/5}\varepsilon^{-2/5}. \]
+          <p>验证单位：</p>\[ \left(\mathrm{\frac{m^3}{s^2}}\right)^{3/5}\left(\mathrm{\frac{m^2}{s^3}}\right)^{-2/5}=\mathrm{m^{9/5-4/5}\,s^{-6/5+6/5}}=\mathrm m. \]<p>管流中 ε 等于压降功率除以质量，\(\varepsilon=2f_mV_m^3/D\)，正是课件公式里的那一项 <span class="tag approx">Hinze 理论</span>。</p></div></li>
+      </ol>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">小题 2-5：B 线的物理本质是什么在比赛？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">表面张力与重力</button>
+        <button type="button" class="opt" data-opt="b">气流吸力与重力</button>
+        <button type="button" class="opt" data-opt="c">液体湍流的推挤与浮力</button>
+      </div>
+      <div class="fb closed"><p>浮力把气体按在管顶，液体湍流把它打散。气流吸力与重力的比赛是 A 线（Kelvin–Helmholtz）；表面张力在 Taitel–Dukler 的四条线里都没有出现。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-map">
+    <h3><span class="no">七</span>合起来：Taitel–Dukler 流型图</h3>
+    <p class="qhead">这一节要回答的问题：四条线怎么拼成一张图？给定一个工况，怎么一步步判断流型？</p>
+    <p class="oneline">一句话答案：先由 X 算液位，再依次检查 A、D、B、C 四个判据；四条线画在以 X 为横坐标的图上，就是课件第 90–91 页的流型图。</p>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 720 390" role="img" aria-label="Taitel-Dukler 水平管流型图（两相均湍流计算）：横坐标 X，左纵坐标 K，右纵坐标 F 或 T；A 线从左上向右下降，B 线在 X 大于 1.6 处近似水平，C 线为低处的拱形，D 为 X 等于 1.6 的竖线；区域依次为环状、间歇、分散泡状、波状分层、分层平滑。">
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <rect x="80" y="30" width="560" height="300" fill="none" stroke="currentColor" stroke-width="1"/>
+          <g stroke="currentColor" stroke-width="0.5" opacity="0.25">
+            <line x1="160" y1="30" x2="160" y2="330"/><line x1="240" y1="30" x2="240" y2="330"/><line x1="320" y1="30" x2="320" y2="330"/><line x1="400" y1="30" x2="400" y2="330"/><line x1="480" y1="30" x2="480" y2="330"/><line x1="560" y1="30" x2="560" y2="330"/>
+            <line x1="80" y1="105" x2="640" y2="105"/><line x1="80" y1="180" x2="640" y2="180"/><line x1="80" y1="255" x2="640" y2="255"/>
+          </g>
+          <g font-family="var(--font-mono)" font-size="10.5" text-anchor="middle">
+            <text x="80" y="346">0.001</text><text x="160" y="346">0.01</text><text x="240" y="346">0.1</text><text x="320" y="346">1</text><text x="400" y="346">10</text><text x="480" y="346">100</text><text x="560" y="346">1000</text><text x="640" y="346">10⁴</text>
+          </g>
+          <g font-family="var(--font-mono)" font-size="10.5" text-anchor="end">
+            <text x="74" y="334">1</text><text x="74" y="259">10</text><text x="74" y="184">100</text><text x="74" y="109">1000</text><text x="74" y="34">10⁴</text>
+          </g>
+          <g font-family="var(--font-mono)" font-size="10.5">
+            <text x="646" y="334">0.001</text><text x="646" y="259">0.01</text><text x="646" y="184">0.1</text><text x="646" y="109">1</text><text x="646" y="34">10</text>
+          </g>
+          <text x="360" y="372" text-anchor="middle">X（Lockhart–Martinelli 参数）</text>
+          <text x="22" y="180" text-anchor="middle" transform="rotate(-90 22 180)">K（用于 C 线）</text>
+          <text x="700" y="180" text-anchor="middle" transform="rotate(90 700 180)">F（A 线）或 T（B 线）</text>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="2.4" points="93.7,80.6 175.8,95.0 206.6,101.4 226.4,106.3 241.2,110.6 253.3,114.6 263.7,118.5 272.8,122.3 281.0,126.3 288.6,130.3 295.7,134.4 302.5,138.6 308.9,143.1 315.2,147.7 321.4,152.5 327.4,157.6 333.5,163.0 339.5,168.8 345.6,174.8 351.9,181.4 358.3,188.4 365.0,195.9 372.0,204.2 379.3,213.2 387.3,223.2 395.9,234.4 405.4,247.1 416.1,261.8 428.5,279.1 443.5,300.3 462.4,327.6"/>
+          <polyline fill="none" stroke="currentColor" stroke-width="2" points="336.0,106.7 344.1,105.4 352.4,104.5 361.1,103.9 370.2,103.8 380.0,104.0 390.8,104.8 402.9,106.1 417.1,108.2 434.4,111.2 457.2,115.9 491.3,123.6 537.5,134.6 610.9,152.5 630.2,157.2"/>
+          <polyline fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 4" points="128.8,326.6 185.2,300.3 212.2,288.6 230.4,281.3 244.5,276.2 256.1,272.4 266.0,269.6 274.9,267.4 283.0,265.9 290.4,264.7 297.4,264.0 304.1,263.6 310.5,263.5 316.8,263.7 322.9,264.3 328.9,265.0 335.0,266.1 341.0,267.4 347.2,269.1 353.5,271.0 359.9,273.3 366.7,276.0 373.8,279.1 381.3,282.6 389.4,286.8 398.2,291.6 407.9,297.4 419.0,304.2 432.0,312.5 447.8,323.1 457.2,329.6"/>
+          <line x1="336" y1="30" x2="336" y2="168" stroke="var(--caution)" stroke-width="2.4"/>
+          <g font-weight="500">
+            <text x="200" y="74" fill="var(--accent)">A</text><text x="420" y="98">B</text><text x="250" y="294">C</text><text x="342" y="44" fill="var(--caution)">D：X = 1.6</text>
+          </g>
+          <g font-size="12.5" font-weight="500" opacity="0.85">
+            <text x="160" y="56">环状流</text><text x="430" y="70">分散泡状流</text><text x="430" y="170">间歇流</text><text x="150" y="200">波状分层流</text><text x="250" y="316">分层平滑流</text>
+          </g>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-8　Taitel–Dukler 水平管流型图（按本讲公式、两相均湍流重新计算）。</b>A 线（色）读右轴 F，B 线（实线）读右轴 T，C 线（虚线）读左轴 K，D 是 X = 1.6 的竖线。因为纵轴用的都是无因次量，这一张图对任何流体、任何管径都适用（在水平、两相均湍流的假设下），这是它比纯经验流型图强的地方。与课件第 91 页的图形状一致。</figcaption>
+    </figure>
+    <h4>判断流程（按顺序）</h4>
+    <div class="read">
+      <ol>
+        <li>算两个单相压降，得 X；由 X 解出液位 \(\tilde h_L\)，进而得到 \(\tilde A_G,\tilde S_i,\tilde u_G,\tilde u_L\)。</li>
+        <li>算 F，检查 <b>A 线</b>：波会失控吗？</li>
+        <li>若会：看 <b>D 线</b>。\(\tilde h_L\lt0.5\)（X &lt; 1.6）为环状流；否则为间歇流，再算 T 检查 <b>B 线</b>，满足则为分散泡状流。</li>
+        <li>若不会：算 K，检查 <b>C 线</b>：满足为波状分层流，否则为分层平滑流。</li>
+      </ol>
+    </div>
+    <h4>案例：空气–水，D = 25 mm，\(J_L=0.05\) m/s，\(J_G=10\) m/s</h4>
+    <div class="read">
+      <ol>
+        <li>液相雷诺数 \[ \mathrm{Re}_{LS}=\frac{997\times0.05\times0.025}{8.9\times10^{-4}}=1400, \] 层流；\(|\dd p/\dd z|_{LS}=2.28\) Pa/m。气相 \(\mathrm{Re}_{GS}=15\,900\)，湍流；\(|\dd p/\dd z|_{GS}=62.7\) Pa/m。</li>
+        <li>\(X=\sqrt{2.28/62.7}=0.191\)，解得 \(\tilde h_L=0.130\)（液层厚 3.3 mm）；\(\tilde A_G=0.726\)，\(\tilde S_i=0.672\)，\(\tilde u_G=1.08\)，\(\tilde u_L=13.1\)。液体实际以 0.66 m/s 流动，是折算速度的 13 倍，因为它只占 7.6% 的截面。</li>
+        <li>修正 Froude 数与 A 线左边：\[ F=\sqrt{\frac{1.18}{995.8}}\cdot\frac{10}{\sqrt{0.025\times9.81}}=0.695,\qquad \frac{0.695^2\times1.08^2\times0.672}{0.870^2\times0.726}=0.69\lt1, \] 波不会失控。</li>
+        <li>\(K=F\sqrt{\mathrm{Re}_{LS}}=26.0\)，C 线要求 \(K\ge20/(1.08\sqrt{13.1})=5.1\)：满足，会起波。</li>
+      </ol>
+      <p><b>结论：波状分层流。</b>继续加气，到 \(J_G\approx13\) m/s 时 A 线被满足，因 X &lt; 1.6，变成环状流。把气速降到 2 m/s，K = 5.2 小于此时的门槛 7.6，回到分层平滑流。下面的判别器可以验证这些结果。</p>
+    </div>
+
+    <div class="calc" id="td-widget">
+      <h4 style="margin:0">Taitel–Dukler 水平管流型判别器</h4>
+      <p class="small muted">按本讲公式计算（水平管；Re &lt; 2000 取层流 f = 16/Re，否则 f = 0.046 Re<sup>−0.2</sup>）。右侧是同一流体和管径下算出的整张流型图，点表示当前工况。</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <button class="reset" type="button" data-tdpreset="aw">空气–水（25 °C，0.1 MPa）</button>
+        <button class="reset" type="button" data-tdpreset="am">空气–甲醇（20 °C）</button>
+        <button class="reset" type="button" data-tdpreset="sw">汽–水（7 MPa 饱和）</button>
+      </div>
+      <div class="calc-grid">
+        <label for="td-d">管径 D（mm）<input id="td-d" type="number" step="any" value="25"></label>
+        <label for="td-jg">气相折算速度 J_G（m/s）<input id="td-jg" type="number" step="any" value="10"></label>
+        <label for="td-jl">液相折算速度 J_L（m/s）<input id="td-jl" type="number" step="any" value="0.05"></label>
+        <label for="td-rl">液相密度（kg/m³）<input id="td-rl" type="number" step="any" value="997"></label>
+        <label for="td-rg">气相密度（kg/m³）<input id="td-rg" type="number" step="any" value="1.18"></label>
+        <label for="td-ml">液相黏度（Pa·s）<input id="td-ml" type="number" step="any" value="0.00089"></label>
+        <label for="td-mg">气相黏度（Pa·s）<input id="td-mg" type="number" step="any" value="0.0000185"></label>
+      </div>
+      <div class="td-layout">
+        <div class="td-left">
+          <div class="verdict" id="td-verdict"></div>
+          <div class="tbl"><table id="td-checks"></table></div>
+          <div class="calc-out" id="td-out"></div>
+        </div>
+        <div class="td-right">
+          <canvas id="td-map" width="440" height="340" aria-label="当前流体与管径下按 Taitel-Dukler 判据计算的 J_G–J_L 流型图"></canvas>
+          <div class="legend" id="td-legend">
+            <span class="chip" style="--c: var(--rg-ss)">分层平滑</span><span class="chip" style="--c: var(--rg-sw)">波状分层</span><span class="chip" style="--c: var(--rg-i)">间歇</span><span class="chip" style="--c: var(--rg-an)">环状</span><span class="chip" style="--c: var(--rg-db)">分散泡状</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="read">
+      <p>试一试：把管径从 25 mm 改成 100 mm，看边界怎么移动；把流体换成高压汽–水，看环状流区域怎么变。边界会随管径和流体移动，而这些移动是由同一组物理机理决定的。这正是半理论流型图相对纯经验图的优势（第 1 讲 6.1 节）。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-research">
+    <h3><span class="no">八</span>和你课题的联系</h3>
+    <div class="read">
+      <p>本讲真正要带走的不是 Taitel 图本身（你的实验里没有水平管），而是它的方法：<b>先写出一个基础状态，加一个小扰动，比较“推动扰动长大”的力和“把扰动拉回来”的力</b>。这就是线性稳定性分析，它可以直接用到针尖气泡上。</p>
+      <ul>
+        <li><b>加速界面的 Rayleigh–Taylor 不稳定性。</b>课件第 3 章第 42–44 页的泰勒不稳定性讲的是重力场中“重流体在上、轻流体在下”。界面加速时，加速度起的作用和重力一样：当轻的气体推动重的液体加速（气泡快速膨胀），或重的液体压着轻的气体减速（气泡塌缩），界面就可能失稳 <span class="tag ok">已确立</span>。只要把 g 换成气泡壁的加速度 \(|\ddot R|\)，就能套用第 3 章的临界波长 \(L_c=2\pi\sqrt{\sigma/(\Delta\rho|\ddot R|)}\)。</li>
+        <li><b>一个可以检验的估算</b> <span class="tag open">示例，待你的数据检验</span>：若高速图像测得 \(|\ddot R|\sim10^6\ \mathrm{m/s^2}\)，甲醇中 \(L_c=2\pi\sqrt{0.0225/(791\times10^6)}\approx34\) μm。比这个尺度更长的界面褶皱会长大。你可以拿实测的 \(R(t)\) 求 \(\ddot R\)，再对照图像中气泡表面的皱纹尺度来检验。</li>
+        <li><b>Kelvin–Helmholtz 的位置。</b>如果放电或电场在气泡界面附近引起明显的切向流动（例如电流体动力学流动或蒸气射流），界面两侧的速度差就可能引发本讲第四步的机理。是否如此，需要先测量界面附近的流速。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-errors">
+    <h3><span class="no">九</span>常见误解与理论局限</h3>
+    <div class="read">
+      <ol>
+        <li><b>X 要开平方。</b>X = 1.6 对应液位在管中心，是开平方以后的值。</li>
+        <li><b>判据里的速度用对了吗。</b>Kelvin–Helmholtz 的推导用的是真实速度 \(u_G\)，写成无因次形式后才变成 \(\tilde u_GJ_G\)。直接把折算速度当真实速度，会低估气速。</li>
+        <li><b>不要把 Taitel 图当成纯理论。</b>s = 0.01、修正系数 \((1-\tilde h_L)\)、\(\tilde h_L=0.5\) 的选择、界面摩擦取 \(\tau_i\approx\tau_{WG}\)，都带有经验成分 <span class="tag approx">半理论、半经验</span>。</li>
+        <li><b>水平管的图不能用于竖直管。</b>竖直管中重力沿管轴，不存在分层流，判据完全不同（第 1 讲 6.2–6.4 节，Taitel 等 1980）。</li>
+        <li><b>线性稳定性只回答“会不会长大”。</b>长大以后变成什么（液塞还是环状），要另外的物理论证（D 线）。</li>
+        <li><b>没有表面张力。</b>四条线都不含 σ。管径接近或小于毛细长度（空气–水约 2.7 mm）时，这个理论不再适用。</li>
+        <li><b>边界是过渡带。</b>理论线和实验线有偏差（课件第 92 页），实际工况落在边界附近时，两种流型可能交替出现。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-check">
+    <h3><span class="no">十</span>一页总结与自测</h3>
+    <div class="note link">
+      <b>这一讲的五句话</b>
+      <ol style="margin:0;padding-left:1.4em;display:grid;gap:4px">
+        <li>Taitel–Dukler 从平稳分层流出发，问它在什么条件下站不住。</li>
+        <li>分层流的液位由两层受力平衡决定，只取决于 X；X = 1.6 时液位在管中心。</li>
+        <li>C 线：风输入波的能量大于黏性耗散，液面起波。</li>
+        <li>A 线：波峰上方气流加速、压力降低，吸力大于重力，波失控；之后液位高于管中心变间歇流，低于管中心变环状流（D 线）。</li>
+        <li>B 线：液体湍流的推挤大于浮力，气体被打散成分散泡状流。</li>
+      </ol>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 2-6：为什么 Taitel 流型图可以用于不同流体和不同管径，而 Baker、Mandhane 那样的经验图不行？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">因为 Taitel 做的实验更多</button>
+        <button type="button" class="opt" data-opt="b">因为它的坐标和边界来自力平衡与稳定性分析，物性和管径已经被组合进无因次数 X、F、K、T 里</button>
+        <button type="button" class="opt" data-opt="c">因为它不考虑重力</button>
+      </div>
+      <div class="fb closed"><p>每一条边界都对应一个机理，机理决定了物性和管径应当以什么组合出现。经验图只是某一组实验条件下的“切片”（第 1 讲 6.1 节），换了条件边界就移动；Taitel 图的边界会按机理跟着移动。</p></div>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">小题 2-7：一个波状分层流工况，保持液体流量不变、逐渐加大气体流量，最先越过的是哪条线？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">A 线（波失控），之后按液位落入环状流或间歇流</button>
+        <button type="button" class="opt" data-opt="b">B 线（湍流打散）</button>
+        <button type="button" class="opt" data-opt="c">C 线（起波）</button>
+      </div>
+      <div class="fb closed"><p>已经是波状分层流，说明 C 线早已越过。加大气量使气流吸力增大，最先满足的是 A 线。B 线由液体湍流决定，靠加气是达不到的。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l22-next">
+    <h3><span class="no">下一讲</span>第 2 章第 3 讲：相速度与相含率分布（课件 2.4）</h3>
+    <div class="read">
+      <p>内容：为什么管截面上的含气率和速度不均匀；用力平衡求两相流中的剪切应力分布；环状液膜的速度剖面推导；Bankoff 变密度模型与分布系数 \(C_0\) 的来源。仍按这一讲的方式写。</p>
+      <p>读完这一讲后，请告诉我：哪一节最清楚，哪一节还卡着。卡住的地方告诉我是第几节第几步，下一讲开头先把它讲透。</p>
+    </div>
+  </section>
+</article>
+
 </main>
 </div>
 <footer class="foot">
@@ -1314,3 +1983,232 @@ flowchart LR
   calc();
 })();
 </script>
+<script>
+(function () {
+  /* ---------- view routing (tabs) ---------- */
+  var DEFAULT_VIEW = 'lesson-2-2';
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  function route() {
+    var id = '';
+    try { id = decodeURIComponent(location.hash.slice(1)); } catch (e) { id = ''; }
+    var el = id ? document.getElementById(id) : null;
+    var view = el ? el.closest('.view') : null;
+    if (!view) { view = document.getElementById(DEFAULT_VIEW); el = null; }
+    views.forEach(function (v) {
+      var off = v !== view;
+      v.classList.toggle('off', off);
+      v.setAttribute('aria-hidden', off ? 'true' : 'false');
+    });
+    document.querySelectorAll('.tocv').forEach(function (g) { g.hidden = g.getAttribute('data-view') !== view.id; });
+    document.querySelectorAll('.tabs a').forEach(function (a) {
+      if (a.getAttribute('href') === '#' + view.id) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
+    });
+    if (el && el !== view) { try { el.scrollIntoView({ block: 'start', behavior: 'instant' }); } catch (e) { el.scrollIntoView(); } }
+    else if (id) window.scrollTo(0, 0);
+    window.dispatchEvent(new Event('viewchange'));
+  }
+  window.addEventListener('hashchange', route);
+  route();
+
+  /* ---------- quizzes ---------- */
+  document.querySelectorAll('.quiz').forEach(function (qz) {
+    var ans = qz.getAttribute('data-answer');
+    var fb = qz.querySelector('.fb');
+    var opts = qz.querySelectorAll('button.opt');
+    opts.forEach(function (b) {
+      b.addEventListener('click', function () {
+        opts.forEach(function (x) { x.classList.remove('right', 'wrong'); });
+        var ok = b.getAttribute('data-opt') === ans;
+        b.classList.add(ok ? 'right' : 'wrong');
+        if (!ok) { var r = qz.querySelector('button.opt[data-opt="' + ans + '"]'); if (r) r.classList.add('right'); }
+        var head = fb.querySelector('.fb-head');
+        if (!head) { head = document.createElement('p'); fb.insertBefore(head, fb.firstChild); }
+        head.className = 'fb-head ' + (ok ? 'good' : 'bad');
+        head.textContent = ok ? '答对了。' : '再想想。正确答案已用绿色标出：';
+        fb.classList.remove('closed');
+      });
+    });
+  });
+
+  /* ---------- Taitel–Dukler model ---------- */
+  function geom(h) {
+    var c = 2 * h - 1, s = Math.sqrt(Math.max(0, 1 - c * c)), ac = Math.acos(c), A = Math.PI / 4;
+    var AL = 0.25 * (Math.PI - ac + c * s), AG = 0.25 * (ac - c * s), SL = Math.PI - ac, SG = ac, Si = s;
+    return { AL: AL, AG: AG, Si: Si, SL: SL, SG: SG, uL: A / AL, uG: A / AG, DL: 4 * AL / SL, DG: 4 * AG / (SG + Si) };
+  }
+  function X2(h, n, m) {
+    var g = geom(h);
+    var gas = Math.pow(g.uG * g.DG, -m) * g.uG * g.uG * (g.SG / g.AG + g.Si / g.AL + g.Si / g.AG);
+    var liq = Math.pow(g.uL * g.DL, -n) * g.uL * g.uL * g.SL / g.AL;
+    return gas / liq;
+  }
+  function hOfX(X, n, m) {
+    var lo = 1e-6, hi = 1 - 1e-6, t = X * X;
+    for (var i = 0; i < 56; i++) { var mid = 0.5 * (lo + hi); if (X2(mid, n, m) < t) lo = mid; else hi = mid; }
+    return 0.5 * (lo + hi);
+  }
+  function single(rho, mu, J, D) {
+    var Re = rho * J * D / mu, lam = Re < 2000, n = lam ? 1 : 0.2, f = (lam ? 16 : 0.046) * Math.pow(Re, -n);
+    return { dp: 2 * f * rho * J * J / D, n: n, Re: Re, lam: lam };
+  }
+  function classify(p) {
+    var g0 = 9.81, dr = p.rl - p.rg;
+    var L = single(p.rl, p.ml, p.JL, p.D), G = single(p.rg, p.mg, p.JG, p.D);
+    var X = Math.sqrt(L.dp / G.dp), h = hOfX(X, L.n, G.n), q = geom(h);
+    var F = Math.sqrt(p.rg / dr) * p.JG / Math.sqrt(p.D * g0);
+    var K = F * Math.sqrt(p.rl * p.JL * p.D / p.ml);
+    var T = Math.sqrt(L.dp / (dr * g0));
+    var Aval = F * F * q.uG * q.uG * q.Si / ((1 - h) * (1 - h) * q.AG);
+    var Bth = 8 * q.AG / (q.Si * q.uL * q.uL * Math.pow(q.uL * q.DL, -L.n));
+    var Cth = 20 / (q.uG * Math.sqrt(q.uL));
+    var reg;
+    if (Aval >= 1) reg = h >= 0.5 ? (T * T >= Bth ? 'db' : 'i') : 'an';
+    else reg = K >= Cth ? 'sw' : 'ss';
+    return { reg: reg, X: X, h: h, q: q, F: F, K: K, T: T, Aval: Aval, Bth: Bth, Cth: Cth, L: L, G: G };
+  }
+
+  var SUP = { '-': '⁻', '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+  function fmt(x, unit) {
+    if (!isFinite(x)) return '—';
+    var a = Math.abs(x), s;
+    if (a !== 0 && (a < 1e-3 || a >= 1e5)) {
+      var e = Math.floor(Math.log10(a));
+      s = (x / Math.pow(10, e)).toFixed(2) + '×10' + String(e).split('').map(function (c) { return SUP[c]; }).join('');
+    } else if (a >= 100) s = x.toFixed(0);
+    else if (a >= 10) s = x.toFixed(1);
+    else s = x.toPrecision(3);
+    return unit ? s + ' ' + unit : s;
+  }
+  function row(k, v) { return '<div><span>' + k + '</span><span>' + v + '</span></div>'; }
+
+  /* ---------- X → liquid level widget ---------- */
+  var xs = document.getElementById('xh-slider');
+  function drawXH() {
+    if (!xs) return;
+    var X = Math.pow(10, parseFloat(xs.value) / 100), h = hOfX(X, 0.2, 0.2), q = geom(h);
+    var r = 80, y = 180 - 160 * h, dy = y - 100, w = Math.sqrt(Math.max(0, r * r - dy * dy));
+    document.getElementById('xh-liq').setAttribute('d', 'M ' + (100 + w).toFixed(2) + ' ' + y.toFixed(2) + ' A 80 80 0 ' + (h > 0.5 ? 1 : 0) + ' 1 ' + (100 - w).toFixed(2) + ' ' + y.toFixed(2) + ' Z');
+    document.getElementById('xh-out').innerHTML =
+      row('X', fmt(X)) + row('液位 h̃_L = h_L/D', fmt(h)) +
+      row('液体占截面的比例', (q.AL / (Math.PI / 4) * 100).toFixed(1) + '%') +
+      row('液体真实速度 / 折算速度', fmt(q.uL)) + row('气体真实速度 / 折算速度', fmt(q.uG));
+  }
+  if (xs) { xs.addEventListener('input', drawXH); drawXH(); }
+
+  /* ---------- classifier widget ---------- */
+  var REG = {
+    ss: ['分层平滑流', '波不会失控（A 线不满足），气流也不足以起波（C 线不满足）。'],
+    sw: ['波状分层流', '气流足以吹起波纹（C 线满足），但波不会失控（A 线不满足）。'],
+    i: ['间歇流（弹状/塞状）', '波失控（A 线满足），液位高于管中心，液体足以堵满截面；液体湍流还不足以打散气体（B 线不满足）。'],
+    an: ['环状流', '波失控（A 线满足），但液位低于管中心，液体不够堵满截面，被气流推到管壁四周。'],
+    db: ['分散泡状流', '波失控、液位高于管中心，而且液体湍流强到能把气体打散到整个截面（B 线满足）。']
+  };
+  var presets = {
+    aw: { d: 25, rl: 997, rg: 1.18, ml: 0.00089, mg: 0.0000185 },
+    am: { d: 25, rl: 791, rg: 1.2, ml: 0.00059, mg: 0.0000181 },
+    sw: { d: 25, rl: 740, rg: 36.5, ml: 0.000091, mg: 0.000019 }
+  };
+  var ids = ['d', 'jg', 'jl', 'rl', 'rg', 'ml', 'mg'];
+  function v(k) { var el = document.getElementById('td-' + k); return el ? parseFloat(el.value) : NaN; }
+  function params() { return { D: v('d') / 1000, JG: v('jg'), JL: v('jl'), rl: v('rl'), rg: v('rg'), ml: v('ml'), mg: v('mg') }; }
+  function valid(p) {
+    return ['D', 'JG', 'JL', 'rl', 'rg', 'ml', 'mg'].every(function (k) { return isFinite(p[k]) && p[k] > 0; }) && p.rl > p.rg;
+  }
+  function css(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || '#888'; }
+
+  var mapCache = { key: '', img: null };
+  function drawMap(p, cur) {
+    var cv = document.getElementById('td-map');
+    if (!cv) return;
+    var cssW = cv.clientWidth || 440, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = Math.round(cssW * dpr), H = Math.round(cssW * 0.78 * dpr);
+    if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; mapCache.key = ''; }
+    var ctx = cv.getContext('2d');
+    var ml = 52 * dpr, mb = 40 * dpr, mt = 10 * dpr, mr = 12 * dpr;
+    var pw = W - ml - mr, ph = H - mt - mb;
+    var gx0 = -1, gx1 = 2, gy0 = -3, gy1 = 1;  // log10 JG in [0.1,100], log10 JL in [0.001,10]
+    var colors = { ss: css('--rg-ss'), sw: css('--rg-sw'), i: css('--rg-i'), an: css('--rg-an'), db: css('--rg-db') };
+    var key = [p.D, p.rl, p.rg, p.ml, p.mg, W, H, colors.ss, colors.i].join('|');
+    if (mapCache.key !== key) {
+      ctx.clearRect(0, 0, W, H);
+      var nx = 120, ny = 90, cw = pw / nx, ch = ph / ny;
+      for (var i = 0; i < nx; i++) {
+        var JG = Math.pow(10, gx0 + (i + 0.5) / nx * (gx1 - gx0));
+        for (var j = 0; j < ny; j++) {
+          var JL = Math.pow(10, gy0 + (j + 0.5) / ny * (gy1 - gy0));
+          var r = classify({ D: p.D, JG: JG, JL: JL, rl: p.rl, rg: p.rg, ml: p.ml, mg: p.mg }).reg;
+          ctx.fillStyle = colors[r];
+          ctx.fillRect(ml + i * cw, mt + ph - (j + 1) * ch, Math.ceil(cw) + 0.5, Math.ceil(ch) + 0.5);
+        }
+      }
+      var ink = getComputedStyle(document.body).color;
+      ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 1 * dpr;
+      ctx.strokeRect(ml, mt, pw, ph);
+      ctx.font = (11 * dpr) + 'px ' + getComputedStyle(document.body).fontFamily;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      var xl = ['0.1', '1', '10', '100'];
+      for (var a = 0; a <= 3; a++) {
+        var x = ml + a / 3 * pw;
+        ctx.beginPath(); ctx.moveTo(x, mt + ph); ctx.lineTo(x, mt + ph + 5 * dpr); ctx.stroke();
+        ctx.fillText(xl[a], x, mt + ph + 7 * dpr);
+      }
+      ctx.fillText('J_G（m/s）', ml + pw / 2, mt + ph + 22 * dpr);
+      ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      var yl = ['0.001', '0.01', '0.1', '1', '10'];
+      for (var b = 0; b <= 4; b++) {
+        var y = mt + ph - b / 4 * ph;
+        ctx.beginPath(); ctx.moveTo(ml - 5 * dpr, y); ctx.lineTo(ml, y); ctx.stroke();
+        ctx.fillText(yl[b], ml - 7 * dpr, y);
+      }
+      ctx.save(); ctx.translate(12 * dpr, mt + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center';
+      ctx.fillText('J_L（m/s）', 0, 0); ctx.restore();
+      mapCache.key = key; mapCache.img = ctx.getImageData(0, 0, W, H);
+    } else {
+      ctx.putImageData(mapCache.img, 0, 0);
+    }
+    var lx = Math.log10(cur.JG), ly = Math.log10(cur.JL);
+    if (lx >= gx0 && lx <= gx1 && ly >= gy0 && ly <= gy1) {
+      var px = ml + (lx - gx0) / (gx1 - gx0) * pw, py = mt + ph - (ly - gy0) / (gy1 - gy0) * ph;
+      ctx.beginPath(); ctx.arc(px, py, 6 * dpr, 0, 2 * Math.PI);
+      ctx.fillStyle = css('--panel'); ctx.fill();
+      ctx.lineWidth = 2.5 * dpr; ctx.strokeStyle = getComputedStyle(document.body).color; ctx.stroke();
+    }
+  }
+
+  function calcTD() {
+    var out = document.getElementById('td-out'); if (!out) return;
+    var p = params(), ver = document.getElementById('td-verdict'), tb = document.getElementById('td-checks');
+    if (!valid(p)) { ver.innerHTML = '<p class="flag">请输入正数，并保证液相密度大于气相密度。</p>'; out.innerHTML = ''; tb.innerHTML = ''; return; }
+    var r = classify(p), q = r.q;
+    ver.innerHTML = '<p><b>' + REG[r.reg][0] + '。</b>' + REG[r.reg][1] + '</p>';
+    var aOn = r.Aval >= 1, na = '<span class="muted">此情形不需要</span>';
+    tb.innerHTML = '<thead><tr><th>判据</th><th class="num">算得</th><th class="num">门槛</th><th>结论</th></tr></thead><tbody>' +
+      '<tr><td>A 波失控？</td><td class="num">' + fmt(r.Aval) + '</td><td class="num">≥ 1</td><td>' + (aOn ? '是' : '否') + '</td></tr>' +
+      '<tr><td>D 液位在管中心之上？</td><td class="num">h̃ = ' + fmt(r.h) + '</td><td class="num">0.5</td><td>' + (aOn ? (r.h >= 0.5 ? '是 → 间歇' : '否 → 环状') : na) + '</td></tr>' +
+      '<tr><td>B 湍流打散？</td><td class="num">T² = ' + fmt(r.T * r.T) + '</td><td class="num">≥ ' + fmt(r.Bth) + '</td><td>' + (aOn && r.h >= 0.5 ? (r.T * r.T >= r.Bth ? '是' : '否') : na) + '</td></tr>' +
+      '<tr><td>C 会起波？</td><td class="num">K = ' + fmt(r.K) + '</td><td class="num">≥ ' + fmt(r.Cth) + '</td><td>' + (!aOn ? (r.K >= r.Cth ? '是' : '否') : na) + '</td></tr></tbody>';
+    out.innerHTML =
+      row('液相 Re_LS', fmt(r.L.Re) + (r.L.lam ? '（层流）' : '（湍流）')) +
+      row('气相 Re_GS', fmt(r.G.Re) + (r.G.lam ? '（层流）' : '（湍流）')) +
+      row('|dp/dz|_LS', fmt(r.L.dp, 'Pa/m')) + row('|dp/dz|_GS', fmt(r.G.dp, 'Pa/m')) +
+      row('X', fmt(r.X)) + row('液层厚度 h_L', fmt(r.h * p.D * 1000, 'mm')) +
+      row('液体真实速度 u_L', fmt(q.uL * p.JL, 'm/s')) + row('气体真实速度 u_G', fmt(q.uG * p.JG, 'm/s')) +
+      row('F', fmt(r.F)) + row('K', fmt(r.K)) + row('T', fmt(r.T));
+    drawMap(p, p);
+  }
+  ids.forEach(function (k) { var el = document.getElementById('td-' + k); if (el) el.addEventListener('input', calcTD); });
+  document.querySelectorAll('[data-tdpreset]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var pr = presets[btn.getAttribute('data-tdpreset')];
+      ['d', 'rl', 'rg', 'ml', 'mg'].forEach(function (k) { document.getElementById('td-' + k).value = pr[k]; });
+      calcTD();
+    });
+  });
+  window.addEventListener('viewchange', function () { mapCache.key = ''; calcTD(); });
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(calcTD, 150); });
+  try { window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () { mapCache.key = ''; calcTD(); }); } catch (e) {}
+  calcTD();
+})();
+</script>
+

@@ -282,7 +282,77 @@
     return { alpha, eta, iters: k + 1 };
   }
 
+  // ---- Part 5: classification helpers
+  const sigmoid = t => (t >= 0 ? 1 / (1 + Math.exp(-t)) : Math.exp(t) / (1 + Math.exp(t)));
+  // Logistic regression with augmented inputs x̃ = (1, x₁, x₂); labels y ∈ {0, 1}
+  function logisticNLL(X, y, th) { // −ℒ(θ) = −Σ [yᵢ θᵀxᵢ − log(1 + e^{θᵀxᵢ})]
+    let s = 0;
+    for (let i = 0; i < X.length; i++) {
+      const t = X[i].reduce((a, v, k) => a + v * th[k], 0);
+      s += (t > 0 ? t + Math.log1p(Math.exp(-t)) : Math.log1p(Math.exp(t))) - y[i] * t;
+    }
+    return s;
+  }
+  // One Newton–Raphson (IRLS) step: θ ← θ − (XᵀRX)⁻¹ Xᵀ(z − y), z = σ(Xθ), R = diag(z(1 − z))
+  function newtonStep(X, y, th) {
+    const p = th.length, g = new Float64Array(p), H = new Float64Array(p * p);
+    for (let i = 0; i < X.length; i++) {
+      const xi = X[i], z = sigmoid(xi.reduce((a, v, k) => a + v * th[k], 0)), r = z * (1 - z);
+      for (let a = 0; a < p; a++) { g[a] += xi[a] * (z - y[i]); for (let b = 0; b < p; b++) H[a * p + b] += r * xi[a] * xi[b]; }
+    }
+    const L = cholJitter(H, p);
+    const d = cholSolve(L, p, g);
+    return { th: th.map((v, k) => v - d[k]), grad: g };
+  }
+  // SVM dual by SMO (Platt): max Σα − ½ΣΣ αᵢαⱼyᵢyⱼK(xᵢ,xⱼ), 0 ≤ α ≤ C, Σαᵢyᵢ = 0; labels y ∈ {−1, +1}
+  function svmTrain(K, y, C, opts) {
+    opts = opts || {};
+    const n = y.length, tol = opts.tol || 1e-4 / Math.max(1, C), rand = mulberry32(opts.seed || 1); // primal error ≈ C·Σξ, so the KKT tolerance must shrink as C grows
+    const alpha = new Float64Array(n), f = new Float64Array(n); // f = Σ αⱼyⱼK(xⱼ, ·) + b at training points
+    let b = 0, passes = 0, steps = 0;
+    const kkt = i => { const g = y[i] * f[i]; return (alpha[i] < C - 1e-12 && g < 1 - tol) || (alpha[i] > 1e-12 && g > 1 + tol); };
+    function takeStep(i, j) {
+      if (i === j) return false;
+      const Ei = f[i] - y[i], Ej = f[j] - y[j], ai = alpha[i], aj = alpha[j];
+      let L, H;
+      if (y[i] !== y[j]) { L = Math.max(0, aj - ai); H = Math.min(C, C + aj - ai); } else { L = Math.max(0, ai + aj - C); H = Math.min(C, ai + aj); }
+      if (H - L < 1e-12) return false;
+      const eta = 2 * K[i * n + j] - K[i * n + i] - K[j * n + j];
+      if (eta >= -1e-12) return false;
+      let ajn = Math.min(H, Math.max(L, aj - y[j] * (Ei - Ej) / eta));
+      if (Math.abs(ajn - aj) < 1e-10 * (ajn + aj + 1e-10)) return false;
+      const ain = ai + y[i] * y[j] * (aj - ajn);
+      const b1 = b - Ei - y[i] * (ain - ai) * K[i * n + i] - y[j] * (ajn - aj) * K[i * n + j];
+      const b2 = b - Ej - y[i] * (ain - ai) * K[i * n + j] - y[j] * (ajn - aj) * K[j * n + j];
+      const bn = ain > 1e-12 && ain < C - 1e-12 ? b1 : ajn > 1e-12 && ajn < C - 1e-12 ? b2 : (b1 + b2) / 2;
+      const di = y[i] * (ain - ai), dj = y[j] * (ajn - aj), db = bn - b;
+      for (let k = 0; k < n; k++) f[k] += di * K[i * n + k] + dj * K[j * n + k] + db;
+      alpha[i] = ain; alpha[j] = ajn; b = bn; steps++;
+      return true;
+    }
+    const maxSteps = opts.maxSteps || 200000;
+    while (passes < 5 && steps < maxSteps) {
+      let changed = 0;
+      for (let i = 0; i < n && steps < maxSteps; i++) {
+        if (!kkt(i)) continue;
+        const Ei = f[i] - y[i];
+        let best = -1, gap = -1;
+        for (let j = 0; j < n; j++) { const d = Math.abs(Ei - (f[j] - y[j])); if (j !== i && d > gap) { gap = d; best = j; } }
+        if (takeStep(i, best)) { changed++; continue; }
+        const start = Math.floor(rand() * n);
+        for (let t = 0; t < n; t++) { if (takeStep(i, (start + t) % n)) { changed++; break; } }
+      }
+      passes = changed === 0 ? passes + 1 : 0;
+    }
+    let dual = 0, wnorm2 = 0, hinge = 0;
+    for (let i = 0; i < n; i++) { dual += alpha[i]; for (let j = 0; j < n; j++) wnorm2 += alpha[i] * alpha[j] * y[i] * y[j] * K[i * n + j]; }
+    dual -= wnorm2 / 2;
+    for (let i = 0; i < n; i++) hinge += Math.max(0, 1 - y[i] * f[i]);
+    return { alpha, b, f, steps, dual, primal: wnorm2 / 2 + C * hinge, wnorm2 };
+  }
+
   const api = { mulberry32, gaussian, erf, cholesky, cholSolve, traceInv, kernel, krrFit, act, mlpCreate, mlpPredict, zeroGrad, mlpBackprop, sgdStep, mlpLoss,
+    sigmoid, logisticNLL, newtonStep, svmTrain,
     ridgeFit, cvScores, localFit, kweight, bayesFit, predVar, evidenceOpt, forwardSolve, backSolveT };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
@@ -1192,6 +1262,228 @@
     compute(); update();
   }
 
+  // ---------------------------------------------------------------- Part 5 shared drawing helpers
+  // draw the line a·x₁ + b·x₂ + c = 0 inside the frame's data box
+  function drawLine(ctx, F, a, b, c) {
+    const [x0, x1] = F.xr, [y0, y1] = F.yr, pts = [];
+    if (Math.abs(b) > 1e-12) { for (const x of [x0, x1]) { const y = -(a * x + c) / b; if (y >= y0 - 1e-9 && y <= y1 + 1e-9) pts.push([x, y]); } }
+    if (Math.abs(a) > 1e-12) { for (const y of [y0, y1]) { const x = -(b * y + c) / a; if (x >= x0 - 1e-9 && x <= x1 + 1e-9) pts.push([x, y]); } }
+    if (pts.length < 2) return;
+    let best = [pts[0], pts[1]], dmax = -1;
+    for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) { const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]); if (d > dmax) { dmax = d; best = [pts[i], pts[j]]; } }
+    ctx.beginPath(); ctx.moveTo(F.X(best[0][0]), F.Y(best[0][1])); ctx.lineTo(F.X(best[1][0]), F.Y(best[1][1])); ctx.stroke();
+  }
+  // marching squares: G[j][i] is the value at (gx[i], gy[j])
+  function contour(ctx, F, G, gx, gy, level) {
+    ctx.beginPath();
+    for (let j = 0; j < gy.length - 1; j++) {
+      for (let i = 0; i < gx.length - 1; i++) {
+        const v = [G[j][i] - level, G[j][i + 1] - level, G[j + 1][i + 1] - level, G[j + 1][i] - level];
+        const c = [[gx[i], gy[j]], [gx[i + 1], gy[j]], [gx[i + 1], gy[j + 1]], [gx[i], gy[j + 1]]], pts = [];
+        for (let e = 0; e < 4; e++) {
+          const a = v[e], b = v[(e + 1) % 4];
+          if ((a < 0) !== (b < 0)) { const t = a / (a - b), p = c[e], q = c[(e + 1) % 4]; pts.push([p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1])]); }
+        }
+        for (let k = 0; k + 1 < pts.length; k += 2) { ctx.moveTo(F.X(pts[k][0]), F.Y(pts[k][1])); ctx.lineTo(F.X(pts[k + 1][0]), F.Y(pts[k + 1][1])); }
+      }
+    }
+    ctx.stroke();
+  }
+  function classDots(ctx, F, X, isPos) {
+    X.forEach((x, i) => {
+      const px = F.X(x[0]), py = F.Y(x[1]);
+      if (isPos[i]) { ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(px, py, 4.2, 0, 2 * Math.PI); ctx.fill(); }
+      else { ctx.fillStyle = C.c2; ctx.fillRect(px - 3.8, py - 3.8, 7.6, 7.6); }
+    });
+  }
+
+  // ---------------------------------------------------------------- demo P5a: sigmoid and log-odds
+  function demoSigmoid() {
+    const wEl = $('sig-w'), bEl = $('sig-b'), XS = linspace(-6, 6, 300);
+    const view = canvasView($('sig-plot'), v => {
+      const ctx = v.ctx, w = +wEl.value, b = +bEl.value, half = v.h / 2;
+      const top = frame(v, [-6, 6], [-0.05, 1.05], { l: 40, t: 10, b: half + 6 });
+      const bot = frame(v, [-6, 6], [-8, 8], { l: 40, t: half + 14, b: 28 });
+      axes(ctx, top, { xticks: [-6, -4, -2, 0, 2, 4, 6], xfmt: () => '', yticks: [0, 0.5, 1], ylabel: 'p(x) = σ(wx + b)' });
+      axes(ctx, bot, { xticks: [-6, -4, -2, 0, 2, 4, 6], yticks: [-8, -4, 0, 4, 8], xlabel: 'x', ylabel: '对数几率 log p/(1−p) = wx + b' });
+      const x0 = Math.abs(w) > 1e-9 ? -b / w : null;
+      [top, bot].forEach((F, k) => {
+        ctx.save(); clip(ctx, F);
+        ctx.strokeStyle = C.ink3; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+        const yref = k === 0 ? 0.5 : 0;
+        ctx.beginPath(); ctx.moveTo(F.m.l, F.Y(yref)); ctx.lineTo(F.m.l + F.pw, F.Y(yref)); ctx.stroke();
+        if (x0 !== null) { ctx.strokeStyle = C.ink2; ctx.beginPath(); ctx.moveTo(F.X(x0), F.m.t); ctx.lineTo(F.X(x0), F.m.t + F.ph); ctx.stroke(); }
+        ctx.setLineDash([]);
+        ctx.strokeStyle = k === 0 ? C.accent : C.c2; ctx.lineWidth = 2.4;
+        curve(ctx, F, XS, k === 0 ? (x => sigmoid(w * x + b)) : (x => w * x + b));
+        ctx.restore();
+      });
+    });
+    function update() {
+      const w = +wEl.value, b = +bEl.value, p1 = sigmoid(w + b);
+      $('sig-w-out').textContent = w.toFixed(1); $('sig-b-out').textContent = b.toFixed(1);
+      $('sig-readout').innerHTML = (Math.abs(w) > 1e-9 ? '决策边界 p = ½ 在 x = −b/w = <b>' + (-b / w).toFixed(2) + '</b>（对数几率 = 0 的地方）' : 'w = 0：概率处处相同，没有决策边界') +
+        ' · 边界处的斜率 dp/dx = w/4 = ' + (w / 4).toFixed(2) +
+        '<br>在 x = 1：对数几率 w + b = ' + (w + b).toFixed(2) + '，几率 odds = e<sup>w+b</sup> = ' + fmtSig(Math.exp(w + b)) + '，概率 p = σ(w + b) = <b>' + p1.toFixed(3) + '</b>';
+      view.draw();
+    }
+    [wEl, bEl].forEach(el => el.addEventListener('input', update));
+    update();
+  }
+
+  // ---------------------------------------------------------------- demo P5b: 2-D logistic regression by Newton–Raphson (IRLS)
+  function demoLogit() {
+    const sepEl = $('logit-sep'), DOM = [-4, 4];
+    const g = gaussian(mulberry32(31)), Z = [];
+    for (let i = 0; i < 60; i++) Z.push([g(), g()]);
+    let X = [], A = [], y = [], th = [0, 0, 0], hist = [], gdNote = '';
+    function gen() {
+      const s = +sepEl.value;
+      X = Z.map((z, i) => { const c = i % 2; return [(c ? 1 : -1) * s / 2 + 0.85 * z[0], (c ? 1 : -1) * s / 4 + 0.85 * z[1]]; });
+      y = X.map((_, i) => i % 2); A = X.map(x => [1, x[0], x[1]]);
+    }
+    function record() {
+      const st = newtonStep(A, y, th);
+      hist.push({ m: hist.length, nll: logisticNLL(A, y, th), gn: Math.hypot(...st.grad), tn: Math.hypot(...th), th: th.slice() });
+    }
+    function reset() { th = [0, 0, 0]; hist = []; gdNote = ''; record(); }
+    function step() { th = newtonStep(A, y, th).th; record(); }
+    function gdCompare() { // plain gradient descent from θ = 0 with a safe step 1/(¼ λmax(XᵀX))
+      const last = hist[hist.length - 1]; if (last.gn > 1e-6) { gdNote = ''; return; }
+      const M = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]; A.forEach(a => { for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) M[i][j] += a[i] * a[j]; });
+      let v = [1, 1, 1], lam = 0; for (let k = 0; k < 60; k++) { const u = M.map(r => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]); lam = Math.hypot(...u); v = u.map(t => t / lam); }
+      const eta = 4 / lam, target = last.nll + 1e-6; let t = [0, 0, 0], k = 0;
+      for (; k < 200000; k++) { if (logisticNLL(A, y, t) <= target) break; const gr = newtonStep(A, y, t).grad; t = t.map((q, i) => q - eta * gr[i]); }
+      gdNote = '对比：从 θ = 0 出发，步长 η = 4/λ<sub>max</sub>(XᵀX) 的梯度下降要 <b>' + (k >= 200000 ? '超过 200,000' : k.toLocaleString('en-US')) + '</b> 步才能达到同样精度；Newton 只用了 ' + last.m + ' 步。';
+    }
+    const view = canvasView($('logit-plot'), v => {
+      const ctx = v.ctx, F = frame(v, DOM, DOM, { l: 34, r: 12, t: 18, b: 28 });
+      const N = 56, cw = F.pw / N, ch = F.ph / N;
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) {
+        const x1 = DOM[0] + (i + 0.5) * 8 / N, x2 = DOM[0] + (j + 0.5) * 8 / N, p = sigmoid(th[0] + th[1] * x1 + th[2] * x2);
+        ctx.fillStyle = p >= 0.5 ? C.accent : C.c2; ctx.globalAlpha = 0.28 * Math.abs(2 * p - 1);
+        ctx.fillRect(F.m.l + i * cw, F.m.t + F.ph - (j + 1) * ch, cw + 0.6, ch + 0.6);
+      }
+      ctx.globalAlpha = 1;
+      axes(ctx, F, { xticks: [-4, -2, 0, 2, 4], yticks: [-4, -2, 0, 2, 4], xlabel: 'x₁', ylabel: 'x₂' });
+      ctx.save(); clip(ctx, F);
+      if (Math.hypot(th[1], th[2]) > 1e-9) {
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 2.4; drawLine(ctx, F, th[1], th[2], th[0]);
+        ctx.strokeStyle = C.ink2; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
+        drawLine(ctx, F, th[1], th[2], th[0] - Math.log(9)); drawLine(ctx, F, th[1], th[2], th[0] + Math.log(9));
+        ctx.setLineDash([]);
+      }
+      classDots(ctx, F, X, y.map(v => v === 1));
+      ctx.restore();
+    });
+    function update() {
+      const s = +sepEl.value, last = hist[hist.length - 1];
+      $('logit-sep-out').textContent = s.toFixed(1);
+      let correct = 0; A.forEach((a, i) => { if ((th[0] + th[1] * a[1] + th[2] * a[2] > 0 ? 1 : 0) === y[i]) correct++; });
+      const rows = hist.slice(-7).map(h => '<tr><td class="num">' + h.m + '</td><td class="num">' + h.nll.toFixed(6) + '</td><td class="num">' + h.gn.toExponential(1) + '</td><td class="num">' + h.tn.toFixed(2) + '</td></tr>').join('');
+      const sepWarn = last.tn > 25 || last.nll < 1e-3;
+      $('logit-readout').innerHTML =
+        '第 <b>' + last.m + '</b> 次迭代 · θ = (b, w₁, w₂) = (' + th.map(t => t.toFixed(3)).join(', ') + ') · 训练准确率 ' + correct + '/' + A.length +
+        '<div class="tbl" style="margin-top:6px"><table><thead><tr><th class="num">m</th><th class="num">NLL −ℒ(θ)</th><th class="num">‖∇‖</th><th class="num">‖θ‖</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        (sepWarn ? '<b class="warn-text">数据线性可分：NLL 能无限接近 0，‖θ‖ 每一步都在变大，MLE 不存在。</b>实际中要加正则化（例如 Part 3 的岭惩罚 λ‖θ‖²）。' : (gdNote ? gdNote : ''));
+      view.draw();
+    }
+    $('logit-step').addEventListener('click', () => { step(); if (hist[hist.length - 1].gn < 1e-6) gdCompare(); update(); });
+    $('logit-run').addEventListener('click', () => { for (let k = 0; k < 40 && hist[hist.length - 1].gn > 1e-10; k++) step(); gdCompare(); update(); });
+    $('logit-reset').addEventListener('click', () => { reset(); update(); });
+    sepEl.addEventListener('input', () => { gen(); reset(); update(); });
+    gen(); reset(); update();
+  }
+
+  // ---------------------------------------------------------------- figure P5c: margin-based losses
+  function demoLosses() {
+    canvasView($('loss-plot'), v => {
+      const ctx = v.ctx, F = frame(v, [-2.5, 3], [0, 4], { l: 34 }), G = linspace(-2.5, 3, 400);
+      axes(ctx, F, { xticks: [-2, -1, 0, 1, 2, 3], yticks: [0, 1, 2, 3, 4], xlabel: '间隔 γ = y f(x)', ylabel: '损失 ℓ(γ)' });
+      ctx.save(); clip(ctx, F);
+      ctx.strokeStyle = C.ink2; ctx.lineWidth = 2.4;
+      ctx.beginPath(); ctx.moveTo(F.X(-2.5), F.Y(1)); ctx.lineTo(F.X(0), F.Y(1)); ctx.lineTo(F.X(0), F.Y(0)); ctx.lineTo(F.X(3), F.Y(0)); ctx.stroke();
+      ctx.lineWidth = 2.4;
+      ctx.strokeStyle = C.accent; curve(ctx, F, G, gm => Math.max(0, 1 - gm));
+      ctx.strokeStyle = C.c2; ctx.setLineDash([6, 3]); curve(ctx, F, G, gm => Math.log1p(Math.exp(-gm)) / Math.LN2); ctx.setLineDash([]);
+      ctx.strokeStyle = C.c3; ctx.setLineDash([2, 3]); curve(ctx, F, G, gm => Math.exp(-gm)); ctx.setLineDash([]);
+      ctx.restore();
+      legend(ctx, F, [['0–1 损失', C.ink2, false], ['hinge：max(0, 1−γ)（SVM）', C.accent, false], ['logistic：log₂(1+e^−γ)（逻辑回归）', C.c2, true], ['指数：e^−γ（boosting）', C.c3, [2, 3]]]);
+    });
+  }
+
+  // ---------------------------------------------------------------- demo P5d: soft-margin / kernel SVM (SMO)
+  function demoSVM() {
+    const dEl = $('svm-data'), kEl = $('svm-kernel'), cEl = $('svm-c'), lEl = $('svm-ell'), DOM = [-3.2, 3.2];
+    const GX = linspace(DOM[0], DOM[1], 71);
+    let seed = 13, X = [], y = [], model = null, G = null;
+    function gen() {
+      const r = mulberry32(seed), g = gaussian(mulberry32(seed + 500)), kind = dEl.value;
+      X = []; y = [];
+      for (let i = 0; i < 40; i++) {
+        const c = i % 2 ? 1 : -1;
+        if (kind === 'ring') { const rad = (c > 0 ? 2.1 : 0.85) + 0.28 * g(), ang = 2 * Math.PI * r(); X.push([rad * Math.cos(ang), rad * Math.sin(ang)]); }
+        else { const sep = kind === 'sep' ? 1.35 : 0.8, sd = kind === 'sep' ? 0.45 : 0.75; X.push([c * sep + sd * g(), c * sep * 0.5 + sd * g()]); }
+        y.push(c);
+      }
+    }
+    const ell = () => Math.pow(10, +lEl.value), Cv = () => Math.pow(10, +cEl.value);
+    const kf = (a, b) => (kEl.value === 'lin' ? a[0] * b[0] + a[1] * b[1] : Math.exp(-((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) / (2 * ell() * ell())));
+    function train() {
+      const n = X.length, K = new Float64Array(n * n);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) K[i * n + j] = kf(X[i], X[j]);
+      model = svmTrain(K, y, Cv(), { seed: 3 });
+      const sv = []; for (let i = 0; i < n; i++) if (model.alpha[i] > 1e-8) sv.push(i);
+      G = GX.map(x2 => GX.map(x1 => sv.reduce((acc, i) => acc + model.alpha[i] * y[i] * kf(X[i], [x1, x2]), model.b)));
+    }
+    const view = canvasView($('svm-plot'), v => {
+      const ctx = v.ctx, F = frame(v, DOM, DOM, { l: 34, r: 12, t: 18, b: 28 });
+      const N = GX.length - 1, cw = F.pw / N, ch = F.ph / N;
+      for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+        const fv = (G[j][i] + G[j][i + 1] + G[j + 1][i] + G[j + 1][i + 1]) / 4;
+        ctx.fillStyle = fv >= 0 ? C.accent : C.c2; ctx.globalAlpha = Math.min(0.26, 0.1 + 0.08 * Math.abs(fv));
+        ctx.fillRect(F.X(GX[i]), F.Y(GX[j + 1]), cw + 0.6, ch + 0.6);
+      }
+      ctx.globalAlpha = 1;
+      axes(ctx, F, { xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [-3, -2, -1, 0, 1, 2, 3], xlabel: 'x₁', ylabel: 'x₂' });
+      ctx.save(); clip(ctx, F);
+      ctx.strokeStyle = C.ink; ctx.lineWidth = 2.4; contour(ctx, F, G, GX, GX, 0);
+      ctx.strokeStyle = C.ink2; ctx.lineWidth = 1.3; ctx.setLineDash([5, 4]); contour(ctx, F, G, GX, GX, 1); contour(ctx, F, G, GX, GX, -1); ctx.setLineDash([]);
+      classDots(ctx, F, X, y.map(t => t > 0));
+      const Cc = Cv();
+      X.forEach((x, i) => {
+        const a = model.alpha[i]; if (a <= 1e-8) return;
+        ctx.strokeStyle = C.ink; ctx.lineWidth = 1.8; ctx.setLineDash(a >= Cc - 1e-8 ? [3, 2] : []);
+        ctx.beginPath(); ctx.arc(F.X(x[0]), F.Y(x[1]), 8, 0, 2 * Math.PI); ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      ctx.restore();
+    });
+    function update() {
+      const Cc = Cv(), lin = kEl.value === 'lin', n = X.length;
+      lEl.disabled = lin;
+      $('svm-c-out').textContent = fmtSig(Cc);
+      $('svm-ell-out').textContent = lin ? '不适用' : ell().toPrecision(2);
+      let onM = 0, bound = 0, err = 0;
+      for (let i = 0; i < n; i++) { const a = model.alpha[i]; if (a > 1e-8 && a < Cc - 1e-8) onM++; else if (a >= Cc - 1e-8) bound++; if (y[i] * model.f[i] <= 0) err++; }
+      $('svm-readout').innerHTML =
+        '支持向量 <b>' + (onM + bound) + '</b> / ' + n + '：正好在间隔线上（0 &lt; α &lt; C，实线圈）' + onM + ' 个，α = C（虚线圈，在间隔内或被分错）' + bound + ' 个 · 训练错误 ' + err + ' 个' +
+        (lin ? ' · 间隔宽度 2/‖w‖ = <b>' + (2 / Math.sqrt(model.wnorm2)).toFixed(3) + '</b>' : '') +
+        '<br>原问题目标 ½‖w‖² + CΣξᵢ = ' + model.primal.toFixed(4) + '，对偶目标 = ' + model.dual.toFixed(4) + '，相对差 ' + Math.abs((model.primal - model.dual) / Math.max(1e-12, Math.abs(model.primal))).toExponential(0) + '：两者相等（强对偶），说明 SMO 求到了最优解。';
+      view.draw();
+    }
+    let pending = 0;
+    function schedule(level) {
+      if (!pending) requestAnimationFrame(() => { const L = pending; pending = 0; if (L >= 2) gen(); train(); update(); });
+      pending = Math.max(pending, level);
+    }
+    [cEl, lEl].forEach(el => el.addEventListener('input', () => schedule(1)));
+    kEl.addEventListener('change', () => schedule(1));
+    dEl.addEventListener('change', () => schedule(2));
+    $('svm-resample').addEventListener('click', () => { seed++; schedule(2); });
+    gen(); train(); update();
+  }
+
   // ---------------------------------------------------------------- demo 8: one-hidden-layer MLP + SGD
   function demoMLP() {
     const hEl = $('mlp-h'), lrEl = $('mlp-lr'), bsEl = $('mlp-bs'), actEl = $('mlp-act'), unitsEl = $('mlp-units');
@@ -1341,7 +1633,7 @@
   }
 
   readColors();
-  [demoLS, demoCoin, demoGauss1, demoGauss2, demoPoly, demoShrink, demoLocal, demoBayes, demoRate, demoKRR, demoGP, demoMLP, tocSpy, progress].forEach(fn => {
+  [demoLS, demoCoin, demoGauss1, demoGauss2, demoPoly, demoShrink, demoLocal, demoBayes, demoRate, demoKRR, demoGP, demoMLP, demoSigmoid, demoLogit, demoLosses, demoSVM, tocSpy, progress].forEach(fn => {
     try { fn(); } catch (err) { console.error(fn.name, err); }
   });
   const redraw = () => { readColors(); redrawers.forEach(d => d()); };

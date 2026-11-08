@@ -195,7 +195,95 @@
     return s / X.length;
   }
 
-  const api = { mulberry32, gaussian, erf, cholesky, cholSolve, traceInv, kernel, krrFit, act, mlpCreate, mlpPredict, zeroGrad, mlpBackprop, sgdStep, mlpLoss };
+  // ---- Part 3: parametric regression helpers
+  function cholJitter(A, n) {
+    let L = cholesky(A, n), jitter = 1e-12;
+    while (!L && jitter < 1e3) { for (let i = 0; i < n; i++) A[i * n + i] += jitter; L = cholesky(A, n); jitter *= 10; }
+    return L;
+  }
+  function forwardSolve(L, n, b) { // L v = b
+    const v = new Float64Array(n);
+    for (let i = 0; i < n; i++) { let s = b[i]; for (let k = 0; k < i; k++) s -= L[i * n + k] * v[k]; v[i] = s / L[i * n + i]; }
+    return v;
+  }
+  function backSolveT(L, n, b) { // Lᵀ v = b
+    const v = new Float64Array(n);
+    for (let i = n - 1; i >= 0; i--) { let s = b[i]; for (let k = i + 1; k < n; k++) s -= L[k * n + i] * v[k]; v[i] = s / L[i * n + i]; }
+    return v;
+  }
+  // Ridge (λ > 0) or OLS (λ → 0) on design matrix rows Phi: β = (ΦᵀΦ + λI)⁻¹Φᵀy, with hat-matrix diagonal H_nn
+  function ridgeFit(Phi, y, lam) {
+    const N = Phi.length, p = Phi[0].length;
+    const A = new Float64Array(p * p), b = new Float64Array(p);
+    for (let n = 0; n < N; n++) {
+      const r = Phi[n];
+      for (let i = 0; i < p; i++) { b[i] += r[i] * y[n]; for (let j = 0; j < p; j++) A[i * p + j] += r[i] * r[j]; }
+    }
+    for (let i = 0; i < p; i++) A[i * p + i] += lam;
+    const L = cholJitter(A, p);
+    const beta = cholSolve(L, p, b);
+    const yhat = Phi.map(r => r.reduce((acc, v, i) => acc + v * beta[i], 0));
+    const H = Phi.map(r => { const v = forwardSolve(L, p, r); return v.reduce((acc, t) => acc + t * t, 0); }); // H_nn = φₙᵀ A⁻¹ φₙ
+    return { beta, yhat, H, trH: H.reduce((acc, v) => acc + v, 0) };
+  }
+  // Training error, exact LOOCV via the hat matrix, and GCV
+  function cvScores(fit, y) {
+    const N = y.length;
+    let se = 0, loo = 0;
+    for (let n = 0; n < N; n++) { const r = y[n] - fit.yhat[n], d = 1 - fit.H[n]; se += r * r; loo += (r / d) * (r / d); }
+    const den = 1 - fit.trH / N;
+    return { train: se / N, loocv: loo / N, gcv: den > 1e-6 ? (se / N) / (den * den) : Infinity };
+  }
+  // Local regression at x0: Nadaraya–Watson (p = 0) and local linear (p = 1) with kernel weights
+  function kweight(kind, d, h) {
+    const u = Math.abs(d) / h;
+    if (kind === 'tricube') return u < 1 ? Math.pow(1 - u * u * u, 3) : 0;
+    return Math.exp(-u * u / 2);
+  }
+  function localFit(xs, ys, x0, h, kind) {
+    let S0 = 0, S1 = 0, S2 = 0, T0 = 0, T1 = 0;
+    for (let n = 0; n < xs.length; n++) {
+      const d = xs[n] - x0, w = kweight(kind, d, h);
+      S0 += w; S1 += w * d; S2 += w * d * d; T0 += w * ys[n]; T1 += w * d * ys[n];
+    }
+    const det = S0 * S2 - S1 * S1, ok = det > 1e-9 * S0 * S2 && S0 > 1e-12;
+    return { nw: S0 > 1e-12 ? T0 / S0 : NaN, ll: ok ? (S2 * T0 - S1 * T1) / det : NaN, slope: ok ? (S0 * T1 - S1 * T0) / det : NaN, S0 };
+  }
+  // Bayesian linear regression: prior β ~ N(0, α⁻¹I), noise precision η.
+  // Posterior N(m, S), S = A⁻¹, A = αI + ηΦᵀΦ, m = ηSΦᵀy; log evidence log p(y | α, η)
+  function bayesFit(Phi, y, alpha, eta) {
+    const N = Phi.length, p = Phi[0].length;
+    const A = new Float64Array(p * p), b = new Float64Array(p);
+    for (let n = 0; n < N; n++) {
+      const r = Phi[n];
+      for (let i = 0; i < p; i++) { b[i] += eta * r[i] * y[n]; for (let j = 0; j < p; j++) A[i * p + j] += eta * r[i] * r[j]; }
+    }
+    for (let i = 0; i < p; i++) A[i * p + i] += alpha;
+    const L = cholJitter(A, p);
+    const m = cholSolve(L, p, b);
+    let sse = 0, mm = 0, logdetA = 0;
+    for (let n = 0; n < N; n++) { const r = y[n] - Phi[n].reduce((acc, v, i) => acc + v * m[i], 0); sse += r * r; }
+    for (let i = 0; i < p; i++) { mm += m[i] * m[i]; logdetA += 2 * Math.log(L[i * p + i]); }
+    const gamma = p - alpha * traceInv(L, p); // effective number of parameters = Σ ηλᵢ/(α + ηλᵢ)
+    const logEv = p / 2 * Math.log(alpha) + N / 2 * Math.log(eta) - eta / 2 * sse - alpha / 2 * mm - logdetA / 2 - N / 2 * Math.log(2 * Math.PI);
+    return { m, L, p, sse, mm, gamma, logEv };
+  }
+  function predVar(fit, phi, eta) { const v = forwardSolve(fit.L, fit.p, phi); return 1 / eta + v.reduce((acc, t) => acc + t * t, 0); }
+  // Type-II maximum likelihood: α ← γ / mᵀm, η ← (N − γ) / ‖y − Φm‖², iterated to a fixed point
+  function evidenceOpt(Phi, y, alpha, eta, maxIter) {
+    let k = 0;
+    for (; k < (maxIter || 500); k++) {
+      const f = bayesFit(Phi, y, alpha, eta);
+      const a2 = f.gamma / f.mm, e2 = (y.length - f.gamma) / f.sse;
+      const done = Math.abs(Math.log(a2 / alpha)) < 1e-9 && Math.abs(Math.log(e2 / eta)) < 1e-9;
+      alpha = a2; eta = e2;
+      if (done) break;
+    }
+    return { alpha, eta, iters: k + 1 };
+  }
+
+  const api = { mulberry32, gaussian, erf, cholesky, cholSolve, traceInv, kernel, krrFit, act, mlpCreate, mlpPredict, zeroGrad, mlpBackprop, sgdStep, mlpLoss,
+    ridgeFit, cvScores, localFit, kweight, bayesFit, predVar, evidenceOpt, forwardSolve, backSolveT };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   if (typeof document === 'undefined') return;
 
@@ -865,6 +953,245 @@
     newZ(); compute(); update();
   }
 
+  // ---------------------------------------------------------------- Part 3 shared data: the quartic from the slides
+  const quartic = x => 3 - 2 * x + 3 * x * x - 5 * x * x * x + x * x * x * x;
+  const fmtSig = v => (!isFinite(v) || Math.abs(v) > 1e9 ? '∞' : Math.abs(v) >= 1e4 || (Math.abs(v) < 1e-2 && v !== 0) ? v.toExponential(2) : v.toFixed(2));
+
+  // ---------------------------------------------------------------- demo P3a: polynomial regression bench (overfitting, ridge, LOOCV, GCV)
+  function demoPoly() {
+    const mEl = $('poly-m'), lamEl = $('poly-lam'), nEl = $('poly-n'), sEl = $('poly-noise'), axisEl = $('poly-axis');
+    const GRID = linspace(0, 4, 201);
+    const basis = (x, M) => { const u = x / 2 - 1, r = [1]; for (let k = 1; k <= M; k++) r.push(r[k - 1] * u); return r; };
+    let seed = 7, xs = [], ys = [], cur = null, sweep = [];
+    const lamOf = v => (+v <= -7 ? 0 : Math.pow(10, +v));
+    function gen() {
+      const g = gaussian(mulberry32(seed));
+      xs = linspace(0, 4, +nEl.value); // fixed, equally spaced design points
+      ys = xs.map(x => quartic(x) + +sEl.value * g());
+    }
+    function evaluate(M, lam) {
+      const fit = ridgeFit(xs.map(x => basis(x, M)), ys, lam > 0 ? lam : 1e-10);
+      const cv = cvScores(fit, ys);
+      let te = 0;
+      for (const x of GRID) { const r = basis(x, M); let acc = 0; for (let i = 0; i <= M; i++) acc += r[i] * fit.beta[i]; te += (acc - quartic(x)) * (acc - quartic(x)); }
+      const sig = +sEl.value;
+      return { M, lam, fit, cv, test: te / GRID.length + sig * sig };
+    }
+    function bruteLoo(M, lam) {
+      let acc = 0;
+      for (let n = 0; n < xs.length; n++) {
+        const X = xs.filter((_, i) => i !== n), Y = ys.filter((_, i) => i !== n);
+        const fl = ridgeFit(X.map(x => basis(x, M)), Y, lam > 0 ? lam : 1e-10);
+        const pr = basis(xs[n], M).reduce((a, v, i) => a + v * fl.beta[i], 0);
+        acc += (ys[n] - pr) * (ys[n] - pr);
+      }
+      return acc / xs.length;
+    }
+    function computeSweep() {
+      sweep = [];
+      if (axisEl.value === 'M') for (let M = 0; M <= 12; M++) { const r = evaluate(M, lamOf(lamEl.value)); sweep.push([M, r.cv.train, r.test, r.cv.loocv, r.cv.gcv]); }
+      else for (let i = 0; i <= 40; i++) { const lv = -6 + i * 0.25, r = evaluate(+mEl.value, Math.pow(10, lv)); sweep.push([lv, r.cv.train, r.test, r.cv.loocv, r.cv.gcv]); }
+    }
+    function compute() { cur = evaluate(+mEl.value, lamOf(lamEl.value)); cur.brute = bruteLoo(cur.M, cur.lam); }
+
+    const view = canvasView($('poly-plot'), v => {
+      const ctx = v.ctx, F = frame(v, [-0.05, 4.05], [-45, 20], { l: 40 });
+      axes(ctx, F, { xlabel: 'x', ylabel: 'y' });
+      ctx.save(); clip(ctx, F);
+      ctx.strokeStyle = C.c3; ctx.lineWidth = 1.8; ctx.setLineDash([6, 4]); curve(ctx, F, GRID, quartic); ctx.setLineDash([]);
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 2.4;
+      curve(ctx, F, linspace(-0.05, 4.05, 300), x => basis(x, cur.M).reduce((a, t, i) => a + t * cur.fit.beta[i], 0));
+      dots(ctx, F, xs, ys, 3.6, C.ink);
+      ctx.restore();
+      legend(ctx, F, [['拟合 f_β(x)', C.accent, false], ['真实函数', C.c3, true]]);
+    });
+    const sv = canvasView($('poly-sweep'), v => {
+      const ctx = v.ctx, byM = axisEl.value === 'M';
+      const s2 = +sEl.value * +sEl.value, lo = Math.floor(Math.log10(Math.max(s2, 0.05)) - 1), hi = lo + 5;
+      const F = frame(v, byM ? [0, 12] : [-6, 4], [lo, hi], { l: 44 });
+      const yt = []; for (let k = lo; k <= hi; k++) yt.push(k);
+      axes(ctx, F, {
+        xticks: byM ? [0, 2, 4, 6, 8, 10, 12] : [-6, -4, -2, 0, 2, 4], xfmt: byM ? (t => String(t)) : (k => pow10(k)),
+        yticks: yt, yfmt: k => (k === 0 ? '1' : pow10(k)), xlabel: byM ? '多项式阶数 M' : '正则化 λ（对数刻度）', ylabel: '均方误差',
+      });
+      const lg = x => (isFinite(x) ? Math.log10(Math.max(x, 1e-6)) : hi + 1);
+      const series = [[1, C.c2, [5, 3], '训练误差'], [2, C.accent, false, '测试误差（期望）'], [3, C.c3, [2, 3], 'LOOCV'], [4, C.ink2, [8, 3, 2, 3], 'GCV']];
+      ctx.save(); clip(ctx, F);
+      for (const [k, col, dash] of series) { ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.setLineDash(dash || []); poly(ctx, F, sweep.map(p => p[0]), sweep.map(p => lg(p[k]))); }
+      ctx.setLineDash([3, 3]); ctx.strokeStyle = C.ink2; ctx.lineWidth = 1;
+      const xm = byM ? +mEl.value : Math.max(-6, +lamEl.value);
+      if (byM || +lamEl.value > -7) { ctx.beginPath(); ctx.moveTo(F.X(xm), F.m.t); ctx.lineTo(F.X(xm), F.m.t + F.ph); ctx.stroke(); }
+      ctx.setLineDash([]);
+      ctx.restore();
+      legend(ctx, F, series.map(q => [q[3], q[1], q[2]]));
+    });
+    function update() {
+      const lam = lamOf(lamEl.value), M = cur.M, N = xs.length;
+      $('poly-m-out').textContent = M;
+      $('poly-lam-out').textContent = lam === 0 ? '0（OLS）' : lam.toExponential(0);
+      $('poly-n-out').textContent = N;
+      $('poly-noise-out').textContent = (+sEl.value).toFixed(1);
+      const interp = Math.max(...cur.fit.H) > 1 - 1e-6;
+      const coef = Array.from(cur.fit.beta).map((b, i) => 'β' + i + ' = ' + fmtSig(b)).join('，');
+      $('poly-readout').innerHTML =
+        '训练误差 <b>' + fmtSig(cur.cv.train) + '</b> · 测试误差（新数据上的期望 MSE）<b>' + fmtSig(cur.test) + '</b> · 噪声下限 σ² = ' + (+sEl.value * +sEl.value).toFixed(2) +
+        '<br>LOOCV（帽子矩阵公式）<b>' + fmtSig(cur.cv.loocv) + '</b>，暴力重拟合 ' + N + ' 次得到 ' + fmtSig(cur.brute) +
+        (interp ? '（H<sub>nn</sub> ≈ 1：模型穿过了每个点，留一误差没有意义）' : '，两者一致') +
+        ' · GCV <b>' + fmtSig(cur.cv.gcv) + '</b> · 有效参数个数 tr(H) = <b>' + cur.fit.trH.toFixed(2) + '</b>（参数总数 M + 1 = ' + (M + 1) + '）' +
+        (M + 1 > N && lam === 0 ? '<br><b class="warn-text">M + 1 > N：参数比数据还多，最小二乘解不唯一。</b>这里用极小的 λ 取了其中范数最小的一个。' : '') +
+        '<br><span class="mono">' + coef + '</span>';
+      view.draw(); sv.draw();
+    }
+    let pending = 0;
+    function schedule(level) {
+      if (!pending) requestAnimationFrame(() => { const L = pending; pending = 0; if (L >= 3) gen(); computeSweep(); compute(); update(); });
+      pending = Math.max(pending, level);
+    }
+    [mEl, lamEl].forEach(el => el.addEventListener('input', () => schedule(2)));
+    axisEl.addEventListener('change', () => schedule(2));
+    [nEl, sEl].forEach(el => el.addEventListener('input', () => schedule(3)));
+    $('poly-resample').addEventListener('click', () => { seed++; schedule(3); });
+    gen(); computeSweep(); compute(); update();
+  }
+
+  // ---------------------------------------------------------------- demo P3b: ridge vs LASSO shrinkage (orthonormal design)
+  function demoShrink() {
+    const lEl = $('shrink-lam');
+    const view = canvasView($('shrink-plot'), v => {
+      const ctx = v.ctx, lam = +lEl.value, F = frame(v, [-3, 3], [-3, 3], { l: 34, r: 12, t: 14, b: 28 });
+      axes(ctx, F, { xticks: [-3, -2, -1, 0, 1, 2, 3], yticks: [-3, -2, -1, 0, 1, 2, 3], xlabel: '最小二乘系数 b = Φᵀy', ylabel: '正则化后的 β' });
+      ctx.save(); clip(ctx, F);
+      const B = linspace(-3, 3, 241);
+      ctx.strokeStyle = C.ink3; ctx.lineWidth = 1.5; ctx.setLineDash([5, 4]); curve(ctx, F, B, b => b); ctx.setLineDash([]);
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 2.4; curve(ctx, F, B, b => b / (1 + lam));
+      ctx.strokeStyle = C.c2; ctx.lineWidth = 2.4; curve(ctx, F, B, b => Math.sign(b) * Math.max(Math.abs(b) - lam, 0));
+      ctx.fillStyle = C.c2; ctx.globalAlpha = 0.1; ctx.fillRect(F.X(-lam), F.m.t, F.X(lam) - F.X(-lam), F.ph); ctx.globalAlpha = 1;
+      ctx.restore();
+      legend(ctx, F, [['OLS：β = b', C.ink3, true], ['岭回归：β = b/(1+λ)', C.accent, false], ['LASSO：软阈值', C.c2, false]]);
+    });
+    function update() {
+      const lam = +lEl.value, b = [3, -0.5, 1.2];
+      const r = b.map(x => (x / (1 + lam)).toFixed(2)), l = b.map(x => (Math.sign(x) * Math.max(Math.abs(x) - lam, 0)).toFixed(2));
+      $('shrink-lam-out').textContent = lam.toFixed(2);
+      $('shrink-readout').innerHTML = '例：b = (3, −0.5, 1.2)，λ = ' + lam.toFixed(2) + '<br>岭回归 β = (' + r.join(', ') + ')：<b>每个系数按同一比例缩小，永远不会正好为 0</b>' +
+        '<br>LASSO β = (' + l.join(', ') + ')：<b>|b| ≤ λ 的系数被直接置零</b>（浅橙色带），其余的平移 λ';
+      view.draw();
+    }
+    lEl.addEventListener('input', update);
+    update();
+  }
+
+  // ---------------------------------------------------------------- demo P3c: Nadaraya–Watson vs local linear regression
+  function demoLocal() {
+    const hEl = $('loc-h'), xEl = $('loc-x'), kEl = $('loc-kernel');
+    const rnd = mulberry32(23), g = gaussian(mulberry32(24));
+    const xs = []; for (let i = 0; i < 40; i++) xs.push(4 * rnd()); xs.sort((p, q) => p - q);
+    const ys = xs.map(x => quartic(x) + 2.5 * g());
+    const GRID = linspace(0, 4, 241);
+    const view = canvasView($('loc-plot'), v => {
+      const ctx = v.ctx, h = Math.pow(10, +hEl.value), x0 = +xEl.value, kind = kEl.value;
+      const F = frame(v, [-0.05, 4.05], [-45, 20], { l: 40 });
+      axes(ctx, F, { xlabel: 'x', ylabel: 'y' });
+      ctx.save(); clip(ctx, F);
+      const fits = GRID.map(x => localFit(xs, ys, x, h, kind));
+      ctx.strokeStyle = C.c3; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); curve(ctx, F, GRID, quartic); ctx.setLineDash([]);
+      [['nw', C.c2], ['ll', C.accent]].forEach(([key, col]) => {
+        ctx.strokeStyle = col; ctx.lineWidth = 2.3; ctx.beginPath(); let on = false;
+        GRID.forEach((x, i) => { const y = fits[i][key]; if (!isFinite(y)) { on = false; return; } if (on) ctx.lineTo(F.X(x), F.Y(y)); else { ctx.moveTo(F.X(x), F.Y(y)); on = true; } });
+        ctx.stroke();
+      });
+      // kernel weights at x*: bars along the bottom
+      const w = xs.map(x => kweight(kind, x - x0, h)), wmax = Math.max(...w, 1e-12);
+      ctx.fillStyle = C.ink3; ctx.globalAlpha = 0.55;
+      xs.forEach((x, i) => { const hh = 0.22 * F.ph * w[i] / wmax; ctx.fillRect(F.X(x) - 1.5, F.m.t + F.ph - hh, 3, hh); });
+      ctx.globalAlpha = 1;
+      dots(ctx, F, xs, ys, 3.2, C.ink);
+      ctx.strokeStyle = C.ink2; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.moveTo(F.X(x0), F.m.t); ctx.lineTo(F.X(x0), F.m.t + F.ph); ctx.stroke(); ctx.setLineDash([]);
+      const r = localFit(xs, ys, x0, h, kind), span = Math.max(1.5 * h, 0.25);
+      if (isFinite(r.ll)) {
+        ctx.strokeStyle = C.accent; ctx.lineWidth = 1.6; ctx.setLineDash([7, 4]);
+        ctx.beginPath(); ctx.moveTo(F.X(x0 - span), F.Y(r.ll - r.slope * span)); ctx.lineTo(F.X(x0 + span), F.Y(r.ll + r.slope * span)); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = C.accent; ctx.beginPath(); ctx.arc(F.X(x0), F.Y(r.ll), 5, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (isFinite(r.nw)) { ctx.fillStyle = C.c2; ctx.beginPath(); ctx.arc(F.X(x0), F.Y(r.nw), 5, 0, 2 * Math.PI); ctx.fill(); }
+      ctx.restore();
+      legend(ctx, F, [['局部线性', C.accent, false], ['Nadaraya–Watson', C.c2, false], ['真实函数', C.c3, true]]);
+    });
+    function update() {
+      const h = Math.pow(10, +hEl.value), x0 = +xEl.value, r = localFit(xs, ys, x0, h, kEl.value);
+      let s1 = 0, s2 = 0; xs.forEach(x => { const w = kweight(kEl.value, x - x0, h); s1 += w; s2 += w * w; });
+      $('loc-h-out').textContent = h.toPrecision(2);
+      $('loc-x-out').textContent = x0.toFixed(2);
+      $('loc-readout').innerHTML = '在 x* = ' + x0.toFixed(2) + '：真实值 f(x*) = <b>' + quartic(x0).toFixed(2) + '</b> · 局部线性 β̂₀ = <b>' + fmtSig(r.ll) + '</b> · Nadaraya–Watson = <b>' + fmtSig(r.nw) + '</b>' +
+        '<br>有效样本数 (Σw)²/Σw² ≈ ' + (s2 > 0 ? (s1 * s1 / s2).toFixed(1) : '0') + '（灰色竖条是每个点的权重 k<sub>h</sub>(x<sub>n</sub> − x*)，虚线是 x* 处拟合出的局部直线）';
+      view.draw();
+    }
+    [hEl, xEl].forEach(el => el.addEventListener('input', update));
+    kEl.addEventListener('change', update);
+    update();
+  }
+
+  // ---------------------------------------------------------------- demo P3d: Bayesian linear regression + evidence maximisation
+  function demoBayes() {
+    const aEl = $('bayes-alpha'), eEl = $('bayes-eta'), sEl = $('bayes-samples');
+    const rnd = mulberry32(41), g = gaussian(mulberry32(42));
+    const xs = []; for (let i = 0; i < 9; i++) xs.push(1.3 * rnd()); for (let i = 0; i < 9; i++) xs.push(2.6 + 1.4 * rnd()); xs.sort((p, q) => p - q);
+    const ys = xs.map(x => quartic(x) + 2 * g());
+    const CENTRES = linspace(0, 4, 11), WIDTH = 0.45;
+    const rbf = x => [1].concat(CENTRES.map(c => Math.exp(-(x - c) * (x - c) / (2 * WIDTH * WIDTH))));
+    const Phi = xs.map(rbf), GRID = linspace(-0.05, 4.05, 200), GPHI = GRID.map(rbf);
+    let fit = null, Z = [], note = '', aVal = Math.pow(10, +aEl.value), eVal = Math.pow(10, +eEl.value);
+    const zg = gaussian(mulberry32(77));
+    for (let s = 0; s < 5; s++) Z.push(Array.from({ length: 12 }, () => zg()));
+    const alpha = () => aVal, eta = () => eVal;
+    function compute() { fit = bayesFit(Phi, ys, alpha(), eta()); }
+    const view = canvasView($('bayes-plot'), v => {
+      const ctx = v.ctx, F = frame(v, [-0.05, 4.05], [-55, 30], { l: 40 }), e = eta();
+      axes(ctx, F, { xlabel: 'x', ylabel: 'y' });
+      ctx.save(); clip(ctx, F);
+      const mean = GPHI.map(r => r.reduce((a, t, i) => a + t * fit.m[i], 0)), sd = GPHI.map(r => Math.sqrt(predVar(fit, r, e)));
+      ctx.fillStyle = C.accent; ctx.globalAlpha = 0.16; ctx.beginPath();
+      GRID.forEach((x, i) => { const px = F.X(x), py = F.Y(mean[i] + 2 * sd[i]); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
+      for (let i = GRID.length - 1; i >= 0; i--) ctx.lineTo(F.X(GRID[i]), F.Y(mean[i] - 2 * sd[i]));
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1;
+      if (sEl.checked) {
+        ctx.strokeStyle = C.ink3; ctx.lineWidth = 1; ctx.globalAlpha = 0.7;
+        for (const z of Z) { const d = backSolveT(fit.L, fit.p, z), beta = fit.m.map((m, i) => m + d[i]); poly(ctx, F, GRID, GPHI.map(r => r.reduce((a, t, i) => a + t * beta[i], 0))); }
+        ctx.globalAlpha = 1;
+      }
+      ctx.strokeStyle = C.c3; ctx.lineWidth = 1.6; ctx.setLineDash([6, 4]); curve(ctx, F, GRID, quartic); ctx.setLineDash([]);
+      ctx.strokeStyle = C.accent; ctx.lineWidth = 2.4; poly(ctx, F, GRID, mean);
+      dots(ctx, F, xs, ys, 3.4, C.ink);
+      ctx.restore();
+      const items = [['预测均值 mᵀφ(x)', C.accent, false], ['真实函数', C.c3, true]];
+      if (sEl.checked) items.push(['后验抽样的函数', C.ink3, false]);
+      legend(ctx, F, items);
+    });
+    function update() {
+      const a = alpha(), e = eta();
+      $('bayes-alpha-out').textContent = a.toExponential(1);
+      $('bayes-eta-out').textContent = e.toPrecision(2);
+      const sdGap = Math.sqrt(predVar(fit, rbf(1.95), e)), sdData = Math.sqrt(predVar(fit, rbf(0.6), e));
+      $('bayes-readout').innerHTML =
+        'α = ' + a.toExponential(2) + '，η = ' + e.toPrecision(3) + '（真实噪声精度 1/2² = 0.25）· 等价岭回归 λ = α/η = <b>' + (a / e).toExponential(2) + '</b>' +
+        '<br>有效参数个数 γ = <b>' + fit.gamma.toFixed(2) + '</b>（共 ' + fit.p + ' 个基函数）· log 证据 log p(y | α, η) = <b>' + fit.logEv.toFixed(2) + '</b>' +
+        '<br>预测标准差：数据空档 x = 1.95 处 <b>' + sdGap.toFixed(2) + '</b>，数据密集的 x = 0.6 处 <b>' + sdData.toFixed(2) + '</b>' + (note ? '<br>' + note : '');
+      view.draw();
+    }
+    [aEl, eEl].forEach(el => el.addEventListener('input', () => { note = ''; aVal = Math.pow(10, +aEl.value); eVal = Math.pow(10, +eEl.value); compute(); update(); }));
+    sEl.addEventListener('change', () => view.draw());
+    $('bayes-opt').addEventListener('click', () => {
+      const r = evidenceOpt(Phi, ys, alpha(), eta(), 500);
+      const la = Math.min(+aEl.max, Math.max(+aEl.min, Math.log10(r.alpha))), le = Math.min(+eEl.max, Math.max(+eEl.min, Math.log10(r.eta)));
+      aEl.value = la; eEl.value = le;
+      aVal = Math.pow(10, la); eVal = Math.pow(10, le); // exact optimum unless it lies outside the slider range
+      note = '<b class="ok-text">证据最大化 ' + r.iters + ' 次迭代收敛</b>：α = ' + r.alpha.toExponential(2) + '，η = ' + r.eta.toPrecision(3) + '。完全只用训练数据自动选出了超参数，没有做交叉验证。';
+      compute(); update();
+    });
+    compute(); update();
+  }
+
   // ---------------------------------------------------------------- demo 8: one-hidden-layer MLP + SGD
   function demoMLP() {
     const hEl = $('mlp-h'), lrEl = $('mlp-lr'), bsEl = $('mlp-bs'), actEl = $('mlp-act'), unitsEl = $('mlp-units');
@@ -1014,7 +1341,7 @@
   }
 
   readColors();
-  [demoLS, demoCoin, demoGauss1, demoGauss2, demoRate, demoKRR, demoGP, demoMLP, tocSpy, progress].forEach(fn => {
+  [demoLS, demoCoin, demoGauss1, demoGauss2, demoPoly, demoShrink, demoLocal, demoBayes, demoRate, demoKRR, demoGP, demoMLP, tocSpy, progress].forEach(fn => {
     try { fn(); } catch (err) { console.error(fn.name, err); }
   });
   const redraw = () => { readColors(); redrawers.forEach(d => d()); };

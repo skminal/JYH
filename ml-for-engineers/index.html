@@ -78,6 +78,7 @@ pre code { background: none; padding: 0; }
 .eyebrow { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
 .lede { font-size: 1.08rem; color: var(--ink-2); max-width: 40rem; }
 .warn-text { color: var(--warn); }
+.ok-text { color: var(--ok); font-weight: 600; }
 
 /* structure */
 header.top { display: grid; gap: 14px; padding-bottom: 28px; border-bottom: 1px solid var(--rule); margin-bottom: 8px; }
@@ -242,7 +243,19 @@ document.addEventListener('toggle', function (e) { if (e.target.tagName === 'DET
           <li><a href="#s2-10">2.10 多元高斯分布</a></li>
         </ol>
       </li>
-      <li class="grp"><a href="#p3">Part 3 · 衔接：线性回归</a></li>
+      <li class="grp"><a href="#p3">Part 3 · 参数回归</a>
+        <ol>
+          <li><a href="#s3-1">3.1 Bayes 预测器与 ERM</a></li>
+          <li><a href="#s3-2">3.2 基函数与特征映射</a></li>
+          <li><a href="#s3-3">3.3 加性噪声模型</a></li>
+          <li><a href="#s3-4">3.4 最大似然 = 最小二乘</a></li>
+          <li><a href="#s3-5">3.5 过拟合与容量</a></li>
+          <li><a href="#s3-6">3.6 岭回归与 LASSO</a></li>
+          <li><a href="#s3-7">3.7* 交叉验证与 GCV</a></li>
+          <li><a href="#s3-8">3.8 局部回归与 NW</a></li>
+          <li><a href="#s3-9">3.9* 贝叶斯线性回归</a></li>
+        </ol>
+      </li>
       <li class="grp"><a href="#p4">Part 4 · 非参数回归</a>
         <ol>
           <li><a href="#s4-1">4.1 动机</a></li>
@@ -276,15 +289,15 @@ document.addEventListener('toggle', function (e) { if (e.target.tagName === 'DET
 <header class="top" id="intro">
   <p class="eyebrow">Machine Learning for Engineers · Prof. A. A. Shah · Term 1 2026</p>
   <h1>ML for Engineers 双语精讲</h1>
-  <p class="lede">覆盖你上传的三份课件：Part 1 引言（14 页）、Part 2 概率基础（46 页）、Part 4 非参数回归（72 页）。每一节先用中文把道理讲透，再给出考试时可以直接用的英文表述；课件里跳过的推导都补全了，课件里的几处笔误也单独标了出来。</p>
+  <p class="lede">覆盖全部四份课件，共 235 页：Part 1 引言（14 页）、Part 2 概率基础（46 页）、Part 3 参数回归（103 页）、Part 4 非参数回归（72 页）。每一节先用中文把道理讲透，再给出考试时可以直接用的英文表述；课件里跳过的推导都补全了，课件里的几处笔误也单独标了出来。</p>
   <div class="box note">
     <span class="label">怎么用 · How to use</span>
     <ul>
       <li><b>每节结构</b>：<span class="eyebrow">Slides x–y</span> 标出对应的课件页码 → 中文讲解（术语后附英文）→ <b>EN</b> 框是英文要点，背下来答题用 → <b>Erratum</b> 框是课件笔误 → 节末「自测」先自己做再展开答案。</li>
       <li><b>带 * 的小节</b>（极小极大理论、RKHS、表示定理）在课件里也标了星号，属于进阶内容。第一遍可以只读结论和直觉部分。</li>
-      <li><b>八个交互图</b>可以拖动滑块。亲手把参数调坏、再调好，比把公式读十遍更有效。</li>
+      <li><b>十二个交互图</b>可以拖动滑块。亲手把参数调坏、再调好，比把公式读十遍更有效。</li>
       <li><b>复习工具</b>：每节标题下都可以勾选「已掌握」，左侧目录会打勾并统计进度（只保存在你自己的浏览器里）。文末有<a href="#practice">期末模拟题</a>（英文题干、完整解答、英文简答参考答案）和<a href="#formulas">公式速查表</a>。</li>
-      <li>文件名是 Lecture 0、1、3，课件标题是 Part 1、2、4。中间的 Part 3（线性回归与分类）你没有上传，但 Part 4 大量用到它的概念，所以我写了一个简短的<a href="#p3">衔接小节</a>。</li>
+      <li>文件名是 Lecture 0–3，课件标题是 Part 1–4，编号差 1。文中引用的页码都是 PDF 的页码，例如 “L2 p.51” 指 Lecture 2 PDF 的第 51 页。</li>
     </ul>
   </div>
 </header>
@@ -299,7 +312,8 @@ document.addEventListener('toggle', function (e) { if (e.target.tagName === 'DET
   <ol class="roadmap">
     <li><div><b>数据有限、还带噪声，所以需要概率。</b><a class="go" href="#s1-3">1.3</a><a class="go" href="#p2">Part 2</a></div><div class="why">真实关系 $y = f(x) + \varepsilon$ 永远看不全，只能找"最可能"的模型。</div></li>
     <li><div><b>假设高斯噪声，最大似然就等于最小二乘。</b><a class="go" href="#s1-2">1.2</a><a class="go" href="#s1-3">1.3</a></div><div class="why">损失函数不是随便选的，每一种都对应一个噪声假设。</div></li>
-    <li><div><b>用基函数 φ(x) 表达非线性，再加惩罚 λ‖β‖² 防止过拟合：岭回归。</b><a class="go" href="#p3">Part 3</a></div><div class="why">模型对参数 β 是线性的，所以有闭式解。</div></li>
+    <li><div><b>用基函数 φ(x) 表达非线性，再加惩罚 λ‖β‖² 防止过拟合：岭回归。</b><a class="go" href="#s3-2">3.2</a><a class="go" href="#s3-6">3.6</a></div><div class="why">模型对参数 β 是线性的，所以有闭式解；λ 用交叉验证来选（3.7）。</div></li>
+    <li><div><b>换成贝叶斯视角：先验就是正则化，预测还自带不确定性。</b><a class="go" href="#s3-9">3.9</a></div><div class="why">岭回归 = 高斯先验下的 MAP；证据最大化只用训练数据就能选出超参数。</div></li>
     <li><div><b>岭回归只依赖内积，把内积换成核函数，就得到核岭回归。</b><a class="go" href="#s4-6">4.6</a><a class="go" href="#s4-7">4.7</a></div><div class="why">不用写出特征，就能在无穷维特征空间里做线性回归。</div></li>
     <li><div><b>RKHS 和表示定理保证这样做是对的。</b><a class="go" href="#s4-8">4.8</a><a class="go" href="#s4-9">4.9</a></div><div class="why">在无穷维空间里优化，最优解却只需要 n 个系数。</div></li>
     <li><div><b>另一条路：让基函数本身也可学，这就是神经网络。</b><a class="go" href="#s4-10">4.10</a></div><div class="why">每个隐藏单元 σ(wᵀx + b) 都是一个带参数的基函数。</div></li>
@@ -814,23 +828,408 @@ document.addEventListener('toggle', function (e) { if (e.target.tagName === 'DET
   </div>
 </div>
 
-<!-- ============================================================ PART 3 bridge -->
+<!-- ============================================================ PART 3 -->
 <div class="part" id="p3">
   <div class="part-head">
-    <span class="eyebrow">Part 3 · 未上传 · 补充背景</span>
-    <h2>衔接：Part 4 默认你已经会的东西</h2>
-    <p class="src">Linear regression recap — written by me from context, not from your slides</p>
+    <span class="eyebrow">Part 3 · Lecture 2 · 103 slides</span>
+    <h2>参数回归：从最小二乘到贝叶斯</h2>
+    <p class="src">Parametric regression — ERM, basis functions, maximum likelihood, regularisation, cross-validation, local regression, Bayesian linear regression</p>
   </div>
-  <p>Part 4 的课件反复用到岭回归、$\Phi$、ERM、LOESS、GSCV 这些词，它们应该来自你没上传的 Part 3。下面是标准定义，记号尽量和 Part 4 保持一致。<b>如果和你的 Part 3 课件有出入，以课件为准</b>；把 Part 3 发给我，我可以对照补全。</p>
-  <ul>
-    <li><b>基函数</b> <span class="en-term">(basis functions)</span> $\phi(x) = (\phi_0(x),\dots,\phi_p(x))^\top$，例如多项式基 $1, x, x^2, \dots$。模型 $f_\beta(x) = \beta^\top\phi(x)$ 对 $\beta$ 是线性的，所有这样的函数构成<b>假设空间</b> $\mathcal H_\beta = \{f_\beta \mid \beta\in\mathbb R^{p+1}\}$。</li>
-    <li><b>设计矩阵</b> <span class="en-term">(design matrix)</span> $\Phi$ 是 $N\times(p+1)$ 矩阵，第 $n$ 行是 $\phi(x_n)^\top$。1.2 里的 $X$ 就是 $\phi(x) = (x, 1)^\top$ 时的特例。</li>
-    <li><b>经验风险最小化</b> <span class="en-term">(empirical risk minimisation, ERM)</span>：$\min_\beta \frac1N\sum_n \ell(y_n, f_\beta(x_n))$。取平方损失，就是最小二乘，解为 $\beta = (\Phi^\top\Phi)^{-1}\Phi^\top y$。</li>
-    <li><b>岭回归</b> <span class="en-term">(ridge regression)</span>：加一个惩罚项，$\mathcal J(\beta) = \frac12\|y - \Phi\beta\|^2 + \frac\lambda2\|\beta\|^2$，解为 $\beta = (\Phi^\top\Phi+\lambda I)^{-1}\Phi^\top y$。惩罚把系数往 0 拉，防止过拟合，也保证矩阵可逆。这属于<b>惩罚 ERM</b> <span class="en-term">(penalised ERM)</span>。</li>
-    <li><b>LOESS</b>（局部加权回归）：在每个查询点 $x$ 附近单独拟合一条加权直线，权重是高斯核 $w_n = \exp(-(x-x_n)^2/(2h^2))$，离得越近的点权重越大。课件 p.24 说 "We already met the Gaussian kernel in LOESS"，指的就是这里。</li>
-    <li><b>GSCV</b>（grid search cross-validation，网格搜索交叉验证）：对超参数（如 $\lambda$、带宽 $h$）的每一组候选值，用 K 折交叉验证估计测试误差，选误差最小的一组。</li>
-  </ul>
+
+  <section class="sec" id="s3-1">
+    <div class="sec-head"><span class="eyebrow">Slides 2–5</span><h3><span class="no">3.1</span>回归问题、损失函数与 Bayes 预测器 · The regression problem</h3></div>
+    <p>数据是 $N$ 对 $(x_n, y_n)$。输入 $x_n = (x_1,\dots,x_d)^\top\in\mathcal X\subseteq\mathbb R^d$ 叫<b>设计点</b> <span class="en-term">(design points)</span>；输出 $y_n\in\mathcal Y\subseteq\mathbb R$ 取值连续，叫<b>目标值</b>或<b>观测值</b> <span class="en-term">(targets / observables)</span>。<b>回归</b>就是只用这些训练数据，学出输入到输出的映射 $f^*:\mathcal X\to\mathcal Y$。</p>
+    <p>样本有限，真实函数 $f^*$ 无从得知，我们只能找一个近似 $f$，叫<b>预测器</b> <span class="en-term">(predictor)</span>。怎样的预测器算"最好"？先用<b>损失函数</b>衡量单次预测的误差：平方损失 $\ell_{\text{sq}} = (y - f(x))^2$（回归最常用），或绝对损失 $\ell_{\text{abs}} = |y - f(x)|$。</p>
+    <p><b>Bayes 预测器</b> <span class="en-term">(Bayes predictor)</span>：最小化<b>风险</b> <span class="en-term">(risk)</span>，即期望损失的那个函数，</p>
+    $$f^\star = \operatorname*{argmin}_{f:\mathcal X\to\mathcal Y}\mathcal R(f),\qquad \mathcal R(f) = \mathbb E\big[\ell(Y, f(X))\big]$$
+    <p>期望是对数据的联合分布 $P(X, Y)$ 求的。课件给出结论：在平方损失下，Bayes 预测器是<b>条件均值</b> $f^\star(x) = \mathbb E[Y\mid X = x]$。证明很短，值得自己会推：</p>
+    <div class="box deriv">
+      <span class="label">推导 · 为什么平方损失下最优的是条件均值（课件没推）</span>
+      <p>固定一个 $x$，记 $\mu(x) = \mathbb E[Y\mid X = x]$。在 $(Y - f(x))^2$ 中加一项再减一项 $\mu(x)$：</p>
+      $$\mathbb E\big[(Y - f(x))^2\mid x\big] = \underbrace{\mathbb E\big[(Y-\mu(x))^2\mid x\big]}_{\operatorname{var}(Y\mid x)} + \big(\mu(x) - f(x)\big)^2$$
+      <p>交叉项 $2(\mu - f)\,\mathbb E[Y - \mu\mid x] = 0$。第一项与 $f$ 无关，第二项在 $f(x) = \mu(x)$ 时取到最小值 0。所以 $f^\star(x) = \mu(x)$，剩下的 $\operatorname{var}(Y\mid x)$ 是<b>不可约误差</b> <span class="en-term">(irreducible error)</span>：再好的模型也消除不了。（延伸：换成绝对损失，最优的是条件<b>中位数</b>。）</p>
+    </div>
+    <p>问题是我们<b>不知道</b> $P(X,Y)$！手里只有数据，于是改为最小化<b>经验风险</b> <span class="en-term">(empirical risk)</span>，它是真实风险的蒙特卡洛估计：</p>
+    $$\hat{\mathcal R}(f) = \frac1N\sum_{n=1}^N\big(f(x_n) - y_n\big)^2 = \frac{\text{square error}}{N},\qquad \hat f = \operatorname*{argmin}_f\hat{\mathcal R}(f)$$
+    <p>这叫<b>经验风险最小化</b> <span class="en-term">(ERM)</span>。但在"所有可能的函数"里找最优是不可能的，而且也没有意义：任何一条穿过所有数据点的曲线都能让 $\hat{\mathcal R} = 0$，却对新数据毫无预测能力。所以必须<b>限制假设空间</b>，这就引出了参数模型。</p>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>The Bayes predictor minimises the risk $\mathcal R(f) = \mathbb E[\ell(Y, f(X))]$ over all predictors; under the square loss it is the conditional mean $f^\star(x) = \mathbb E[Y\mid X = x]$. Since the law $P(X,Y)$ is unknown, we minimise the empirical risk $\hat{\mathcal R}(f) = \frac1N\sum_n(f(x_n)-y_n)^2$, a Monte Carlo estimate of the risk; this is empirical risk minimisation (ERM). ERM must be restricted to a hypothesis class, since minimising over all functions is impossible.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3-2">
+    <div class="sec-head"><span class="eyebrow">Slides 6–16</span><h3><span class="no">3.2</span>参数模型、基函数与特征映射 · Basis functions</h3></div>
+    <p><b>参数模型</b>：把 $f^*$ 近似为一个受限<b>假设类</b>中的成员，这个类由<b>有限个</b>参数 $\beta$ 确定，记作 $\{f_\beta\}$。线性回归的经典选择是多项式 $f_\beta(x) = \beta_0 + \beta_1x + \dots + \beta_px^p$。此时经验风险变成参数的函数：</p>
+    $$\hat{\mathcal R}(\beta) = \frac1N\sum_{n=1}^N\big(\beta_0 + \beta_1x_n + \dots + \beta_px_n^p - y_n\big)^2,\qquad \hat\beta_{\text{OLS}} = \operatorname*{argmin}_\beta\hat{\mathcal R}(\beta)$$
+    <p>这叫<b>普通最小二乘</b> <span class="en-term">(ordinary least squares, OLS)</span>，因为这里的 ERM 就是最小化总平方误差。</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, pp.6–7)</span>
+      <p>课件写 $f_\beta(x) = \beta_0 + \beta_1x + \dots + \beta_px^{p-1}$，最后一项的幂次应为 $x^p$（$\beta_p$ 对应 $x^p$）；同页的 $\{f_\beta\mid\beta\in\mathbb R^p\}$ 严格说是 $\mathbb R^{p+1}$（$\beta_0,\dots,\beta_p$ 共 $p+1$ 个）。p.8 起的写法 $\sum_{i=0}^p\beta_ix^i$ 是对的。</p>
+    </div>
+    <h4>推广：任意基函数</h4>
+    $$f_\beta(x) = \sum_{i=0}^p\beta_i\,x^i\quad\Longrightarrow\quad f_\beta(x) = \sum_{i=0}^p\beta_i\,\phi_i(x)$$
+    <p>$\phi_i$ 是一组<b>固定数量、线性无关</b>的<b>基函数</b> <span class="en-term">(basis functions)</span>。这不改变解的性质，但<b>基函数的选择决定了 $f_\beta$ 的灵活性和光滑性</b>。三类重要的非多项式基：</p>
+    <ul>
+      <li><b>样条</b> <span class="en-term">(splines)</span>：带连续性约束的分段多项式。回归样条写成 $f_\beta(x) = \sum_{j=1}^m\beta_jB_j(x)$，$B_j$ 叫样条基函数。把定义域 $[0,1]$ 用<b>节点</b> <span class="en-term">(knots)</span> $0\lt\xi_1\lt\dots\lt\xi_k\lt1$ 分成 $k+1$ 段，每段一个三次多项式，共有 $m = k+4$ 个基函数。$k$ 事先固定，所以是参数方法。</li>
+      <li><b>小波</b> <span class="en-term">(wavelets)</span>：局部化的振荡函数，由一个<b>母小波</b> <span class="en-term">(mother wavelet)</span> $\psi$ 伸缩、平移得到：$\psi_{j,k}(x) = 2^{j/2}\psi(2^jx - k)$。$j$ 控制尺度（$j$ 越大越"窄"），$k$ 控制位置，系数 $2^{j/2}$ 使每个基函数的 $L^2$ 范数相同。它擅长捕捉边缘、尖峰这类局部特征，支持从粗到细的多分辨率分析，近似正交使计算简单。广泛用于信号处理、压缩、去噪。</li>
+      <li><b>径向基函数</b> <span class="en-term">(radial basis functions, RBFs)</span>：只依赖到中心 $c_i$ 的距离，$\phi_i(x) = \varphi(\|x-c_i\|)$。常见的 $\varphi(r)$ 有：高斯 $\exp(-\frac{r^2}{2\sigma^2})$、multiquadric $\sqrt{1+(r/\sigma)^2}$、薄板样条 $r^2\log r$。它们自然推广到高维，给出光滑的插值。<b>伏笔</b>：高斯 RBF 就是 Part 4 里高斯核的核截面；核岭回归相当于"在每个数据点放一个 RBF"的回归（4.9 表示定理）。</li>
+    </ul>
+    <div class="box deriv">
+      <span class="label">推导 · 三次样条为什么是 k + 4 个基函数</span>
+      <p>$k+1$ 段，每段三次多项式有 4 个系数，共 $4(k+1)$ 个自由度。在每个节点上要求函数值、一阶导、二阶导都连续，每个节点 3 个约束，共 $3k$ 个。剩下 $4(k+1) - 3k = k+4$ 个自由度，所以需要 $k+4$ 个基函数。</p>
+    </div>
+    <h4>向量形式与"线性"的含义</h4>
+    <p>令 $\phi_0(x) = 1$，这样模型自带常数项 $\beta_0$：</p>
+    $$f_\beta(x) = \beta_0 + \beta_1\phi_1(x) + \dots + \beta_p\phi_p(x) = \sum_{i=0}^p\beta_i\phi_i(x) = \beta^\top\phi(x),\qquad \phi(x) = (1,\phi_1(x),\dots,\phi_p(x))^\top$$
+    <p>"线性回归"的"线性"指的是<b>对每个 $\beta_i$ 线性</b>。$\phi_i(x)$ 一般是非线性的，所以 $f_\beta$ <b>对 $x$ 非线性、对 $\beta$ 线性</b>（4.2 会再辨析这个用词）。二维输入的多项式例子：$\phi(x) = (1, x_1, x_2, x_1x_2, x_1^2, x_2^2,\dots)^\top$。</p>
+    <h4>特征映射与特征空间</h4>
+    <p>向量函数 $\phi:\mathcal X\to\mathcal F$ 叫<b>特征映射</b> <span class="en-term">(feature map)</span>，它把输入从<b>输入空间</b>送到<b>特征空间</b> <span class="en-term">(feature space)</span>，后者的维度 $p$ 通常更高。$x$ 的分量叫<b>属性</b> <span class="en-term">(attributes)</span>，$\phi(x)$ 的分量叫<b>特征</b> <span class="en-term">(features)</span>。例 1：$x\in\mathbb R$，$\phi(x) = (1, x, x^2, x^3)^\top\in\mathbb R^4$。例 2：$x = (x_1,x_2)^\top$，$\phi(x) = (1, x_1, x_2, x_1^2, x_2^2, x_1x_2)^\top\in\mathbb R^6$。</p>
+    <p><b>特征工程</b> <span class="en-term">(feature engineering)</span> 即从输入构造特征，用途有：把输入压缩成紧凑的特征向量；<b>核化</b>（把线性方法变成非线性方法，Part 4）；只保留关键信息、去掉冗余。</p>
+    <p class="mono" style="font-size:13.5px;color:var(--ink-2)">延伸：d 个变量、次数不超过 q 的多项式特征共有 C(d+q, q) 个。d = 2、q = 2 时是 6（即例 2）；d = 10、q = 3 时是 286；d = 100、q = 3 时是 176,851。特征数爆炸正是 Part 4 核方法要解决的问题。</p>
+  </section>
+
+  <section class="sec" id="s3-3">
+    <div class="sec-head"><span class="eyebrow">Slides 17–22</span><h3><span class="no">3.3</span>概率框架：加性噪声模型 · The probabilistic model</h3></div>
+    <p>现在把 $x_n, y_n$ 看作随机变量 $X_n, Y_n$ 的实现。我们可能关心三件等价的事：联合密度 $p(X,Y)$（可以生成新样本）；条件密度 $p(Y\mid X = x)$（给定输入预测输出）；预测器 $f$。（之后不再区分大小写记号。）"最好"仍是 Bayes 预测器，但它依赖未知的分布，所以我们引入一个<b>模型</b>来近似 $p(x,y)$。</p>
+    <p><b>加性噪声模型</b> <span class="en-term">(additive noise model)</span>：$y = f^\dagger(x) + \epsilon$，$f^\dagger$ 是"真实"的回归函数，$\epsilon$ 是噪声。大多数情况用<b>固定设计</b> <span class="en-term">(fixed design)</span>：把输入 $\{x_n\}$ 看作固定的设计点，不是随机的。</p>
+    <p>取条件期望：$\mathbb E[y\mid x] = f^\dagger(x) + \mathbb E[\epsilon\mid x]$。通常假设噪声<b>条件均值为零</b> $\mathbb E[\epsilon\mid x] = 0$，这时 $f^\star = f^\dagger$：Bayes 预测器恰好就是真实函数。</p>
+    <p>还需要具体假设。对 $f^\dagger$ 用参数模型 $f_\beta(x) = \beta^\top\phi(x)$；对噪声也提出一个分布，它依赖某个未知参数 $\xi$。合起来 $\theta = (\beta,\xi)$，确定了一族<b>条件概率分布</b> $\{p_\theta:\theta\in\Theta\}$ 来近似 $p(y\mid x)$。选最好的 $p_\theta$，等价于选让 $f_\beta$ 最好地近似 $f^\dagger$ 的 $\beta$。</p>
+    <p>噪声用<b>同方差高斯</b> <span class="en-term">(homoskedastic Gaussian)</span> 模型：$\epsilon_n\sim\mathcal N(0,\sigma^2)$，方差处处相同（对比 Part 4 的异方差）。于是</p>
+    $$y\mid x\sim\mathcal N\big(f_\beta(x),\ \sigma^2\big),\qquad \theta = (\beta_0,\dots,\beta_p,\sigma^2)^\top,\qquad \mathbb E_{p_\theta}[y\mid x] = f_\beta(x)$$
+    <p><b>数据模型</b>：$y_n\mid x_n\sim\mathcal N(f_\beta(x_n),\sigma^2)$；给定 $x$ 时各 $y_n$ <b>条件独立</b>；$\theta$ 和 $\sigma^2$ 是<b>固定但未知</b>的参数，不是随机的（这是频率派的看法；3.9 的贝叶斯方法会把 $\beta$ 当成随机变量）。我们通过<b>最大化随机向量 $y = (y_1,\dots,y_N)^\top$ 的联合概率密度</b> $p_\theta(y\mid X)$ 来找 $\theta$。</p>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>We assume an additive noise model $y = f^\dagger(x) + \epsilon$ with $\mathbb E[\epsilon\mid x] = 0$, so the Bayes predictor equals $f^\dagger$. With a parametric model $f_\beta(x) = \beta^\top\phi(x)$ and homoskedastic Gaussian noise $\epsilon_n\sim\mathcal N(0,\sigma^2)$, we obtain the family $y\mid x\sim\mathcal N(f_\beta(x),\sigma^2)$, with the $y_n$ conditionally independent given the inputs and $\theta = (\beta,\sigma^2)$ fixed but unknown.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3-4">
+    <div class="sec-head"><span class="eyebrow">Slides 23–33</span><h3><span class="no">3.4</span>最大似然 = 最小二乘 · Maximum likelihood and least squares</h3></div>
+    <p>条件独立，所以联合密度是乘积，即<b>似然函数</b> <span class="en-term">(likelihood function)</span>：</p>
+    $$\mathcal L(\theta) = p_\theta(y\mid X) = \prod_{n=1}^N\mathcal N\big(y_n\mid\beta^\top\phi(x_n),\sigma^2\big) = \Big(\frac{1}{2\pi\sigma^2}\Big)^{N/2}\exp\!\Big(-\frac{1}{2\sigma^2}\sum_{n=1}^N\big(y_n-\beta^\top\phi(x_n)\big)^2\Big)$$
+    <p><b>最大似然估计</b> <span class="en-term">(MLE)</span> $\theta_{\text{ML}} = \operatorname{argmax}_\theta\mathcal L(\theta)$。取对数更好处理（对数单调，argmax 不变）。用<b>精度</b> <span class="en-term">(precision)</span> $\eta = 1/\sigma^2$：</p>
+    $$\log\mathcal L(\theta) = \frac N2\ln\eta - \frac N2\ln(2\pi) - \frac\eta2\sum_{n=1}^N\big(y_n - \beta^\top\phi(x_n)\big)^2$$
+    <div class="box deriv">
+      <span class="label">推导 · 分别对 η 和 β 求最大</span>
+      <p><b>对 $\eta$</b>：$\dfrac{\partial\log\mathcal L}{\partial\eta} = \dfrac{N}{2\eta} - \dfrac12\sum_n(y_n - \beta^\top\phi(x_n))^2 = 0$，得</p>
+      $$\frac{1}{\eta_{\text{ML}}} = \frac1N\sum_{n=1}^N\big(y_n - \beta^\top\phi(x_n)\big)^2$$
+      <p>即噪声方差的 ML 估计 = 残差的样本方差。它要等 $\beta$ 估出来之后才能算。</p>
+      <p><b>对 $\beta$</b>：只有最后一项依赖 $\beta$，最大化 $-\frac\eta2\sum(\cdots)^2$ 就是最小化平方误差，所以 <b>MLE 与 OLS 的解相同</b>。对每个 $\beta_i$ 求偏导：</p>
+      $$\frac{\partial\log\mathcal L}{\partial\beta_i} = \eta\sum_n\big(y_n - \beta^\top\phi(x_n)\big)\phi_i(x_n) = 0\ \Rightarrow\ \sum_n y_n\phi_i(x_n) = \beta^\top\sum_n\phi(x_n)\phi_i(x_n)$$
+      <p>$i = 0,\dots,p$ 共 $p+1$ 个方程，写成矩阵形式就是<b>正规方程</b>：</p>
+      $$\Phi^\top y = \Phi^\top\Phi\,\beta\quad\Longrightarrow\quad\boxed{\,\beta_{\text{ML}} = (\Phi^\top\Phi)^{-1}\Phi^\top y\,}$$
+      <p>$(\Phi^\top\Phi)^{-1}\Phi^\top$ 叫 <b>Moore–Penrose 伪逆</b> <span class="en-term">(pseudoinverse)</span>（$\Phi$ 列满秩时）。</p>
+    </div>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.25)</span>
+      <p>p.25 方框标题写 “ML estimate of β”，但框里的公式是噪声精度的估计 $1/\eta_{\text{ML}}$，应为 “ML estimate of η”。另外 p.26 的 $\theta^\top\phi(x_n)$、p.28 的 $\mathcal N(\Phi\theta,\cdot)$ 应写作 $\beta$。</p>
+    </div>
+    <p><b>设计矩阵</b> <span class="en-term">(design matrix)</span> $\Phi$ 的第 $n$ 行是 $\phi(x_n)^\top$，第一列全是 1（对应 $\phi_0 = 1$）。用它可以写成 $y = \Phi\beta + \epsilon$，并且 $p(y\mid X)$ 是一个<b>多元高斯</b>：数据独立、精度相同，所以协方差是 $\eta^{-1}I$（回想 2.10）：</p>
+    $$p(y\mid X) = \Big(\frac{\eta}{2\pi}\Big)^{N/2}e^{-\frac\eta2(y-\Phi\beta)^\top(y-\Phi\beta)} = \mathcal N(\Phi\beta,\ \eta^{-1}I)$$
+    <p>其他常用写法：$\frac{1}{\eta_{\text{ML}}} = \frac1N(y-\Phi\beta_{\text{ML}})^\top(y - \Phi\beta_{\text{ML}})$；总平方误差 $E(\beta) = \frac N2\hat{\mathcal R}(\beta) = \frac12(y-\Phi\beta)^\top(y-\Phi\beta) = \frac12\|y - \Phi\beta\|_2^2$。后面的岭回归和 Part 4 都用这个 $E(\beta)$。</p>
+    <div class="box deriv">
+      <span class="label">延伸 · 几何意义：最小二乘是正交投影</span>
+      <p>正规方程可以改写为 $\Phi^\top(y - \Phi\beta_{\text{ML}}) = 0$：残差向量与 $\Phi$ 的每一列都正交。所以 $\hat y = \Phi\beta_{\text{ML}}$ 是 $y$ 在 $\Phi$ 列空间上的<b>正交投影</b>，投影矩阵就是 $H = \Phi(\Phi^\top\Phi)^{-1}\Phi^\top$，即 3.7 的"帽子矩阵"。投影两次还是自己，所以 $H^2 = H$。</p>
+    </div>
+    <p><b>课件的例子</b>：两个输入的线性模型 $f = \theta_0 + \theta_1x_1 + \theta_2x_2$，设计矩阵每行是 $(1, x_{n1}, x_{n2})$；一个输入的三次模型，每行是 $(1, x_n, x_n^2, x_n^3)$。21 个数据点 $x = 0, 0.25,\dots,5$ 由 $y = 6 - 7x + 3x^2 - 0.3x^3 + \epsilon$ 生成，噪声精度 8.163（即 $\sigma\approx0.35$）。拟合三次模型得 $\theta_{\text{ML}} = (6.0532, -7.8709, 2.8804, -0.2806)$，很接近真值 $(6, -7, 3, -0.3)$：模型设定正确、噪声不大时，MLE 表现很好。Matlab 里写 <code>beta = Phi \ y</code>，它用 QR 分解求解，数值上比 <code>inv(Phi'*Phi)*Phi'*y</code> 更稳定。</p>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>With i.i.d. Gaussian noise of precision $\eta$, the log-likelihood is $\frac N2\ln\eta - \frac N2\ln2\pi - \frac\eta2\sum_n(y_n - \beta^\top\phi(x_n))^2$. Maximising over $\beta$ is equivalent to minimising the square error, so the MLE coincides with OLS: $\beta_{\text{ML}} = (\Phi^\top\Phi)^{-1}\Phi^\top y$ from the normal equations $\Phi^\top\Phi\beta = \Phi^\top y$. Maximising over $\eta$ gives $1/\eta_{\text{ML}} = \frac1N\sum_n(y_n - \beta_{\text{ML}}^\top\phi(x_n))^2$, the sample variance of the residuals.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3-5">
+    <div class="sec-head"><span class="eyebrow">Slides 34–38</span><h3><span class="no">3.5</span>过拟合、欠拟合与模型容量 · Overfitting and capacity</h3></div>
+    <p>ML 解的一个严重缺点是<b>容易过拟合</b> <span class="en-term">(overfit)</span>，噪声大时尤其如此。模型复杂度太高（例如用 10 阶多项式去拟合四次函数），训练误差趋于 0，但数据点之间的预测很不准：模型在"拟合噪声" <span class="en-term">(tuning to the noise)</span>。反过来，复杂度太低（$M = 0$ 常数、$M = 1$ 直线）会<b>欠拟合</b> <span class="en-term">(underfit)</span>。两种情况下模型都不能很好地<b>泛化</b> <span class="en-term">(generalise)</span>。不在训练集里的数据叫<b>测试数据</b> <span class="en-term">(test data)</span>，用来评估<b>泛化误差</b>（真实误差）。</p>
+    <p><b>容量</b> <span class="en-term">(capacity / effective complexity)</span>：预测器有多灵活、多有表达力，或者说它所属假设类有多"丰富"。容量是<b>实际的表达能力</b>，不只是参数个数。严格的度量有 VC 维、Rademacher 复杂度、覆盖数或熵，以及范数（如 RKHS 范数）。非参数模型（光滑样条、KRR、高斯过程）没有有限维参数，"参数空间"本质上是函数空间，复杂度通常随数据增长（Part 4 的主题）。</p>
+    <p><b>偏差与方差</b>（p.37）：设想能从真实分布反复抽取长度为 $N$ 的训练集 $S_N$，每次都重新估计 $\beta$。定义预测器在点 $x$ 的<b>模型偏差</b> $\operatorname{Bias}(f_\beta)(x) = \mathbb E_{S_N}[f_\beta(x)] - f^*(x)$；结果之间的波动叫<b>模型方差</b>。如果 $N$ 增大时 $f_\beta(x)\to f^*(x)$，称 $f_\beta(x)$ 在 $x$ 处<b>相合</b> <span class="en-term">(consistent)</span>。欠拟合对应低复杂度、高偏差；过拟合对应高复杂度、高方差；复杂度合适时偏差、方差都低。（4.3 有完整的分解公式和交互演示。）</p>
+    <p>防止过拟合的办法（p.38）：留出独立测试数据评估泛化误差；用<b>网格搜索交叉验证</b>（GS-CV）选复杂度；<b>正则化</b>（3.6）；<b>贝叶斯推断</b>，把参数当作随机变量并对其取平均（3.9）。</p>
+    <figure class="demo" id="demo-poly">
+      <figcaption>
+        <span class="t">交互：多项式回归实验台</span>
+        <span class="s">数据来自课件里的四次函数 $3 - 2x + 3x^2 - 5x^3 + x^4$ 加高斯噪声，设计点等间距（固定设计）。下图把训练误差、测试误差（新数据上的期望 MSE）、LOOCV、GCV 画在一起，横轴可以选阶数 M 或正则化 λ。3.6 的岭回归和 3.7 的交叉验证也用这个实验台。</span>
+      </figcaption>
+      <canvas id="poly-plot" aria-label="多项式拟合"></canvas>
+      <canvas id="poly-sweep" class="short" aria-label="误差随模型复杂度变化"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="poly-m">多项式阶数 M <output id="poly-m-out">4</output></label><input type="range" id="poly-m" min="0" max="12" step="1" value="4"></div>
+        <div class="ctl"><label for="poly-lam">岭回归 λ（最左 = 0）<output id="poly-lam-out">0（OLS）</output></label><input type="range" id="poly-lam" min="-7" max="4" step="0.25" value="-7"></div>
+        <div class="ctl"><label for="poly-n">数据点数 N <output id="poly-n-out">10</output></label><input type="range" id="poly-n" min="6" max="40" step="1" value="10"></div>
+        <div class="ctl"><label for="poly-noise">噪声标准差 σ <output id="poly-noise-out">3.0</output></label><input type="range" id="poly-noise" min="0.5" max="8" step="0.5" value="3"></div>
+        <div class="ctl"><label for="poly-axis">下图横轴</label>
+          <select id="poly-axis"><option value="M" selected>多项式阶数 M</option><option value="lam">正则化 λ</option></select>
+        </div>
+      </div>
+      <div class="btns"><button class="btn" id="poly-resample" type="button">重新加噪声</button></div>
+      <div class="readout" id="poly-readout"></div>
+      <ul class="try">
+        <li><b>过拟合</b>：N = 10，把 M 从 0 拉到 9。训练误差一路下降；测试误差先降后升；M = 9 时曲线正好穿过全部 10 个点（10 个参数、10 个方程），训练误差为 0，曲线在点与点之间剧烈摆动。</li>
+        <li><b>系数爆炸</b>：看读数里的 β。M 越高，系数越大、正负交替，互相抵消着去穿过每个点。这正是课件 p.39 那张表格的现象。（为了数值稳定，这里的基函数用的是 $u = x/2 - 1\in[-1,1]$ 的幂，所以 β 的数值和课件不同，但规律一样。）</li>
+        <li><b>正则化</b>：保持 M = 9，把 λ 调到 10⁻² 左右，曲线立刻变平稳，tr(H) 降到 M + 1 以下。参数还是那么多，但"真正自由"的参数变少了。</li>
+        <li><b>选 λ</b>：下图横轴切换为 λ。紫色测试误差的最低点就是最好的 λ；LOOCV 和 GCV（只用训练数据算出来的）基本跟着它走，这就是 GS-CV 的原理。</li>
+        <li><b>数据越多，越能承受复杂模型</b>：把 N 调到 40，M = 9 的过拟合温和得多。</li>
+      </ul>
+    </figure>
+  </section>
+
+  <section class="sec" id="s3-6">
+    <div class="sec-head"><span class="eyebrow">Slides 39–48</span><h3><span class="no">3.6</span>正则化：岭回归、LASSO 与弹性网 · Regularisation</h3></div>
+    <p><b>动机</b>（p.39）：数据来自四次多项式 $3 - 2x + 3x^2 - 5x^3 + x^4$ 加噪声，只有 10 个点。用阶数 $p$ 越来越高的多项式做 MLE，系数变得<b>非常大</b>（$p = 10$ 时有 3705.5、−4251.9、2744.1 等），导致剧烈振荡。复杂度太高就会过拟合，<b>正则化</b>的办法是惩罚大的系数。</p>
+    <p><b>惩罚 ERM</b> <span class="en-term">(penalised ERM)</span>：在 ERM 里加一个惩罚项 / 正则项 $\Omega(\beta)$（严格递增），$\lambda$ 是惩罚系数：</p>
+    $$\operatorname*{argmin}_\beta\ \hat{\mathcal R}(\beta) + \lambda\,\Omega(\beta)$$
+    <p>$\Omega$ 通常取一个<b>范数</b>，这时叫<b>范数控制</b> <span class="en-term">(norm control)</span>。最小化要同时让 $\hat{\mathcal R}$ 和 $\lambda\Omega$ 都小，后者把 $\beta_i$ 往小的方向推。$\hat{\mathcal R}$ 可以换成 $E(\beta)$，两者只差一个常数倍。</p>
+    <h4>岭回归 Ridge regression</h4>
+    <p>$\Omega = \|\beta\|_2^2$，好处是有闭式解：</p>
+    $$\operatorname*{argmin}_\beta\Big(\frac12(y-\Phi\beta)^\top(y-\Phi\beta) + \frac\lambda2\beta^\top\beta\Big):\quad 0 = -\Phi^\top(y - \Phi\beta) + \lambda\beta\ \Rightarrow\ \beta = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top y$$
+    <p>附带的好处：$\Phi^\top\Phi$ 半正定，加上 $\lambda I$（$\lambda\gt0$）后一定正定、一定可逆。所以即使参数比数据多（$p+1\gt N$），岭回归也有唯一解。</p>
+    <h4>LASSO</h4>
+    <p>$\Omega = \|\beta\|_1 = \sum_{i=0}^p|\beta_i|$（曼哈顿范数），叫 LASSO <span class="en-term">(least absolute shrinkage and selection operator)</span>：$\operatorname{argmin}_\beta\big(E(\beta) + \lambda\|\beta\|_1\big)$。它的特点是 <b>λ 足够大时，有些系数会被压成恰好为 0</b>，叫<b>稀疏性</b> <span class="en-term">(sparsity)</span>。所以 LASSO 同时做了输入（协变量 <span class="en-term">covariate</span>）选择，相当于一种降维。</p>
+    <p><b>为什么会稀疏？几何解释</b>（p.44）：用拉格朗日乘子的观点，惩罚形式等价于约束形式：</p>
+    $$\operatorname*{argmin}_\beta E(\beta)\quad\text{subject to}\quad\Omega(\beta)\le\eta\ \ (\text{某个与 }\lambda\text{ 对应的 }\eta)$$
+    <p>（这里的 $\eta$ 是约束半径，不是噪声精度。）$E(\beta)$ 的等高线是以 $\beta_{\text{ML}}$ 为中心的椭圆。L2 约束是圆，椭圆一般在非坐标轴的位置第一次碰到圆；L1 约束是菱形，<b>尖角正好在坐标轴上</b>，椭圆最先碰到的往往是尖角，于是某个系数恰好为 0。</p>
+    <div class="box deriv">
+      <span class="label">推导 · 正交设计下的显式解：软阈值（课件说"除非 ΦᵀΦ = I 否则无闭式解"，这里正好算这个特例）</span>
+      <p>设 $\Phi^\top\Phi = I$，记 $b = \Phi^\top y$（即 OLS 解）。展开 $E(\beta) = \frac12\|y\|^2 - b^\top\beta + \frac12\|\beta\|^2 = \frac12\|\beta - b\|^2 + \text{常数}$，目标函数对每个分量<b>可分离</b>：</p>
+      <ul>
+        <li><b>岭回归</b>：$\min\frac12(\beta_i - b_i)^2 + \frac\lambda2\beta_i^2\ \Rightarrow\ \beta_i = \dfrac{b_i}{1+\lambda}$。按比例缩小，<b>永远不会恰好是 0</b>。</li>
+        <li><b>LASSO</b>：$\min\frac12(\beta_i - b_i)^2 + \lambda|\beta_i|$。分 $\beta_i\gt0$、$\beta_i\lt0$ 讨论可得<b>软阈值</b> <span class="en-term">(soft thresholding)</span>：$\beta_i = \operatorname{sign}(b_i)\max(|b_i| - \lambda, 0)$。$|b_i|\le\lambda$ 的系数直接变成 0，其余的向 0 平移 $\lambda$。</li>
+      </ul>
+    </div>
+    <figure class="demo" id="demo-shrink">
+      <figcaption>
+        <span class="t">交互：岭回归 vs LASSO 怎样收缩系数</span>
+        <span class="s">正交设计下，横轴是 OLS 系数 $b$，纵轴是正则化之后的 $\beta$。浅橙色带里的系数会被 LASSO 直接置零。</span>
+      </figcaption>
+      <canvas id="shrink-plot" class="square" aria-label="收缩函数"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="shrink-lam">λ <output id="shrink-lam-out">1.00</output></label><input type="range" id="shrink-lam" min="0" max="2.5" step="0.05" value="1"></div>
+      </div>
+      <div class="readout" id="shrink-readout"></div>
+    </figure>
+    <p><b>其他要点</b>（p.45）：LASSO 一般没有闭式解，要用迭代算法（如坐标下降，每一步做的正是上面的软阈值）。LASSO 处理<b>高度相关</b>的预测变量时表现不好，往往只任意挑一个。<b>弹性网</b> <span class="en-term">(Elastic Net)</span> 同时使用两种范数来克服这一点：</p>
+    $$\operatorname*{argmin}_{\beta}\Big(E(\beta) + \alpha\lambda_1\|\beta\|_1 + (1-\alpha)\lambda_2\|\beta\|_2^2\Big)$$
+    <p>其中 $\alpha$ 是<b>混合参数</b> <span class="en-term">(mixing parameter)</span>，决定 1 范数和 2 范数之间的平衡；$\lambda_1, \lambda_2$ 控制两者的强度。</p>
+    <p><b>岭回归例子</b>（pp.46–48）：同一个四次函数，20 个点，$p = 10$。$\lambda = 0$ 时系数巨大（626、−2373.4、4081……）；$\lambda = 0.1$、$1$ 时系数回到合理大小；$\lambda = 10^6$ 时全部接近 0，严重欠拟合。按平方误差看，$\lambda = 1$ 的正则化程度最理想。那么 <b>λ 到底怎么选？</b>见 3.7。</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.48；另 p.43)</span>
+      <p>p.48 写 “For ln λ = 0.1 (too small)…” 和 “For ln λ = 10⁶ (too big)…”，应为 λ = 0.1 和 λ = 10⁶（看同页图的标题 lambda = 0.1、lambda = 1000000），不是 ln λ。另外 p.43 的 $\|\theta\|_1$ 应写作 $\|\beta\|_1$。</p>
+    </div>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>Regularisation adds a penalty $\lambda\Omega(\beta)$ to the ERM objective to control model complexity. Ridge regression uses $\Omega = \|\beta\|_2^2$ and has the closed form $\beta = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top y$; it shrinks all coefficients but never sets them exactly to zero. LASSO uses $\Omega = \|\beta\|_1$; because the $\ell_1$ ball has corners on the axes, a sufficiently large $\lambda$ drives some coefficients exactly to zero, performing variable selection (sparsity). Elastic Net combines both norms and handles highly correlated predictors better than LASSO.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3-7">
+    <div class="sec-head"><span class="eyebrow">Slides 49–73 · LOOCV / GCV 部分课件标 *</span><h3><span class="no">3.7</span>交叉验证、精确 LOOCV 与 GCV · Choosing λ</h3></div>
+    <p>λ 通常用<b>交叉验证</b> <span class="en-term">(cross-validation, CV)</span> 选。它是一种<b>重抽样技术</b>：在不收集新数据的前提下，从同一数据集里反复划分训练集和验证集，本质上是在估计<b>泛化误差</b>。</p>
+    <div class="box note">
+      <span class="label">算法 · k 折交叉验证与网格搜索</span>
+      <p><b>k-fold CV</b>：① 把数据 $\mathcal D$ 平均分成 $k$ 份 $\mathcal D_1,\dots,\mathcal D_k$；② 对 $i = 1,\dots,k$：用 $\mathcal D - \mathcal D_i$ 训练，在 $\mathcal D_i$ 上测误差 $E(i)$；③ 平均：$\overline E = \sum_iE(i)/k$。</p>
+      <p><b>GS-CV</b>：取候选集 $\Lambda = \{\lambda_1,\dots,\lambda_M\}$；对每个 $\lambda_m$ 做一次 k 折 CV 得到 $\overline E_{\lambda_m}$；选 $\lambda_* = \operatorname{argmin}_{\lambda_m}\overline E_{\lambda_m}$。（课件 p.50 循环里写的 “k-fold GS-CV” 应为 “k-fold CV”。）</p>
+    </div>
+    <p><b>留一交叉验证</b> <span class="en-term">(leave-one-out CV, LOOCV)</span>：最极端的情形，$k = N$，每次只留一个点做验证，要拟合 $N$ 次，计算量可能太大。</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.51)</span>
+      <p>课件写 “when we set k = 1, then we have N folds”，应为 <b>k = N</b>。k 是折数；k = 1 意味着不划分，无法验证。</p>
+    </div>
+    <h4>帽子矩阵与精确 LOOCV*</h4>
+    <p>对线性模型和<b>线性平滑器</b>，可以<b>不重新拟合</b>就精确算出 LOOCV。如果训练点上的预测是 $y$ 的线性函数 $\hat y = Hy$，$N\times N$ 矩阵 $H$ 就叫<b>帽子矩阵</b> <span class="en-term">(hat matrix)</span> 或平滑矩阵（它给 $y$ "戴上帽子"变成 $\hat y$）。OLS：$H = \Phi(\Phi^\top\Phi)^{-1}\Phi^\top$；岭回归：$H(\lambda) = \Phi(\Phi^\top\Phi+\lambda I)^{-1}\Phi^\top$。由 $\hat y_n = \sum_jH_{nj}y_j$，预测是所有 $y_j$ 的加权平均，其中 $y_n$ 自己的权重 $H_{nn}$ 叫观测 $n$ 的<b>杠杆值</b> <span class="en-term">(leverage)</span>。</p>
+    <p><b>核心结论</b>：用全部数据在 $x_n$ 处的预测为 $\hat y_n$，去掉 $(x_n,y_n)$ 后的预测为 $\hat y_n^{(-n)}$，则</p>
+    $$\hat y_n^{(-n)} = \frac{\hat y_n - H_{nn}y_n}{1 - H_{nn}},\qquad y_n - \hat y_n^{(-n)} = \frac{y_n - \hat y_n}{1 - H_{nn}},\qquad \text{LOOCV} = \frac1N\sum_{n=1}^N\Big(\frac{y_n - \hat y_n}{1 - H_{nn}}\Big)^2$$
+    <div class="box deriv">
+      <span class="label">推导 · 用 Sherman–Morrison 公式（课件 pp.53–60 的精简版）</span>
+      <p>记 $A = \Phi^\top\Phi$，$\phi = \phi(x_n)$，则 $H_{nn} = \phi^\top A^{-1}\phi$。去掉第 $n$ 行后：</p>
+      $$\Phi_{(-n)}^\top\Phi_{(-n)} = A - \phi\phi^\top,\qquad \Phi_{(-n)}^\top y_{(-n)} = \Phi^\top y - \phi\,y_n =: b_n$$
+      <p><b>Sherman–Morrison</b>：$(A - uv^\top)^{-1} = A^{-1} + \dfrac{A^{-1}uv^\top A^{-1}}{1 - v^\top A^{-1}u}$。取 $u = v = \phi$，分母正是 $1 - H_{nn}$。于是</p>
+      $$\hat y_n^{(-n)} = \phi^\top(A - \phi\phi^\top)^{-1}b_n = \phi^\top A^{-1}b_n + \frac{(\phi^\top A^{-1}\phi)(\phi^\top A^{-1}b_n)}{1 - H_{nn}} = \phi^\top A^{-1}b_n\Big(1 + \frac{H_{nn}}{1-H_{nn}}\Big) = \frac{\phi^\top A^{-1}b_n}{1 - H_{nn}}$$
+      <p>而 $\phi^\top A^{-1}b_n = \phi^\top A^{-1}\Phi^\top y - \phi^\top A^{-1}\phi\,y_n = \hat y_n - H_{nn}y_n$，得证。把 $A$ 换成 $\Phi^\top\Phi + \lambda I$，推导一字不改，所以<b>岭回归同样成立</b>。实验台读数里的"暴力重拟合 N 次"就是对这个公式的数值验证。</p>
+    </div>
+    <p><b>直觉</b>：$H_{nn}$ 接近 1 时，点 $n$ 几乎独自决定了自己那里的拟合值，训练残差小得有欺骗性；除以 $1 - H_{nn}$ 就把它"放大回"真实的预测误差。代价对比：朴素 LOOCV 要解 $N$ 个 $(N-1)\times p$ 的系统，这里只解一个 $N\times p$ 的系统，再用 $H$ 的对角线。</p>
+    <h4>广义交叉验证 GCV*</h4>
+    <p>$N$ 很大时，显式算 $H$ 要 $O(N^3)$。Craven & Wahba（1979）的想法：用平均值 $\operatorname{tr}(H)/N$ 代替每个 $H_{nn}$（很多平滑问题中各点的杠杆值相差不大）：</p>
+    $$\text{GCV} = \frac1N\sum_{n=1}^N\Big(\frac{y_n - \hat y_n}{1 - \operatorname{tr}(H)/N}\Big)^2 = \frac{\frac1N\sum_n(y_n - \hat y_n)^2}{\big(1 - \operatorname{tr}(H)/N\big)^2}$$
+    <p>分子是平均训练误差，分母<b>惩罚复杂度</b>。$\operatorname{tr}(H)$ 叫<b>有效自由度</b> <span class="en-term">(effective degrees of freedom)</span>，即模型的有效参数个数。对 OLS，利用迹的循环性质，$\operatorname{tr}(H) = \operatorname{tr}\big((\Phi^\top\Phi)^{-1}\Phi^\top\Phi\big) = \operatorname{tr}(I_p) = p$，恰好是参数个数。对岭回归，用奇异值分解 $\Phi = UDV^\top$：</p>
+    <div class="box deriv">
+      <span class="label">推导 · 岭回归的有效自由度（课件 pp.63–65）</span>
+      $$H(\lambda) = UDV^\top\big(VD^2V^\top + \lambda I\big)^{-1}VDU^\top = UD\,(D^2+\lambda I)^{-1}DU^\top = U\operatorname{diag}\Big(\frac{d_j^2}{d_j^2+\lambda}\Big)U^\top$$
+      <p>用到 $VV^\top = I$，所以 $VD^2V^\top + \lambda I = V(D^2+\lambda I)V^\top$。取迹并用 $U^\top U = I$：</p>
+      $$\operatorname{tr}H(\lambda) = \sum_{j=1}^p\frac{d_j^2}{d_j^2+\lambda}$$
+      <p>$\lambda = 0$ 时等于 $p$；$\lambda\to\infty$ 时趋于 0（最大收缩）；中间严格小于 $p$。每个方向都被打了一个折扣 $\frac{d_j^2}{d_j^2+\lambda}\in(0,1)$，<b>奇异值小的方向（数据提供信息少的方向）被收缩得最多</b>。岭回归把系数往 0 收缩，所以它们并不真正"自由"。</p>
+    </div>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.63)</span>
+      <p>课件写 “$U\in\mathbb R^{N\times p}$ (if $N\lt p$)”，应为 $N\gt p$（数据比参数多时的"瘦" SVD）。此时 $U^\top U = I$，但 $UU^\top\ne I$（它是投影到列空间的矩阵），所以 “$U^\top U = UU^\top = I$” 只对方阵成立。推导里实际只用到 $U^\top U = I$ 和 $VV^\top = I$，结论不受影响。</p>
+    </div>
+    <p>模型越复杂，$\operatorname{tr}(H)$ 越大，分母越小，GCV 越大，所以 GCV 配合网格搜索会惩罚过于复杂的模型。GCV 也可以看作一种<b>信息准则</b>。对比 <b>AIC</b> <span class="en-term">(Akaike information criterion)</span>：$\text{AIC} = N\log(\text{RSS}) + 2\operatorname{tr}(H)$，它近似一个 KL 散度。两者都惩罚 $\operatorname{tr}(H)$，但 GCV 是<b>乘法</b>式的，AIC 是<b>加法</b>式的。GCV 的缺点：只适用于线性平滑器（树、神经网络没有帽子矩阵）；可能惩罚不足（选出的 λ 偏小）；对 KRR、NW 等方法算迹仍然可能很贵。它的优势在于对一个超参数做优化。4.7 交互图里的 tr(S) 就是这里的 tr(H)。</p>
+    <div class="tbl"><table>
+      <thead><tr><th>方法（M 个候选 λ）</th><th>做法</th><th>总代价</th></tr></thead>
+      <tbody>
+        <tr><td>朴素 LOOCV</td><td>每个 λ 真的重拟合 N 次</td><td>$O(M\cdot N\cdot p^3)$</td></tr>
+        <tr><td>帽子矩阵 LOOCV</td><td>每个 λ：求 $(A+\lambda I)^{-1}$ 一次 $O(p^3)$，每个 $H_{nn}$ 用 $O(p^2)$</td><td>$O\big(M(p^3 + Np^2)\big)$</td></tr>
+        <tr><td>GCV</td><td>一次 SVD $O(Np^2)$；每个 λ 只需 $O(Np + p)$</td><td>$O\big(Np^2 + M(Np+p)\big)$，最低</td></tr>
+        <tr><td>特征分解 + 帽子矩阵</td><td>$\Phi^\top\Phi = V\Lambda V^\top$ 一次 $O(p^3)$；$H_{nn} = \sum_j\frac{(\phi(x_n)^\top v_j)^2}{\lambda_j+\lambda}$</td><td>$O\big(p^3 + Np^2 + M(Np+p)\big)$，与 GCV 相当</td></tr>
+      </tbody>
+    </table></div>
+    <p>朴素 LOOCV 也可以并行。Cholesky、QR、LU 分解对加速帮助不大，因为每换一个 λ 都要重新分解；特征分解只需做一次，换 λ 时只要改对角线 $1/(\lambda_i + \lambda)$。回到上面的实验台，把下图横轴切到 λ，就能看到 LOOCV、GCV 和真实测试误差的对比。</p>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>$k$-fold cross-validation splits the data into $k$ parts, trains on $k-1$ of them and measures the error on the remaining part, averaging over the $k$ choices; combined with a grid search it selects hyperparameters such as $\lambda$. Leave-one-out CV is the case $k = N$. For a linear smoother $\hat y = Hy$, LOOCV can be computed without refitting: $\text{LOOCV} = \frac1N\sum_n\big((y_n - \hat y_n)/(1 - H_{nn})\big)^2$, where $H_{nn}$ is the leverage. GCV replaces each $H_{nn}$ by $\operatorname{tr}(H)/N$; $\operatorname{tr}(H)$ is the effective degrees of freedom, equal to $p$ for OLS and $\sum_j d_j^2/(d_j^2+\lambda)$ for ridge regression.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="s3-8">
+    <div class="sec-head"><span class="eyebrow">Slides 74–86</span><h3><span class="no">3.8</span>局部多项式回归与 Nadaraya–Watson · Local regression</h3></div>
+    <p>换一种思路：只关心某个<b>目标点</b> <span class="en-term">(target point)</span> $x_*$ 处的 $f(x_*)$，在 $x_*$ <b>附近</b>用一个低次多项式来近似 $f$。由 Taylor 展开：</p>
+    $$f(x)\approx\beta_0 + \beta_1(x - x_*) + \dots + \beta_p(x-x_*)^p$$
+    <p>用离 $x_*$ 近的点（权重更大）在局部估计 $\beta$，然后关键一步：<b>预测值就是 $\hat f(x_*) = \hat\beta_0$</b>，即第一个系数。</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.74)</span>
+      <p>课件说 “$\beta_i$ are the derivatives of order $i$ at $x_*$”。由 Taylor 公式，严格地说 $\beta_i = f^{(i)}(x_*)/i!$，要除以 $i!$。$\beta_0 = f(x_*)$、$\beta_1 = f'(x_*)$ 不受影响。</p>
+    </div>
+    <p>这是一个<b>局部化的 ERM</b>：带核权重的平方损失，$k_h$ 是带宽为 $h$ 的<b>核权重函数</b>，</p>
+    $$\hat\beta(x_*) = \operatorname*{argmin}_{\beta\in\mathbb R^{p+1}}\sum_{n=1}^Nk_h(x_n - x_*)\big[y_n - m_{\beta,x_*}(x_n)\big]^2,\qquad m_{\beta,x_*}(x) = \beta_0 + \beta_1(x-x_*) + \dots + \beta_p(x-x_*)^p$$
+    <p>对每个 $x_*$：选一个不同的局部假设类 $\mathcal H_{x_*}$，用依赖于 $x_*$ 的权重求解 ERM，再令 $\hat f(x_*) = \hat\beta_0$。</p>
+    <h4>局部线性回归（p = 1）</h4>
+    <p>记权重 $w_n = k_h(x_n - x_*)$，目标函数为 $Q(\beta) = \sum_nw_n\big(y_n - \beta_0 - \beta_1(x_n - x_*)\big)^2 = (y - X\beta)^\top W(y - X\beta)$，其中设计矩阵 $X$ 的第 $n$ 行是 $(1,\ x_n - x_*)$，$W = \operatorname{diag}(w_1,\dots,w_N)$。求梯度：</p>
+    $$\nabla_\beta Q = -2X^\top Wy + 2X^\top WX\beta = 0\ \Longrightarrow\ \hat\beta = (X^\top WX)^{-1}X^\top Wy,\qquad \hat f(x_*) = \hat\beta_0 = e_1^\top\hat\beta$$
+    <p>这就是<b>加权最小二乘</b>。令 $c(x_*) = e_1^\top(X^\top WX)^{-1}X^\top W$，则 $\hat f(x_*) = \sum_nc_n(x_*)\,y_n$：预测是目标值的线性组合，所以是<b>线性平滑器</b>。线性回归、岭回归、样条也都属于线性平滑器。一般的 $p$ 只需把设计矩阵换成 $\Phi_{nj} = (x_n - x_*)^j$：$\hat\beta = (\Phi^\top W\Phi)^{-1}\Phi^\top Wy$。</p>
+    <h4>Nadaraya–Watson：局部常数（p = 0）</h4>
+    $$\min_{\beta_0}\sum_nw_n(y_n - \beta_0)^2\ \Longrightarrow\ \hat f(x_*) = \hat\beta_0 = \frac{\sum_nk_h(x_n - x_*)\,y_n}{\sum_nk_h(x_n - x_*)}$$
+    <p>也叫<b>核回归</b> <span class="en-term">(kernel regression)</span>，就是对 $y_n$ 做归一化的核加权平均，同样是线性平滑器。局部线性的权重 $c(x_*)$ 里多了斜率项，会对观测<b>重新加权</b>，相当于由一个<b>等价核</b> <span class="en-term">(equivalent kernel)</span> 生成，而不是原来的 $k_h$。</p>
+    <div class="box deriv">
+      <span class="label">延伸 · 两者到底差在哪：写出 2×2 显式解</span>
+      <p>记 $S_j = \sum_nw_n(x_n-x_*)^j$，$T_j = \sum_nw_n(x_n-x_*)^jy_n$。解 2×2 的正规方程（Cramer 法则）：</p>
+      $$\hat f_{\text{LL}}(x_*) = \frac{S_2T_0 - S_1T_1}{S_0S_2 - S_1^2},\qquad \hat f_{\text{NW}}(x_*) = \frac{T_0}{S_0}$$
+      <p>如果权重在 $x_*$ 两侧对称分布，$S_1 = 0$，两式<b>完全相同</b>。只有当权重偏向一侧时，两者才不同，最典型的就是边界附近。另外，局部线性<b>能精确重现任何直线</b>：若 $y_n = a + b(x_n - x_*)$，加权最小二乘的拟合是精确的，$\hat\beta_0 = a = f(x_*)$。NW 做不到这一点。</p>
+    </div>
+    <p><b>边界偏差</b> <span class="en-term">(boundary bias)</span>（p.82）：直接使用权重会在边界造成问题。靠近边界时，NW 只能平均 $x_*$ <b>一侧</b>的数据，例如在左边界 $x_0$ 只用到右边的点，于是 NW 有很大的边界偏差。局部线性用斜率修正了这一点，相当于允许不对称的等价权重。另外两点值得记住：局部多项式回归是<b>非参数</b>的（虽然在局部是参数的），同时它是<b>线性</b>模型（线性平滑器）。核回归也可以用核替换推出来（Part 4）。</p>
+    <p><b>核与带宽</b>：最常用的是高斯核 $k_h(x_n - x_*) = \frac{1}{\sqrt{2\pi}}e^{-(x_*-x_n)^2/(2h^2)}$。$x_*\to x_n$ 时权重增大；<b>带宽 $h$</b> 决定有多少点做出显著贡献，对固定的 $x - x_*$，$h$ 越小权重越小。带宽是最重要的选择，通常用交叉验证（特别是 LOOCV）来选；局部回归是线性平滑器，所以 3.7 的帽子矩阵公式可以直接用。$h\to\infty$ 时所有权重趋于相同，$W\propto I$，局部线性退化为<b>全局 OLS 直线</b>（NW 退化为全局平均值）。</p>
+    <p><b>LOESS / LOWESS</b>（locally estimated / weighted scatterplot smoothing）就是局部加权线性回归，原始方法使用三次立方权重核：</p>
+    $$k_h(x_* - x_n) = W\Big(\frac{|x_* - x_n|}{h}\Big),\qquad W(u) = \begin{cases}(1-u^3)^3 & 0\le u\lt1\\ 0 & \text{otherwise}\end{cases}$$
+    <p>它有紧支撑：距离超过 $h$ 的点权重恰好为 0，所以 $h$ 太小时可能没有足够的点，局部线性无法定义（下面交互图中曲线会出现断口）。Part 4 课件说 "We already met the Gaussian kernel in LOESS"，指的就是这一节。</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.86)</span>
+      <p>课件称之为 “tri-weight kernel”，但给出的公式 $(1-u^3)^3$ 是<b>三次立方核</b> <span class="en-term">(tricube kernel)</span>，这也正是 LOESS 原始方法使用的核。通常所说的 triweight 核是 $(1-u^2)^3$。公式本身是对的，名字不对。</p>
+    </div>
+    <figure class="demo" id="demo-local">
+      <figcaption>
+        <span class="t">交互：Nadaraya–Watson vs 局部线性回归</span>
+        <span class="s">40 个带噪声的点，来自同一个四次函数。灰色竖条是每个数据点在 x* 处的核权重；紫色虚线是局部线性在 x* 拟合出的那条局部直线，它在 x* 处的值（紫色圆点）就是预测。橙色是 NW。</span>
+      </figcaption>
+      <canvas id="loc-plot" aria-label="局部回归"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="loc-h">带宽 h <output id="loc-h-out">0.15</output></label><input type="range" id="loc-h" min="-1.3" max="0.3" step="0.02" value="-0.82"></div>
+        <div class="ctl"><label for="loc-x">目标点 x* <output id="loc-x-out">4.00</output></label><input type="range" id="loc-x" min="0" max="4" step="0.02" value="4"></div>
+        <div class="ctl"><label for="loc-kernel">核函数</label>
+          <select id="loc-kernel"><option value="gauss" selected>高斯核</option><option value="tricube">三次立方核（LOESS）</option></select>
+        </div>
+      </div>
+      <div class="readout" id="loc-readout"></div>
+      <ul class="try">
+        <li><b>边界偏差</b>：默认 x* = 4（右边界）。函数在这里陡升（$f'(4) = 38$），NW 只能平均左边那些更低的点，所以明显偏低（约 −25.5，真实值 −21）。局部线性用斜率外推，约 −21.7，几乎没有偏差。</li>
+        <li><b>内部</b>：把 x* 拖到 2 附近，权重两边大致对称（$S_1\approx0$），两条曲线几乎重合。</li>
+        <li><b>不过偏差小 ≠ 每次都更准</b>：把 x* 拖到 0。这里只有右边的点，局部线性要靠噪声数据外推斜率，方差大，这组数据上它反而比 NW 差。边界处是用方差换偏差。</li>
+        <li><b>带宽</b>：h 很小时两条曲线都很抖（方差大）；h 很大时 NW 变成一条平线（全局平均），局部线性变成全局的最小二乘直线（偏差大）。</li>
+        <li>换成三次立方核、把 h 调小：局部线性的曲线出现断口，因为窗口里不到两个点，没法拟合一条直线。</li>
+      </ul>
+    </figure>
+  </section>
+
+  <section class="sec" id="s3-9">
+    <div class="sec-head"><span class="eyebrow">Slides 87–103 · MAP / 证据部分课件标 *</span><h3><span class="no">3.9</span>贝叶斯线性回归与证据最大化 · Bayesian linear regression</h3></div>
+    <p>贝叶斯视角的好处：<b>只用训练数据就能自动确定模型复杂度</b>，从而避免过拟合。基本做法是给参数 $\beta$ 一个<b>先验分布</b> <span class="en-term">(prior)</span>，暂时假设噪声精度 $\eta$ 已知：</p>
+    $$p(\beta) = \mathcal N(0,\ \alpha^{-1}I),\qquad p(\beta\mid y) = \frac{p(y\mid\beta)\,p(\beta)}{p(y)}$$
+    <p>左边是<b>后验</b> <span class="en-term">(posterior)</span>，即看过数据后更新的分布；分子是<b>似然</b>乘<b>先验</b>；$p(y)$ 不依赖 $\beta$，对后验来说是常数。（记号里省略了 $x$。）</p>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.87)</span>
+      <p>课件写 “the $\beta_i$ are assumed independent with precision $\alpha^{-1}$”，应为<b>精度 $\alpha$</b>（方差 $\alpha^{-1}$）。$\mathcal N(0,\alpha^{-1}I)$ 的协方差是 $\alpha^{-1}I$，精度是协方差的逆。</p>
+    </div>
+    <h4>求后验：两个高斯相乘</h4>
+    <p>两个关于同一变量 $\beta$ 的高斯密度相乘，结果正比于第三个高斯（<b>精度相加，均值按精度加权</b>）：</p>
+    $$\mathcal N(\beta\mid a, A)\cdot\mathcal N(\beta\mid b, B)\ \propto\ \mathcal N(\beta\mid c, C),\qquad C = (A^{-1}+B^{-1})^{-1},\quad c = CA^{-1}a + CB^{-1}b$$
+    <p>先验是 $\beta$ 的密度；似然是 $y$ 的密度、$\beta$ 的函数。把似然改写成"$\beta$ 的密度的形式"：利用正规方程，交叉项消失，</p>
+    $$(y-\Phi\beta)^\top(y-\Phi\beta) = (\beta - \beta_{\text{ML}})^\top(\Phi^\top\Phi)(\beta-\beta_{\text{ML}}) + (y-\Phi\beta_{\text{ML}})^\top(y - \Phi\beta_{\text{ML}})$$
+    <p>第二项不含 $\beta$，所以 $p(y\mid\beta)\propto\mathcal N\big(\beta\mid\beta_{\text{ML}},\ (\eta\Phi^\top\Phi)^{-1}\big)$。再乘以先验 $\mathcal N(\beta\mid0,\alpha^{-1}I)$，套用上面的公式，得到<b>参数的后验</b>：</p>
+    $$\beta\mid y\sim\mathcal N(m, S),\qquad S = (\eta\Phi^\top\Phi + \alpha I)^{-1},\qquad m = \eta S\Phi^\top\Phi\,\beta_{\text{ML}} = \eta S\Phi^\top y$$
+    <h4>预测：对参数做边缘化</h4>
+    <p>对新输入 $x_*$，我们想要 $p(y_*\mid x_*)$。办法是对 $\beta$ <b>边缘化</b>（Part 2 的边缘分布）：$p(y_*\mid x_*) = \int p(y_*\mid\beta)\,p(\beta\mid y)\,d\beta$，其中 $y_*\mid x_*,\beta\sim\mathcal N(\phi(x_*)^\top\beta,\ \eta^{-1})$。</p>
+    <div class="box note">
+      <span class="label">高斯的关键性质 (*)</span>
+      <p>若 $p(z) = \mathcal N(z\mid\mu,\Lambda)$，$p(u\mid z) = \mathcal N(u\mid Az + b,\ L)$，则 $u$ 的边缘分布是 $p(u) = \mathcal N\big(u\mid A\mu+b,\ L + A\Lambda A^\top\big)$。直觉：$u = Az + b + \text{独立噪声}$，线性变换的协方差是 $A\Lambda A^\top$（期末模拟题第 4 题），再加上独立噪声的协方差 $L$。</p>
+    </div>
+    <p>取 $z = \beta\mid y$，$\mu = m$，$\Lambda = S$，$A = \phi(x_*)^\top$，$L = \eta^{-1}$，$b = 0$，得到<b>后验预测分布</b> <span class="en-term">(posterior predictive distribution)</span>：</p>
+    $$p(y\mid x_*) = \mathcal N\Big(y\ \Big|\ m^\top\phi(x_*),\ \ \underbrace{\eta^{-1}}_{\text{噪声}} + \underbrace{\phi(x_*)^\top S\,\phi(x_*)}_{\text{参数的不确定性}}\Big)$$
+    <p>方差有两部分：噪声 $\eta^{-1}$ 是不可约的；参数不确定性 $\phi^\top S\phi$ 随数据增多而减小，在<b>远离数据的地方变大</b>。这是贝叶斯方法相对点估计的最大好处：<b>模型知道自己哪里不知道</b>。</p>
+    <h4>点估计、MAP 与岭回归的联系*</h4>
+    <p>最大似然是一种<b>点估计</b> <span class="en-term">(point estimate)</span>：只用使似然最大的那一组参数值。另一种点估计是<b>最大后验</b> <span class="en-term">(maximum a posteriori, MAP)</span>，取后验分布的<b>众数</b>（单峰分布的最高点）。它和 ML 类似，但考虑了参数的先验。多峰时会有多个众数，MAP 不好解释；对高斯这样的对称分布，众数、中位数、均值三者重合。</p>
+    $$\beta_{\text{MAP}} = \operatorname*{argmax}_\beta\ p(y\mid\beta)\,p(\beta) = \operatorname*{argmax}_\beta\Big(-\frac\eta2\|y-\Phi\beta\|_2^2 - \frac\alpha2\|\beta\|_2^2\Big) = \operatorname*{argmin}_\beta\Big(\frac12\|y-\Phi\beta\|_2^2 + \frac{\alpha/\eta}{2}\|\beta\|_2^2\Big)$$
+    <p>所以 <b>MAP 就是岭回归，正则系数 $\lambda = \alpha/\eta$</b>（课件只说两者"coincide"，这里把 λ 的对应关系写明了，并用代码验证过）。<b>正则化 = 先验</b>：岭惩罚就是在说"我先验地相信系数不会太大"。贝叶斯线性回归自带正则化。</p>
+    <h4>超参数：证据最大化*</h4>
+    <p>控制参数分布的 $\alpha$（和噪声精度 $\eta$）是<b>超参数</b>，通常未知。三种办法：</p>
+    <ul>
+      <li><b>第二类最大似然</b> <span class="en-term">(Type-II ML)</span>，也叫<b>证据最大化</b> <span class="en-term">(evidence maximisation)</span> 或经验贝叶斯：把 $\beta$ 积分掉，最大化<b>边缘似然</b>。</li>
+      <li><b>完全贝叶斯</b>：给 $\alpha, \eta$ 也加上先验（超先验，一般用 Gamma 分布）。</li>
+      <li><b>交叉验证</b>（频率派方法）：k 折 CV、GCV、LOOCV，线性高斯模型都有快速公式（3.7）。</li>
+    </ul>
+    <p><b>证据</b> <span class="en-term">(evidence / marginal likelihood)</span>：$p(y\mid\alpha,\eta) = \int p(y\mid\beta,\eta)\,p(\beta\mid\alpha)\,d\beta$。用性质 (*)，取 $z = \beta\sim\mathcal N(0,\alpha^{-1}I)$，$A = \Phi$，$b = 0$，$L = \eta^{-1}I$：</p>
+    $$y\sim\mathcal N(0,\ C),\quad C = \eta^{-1}I + \alpha^{-1}\Phi\Phi^\top,\qquad \log p(y\mid\alpha,\eta) = -\frac12\big(N\log2\pi + \log|C| + y^\top C^{-1}y\big)$$
+    <p>更便于求导的等价形式（$A = \alpha I + \eta\Phi^\top\Phi$，$p$ 为基函数个数）：</p>
+    $$\log p(y\mid\alpha,\eta) = \frac p2\log\alpha + \frac N2\log\eta - \frac\alpha2m^\top m - \frac\eta2\|y - \Phi m\|^2 - \frac12\log|A| - \frac N2\log2\pi$$
+    <div class="box deriv">
+      <span class="label">推导 · 不动点更新公式（课件 pp.100–103）</span>
+      <p>记 $\Phi^\top\Phi$ 的特征值为 $\lambda_i$，则 $A^{-1} = U\operatorname{diag}\big(\frac{1}{\alpha+\eta\lambda_i}\big)U^\top$。对 $\alpha$ 求导并令其为零：</p>
+      $$\frac p{2\alpha} - \frac12m^\top m - \frac12\operatorname{tr}(A^{-1}) = 0\ \Rightarrow\ \alpha = \frac{\gamma}{m^\top m},\qquad \gamma = p - \alpha\operatorname{tr}(A^{-1}) = \sum_{i=1}^p\frac{\eta\lambda_i}{\alpha + \eta\lambda_i}$$
+      <p>对 $\eta$ 求导，用 $\operatorname{tr}(A^{-1}\Phi^\top\Phi) = \gamma/\eta$：</p>
+      $$\frac N{2\eta} - \frac12\|y-\Phi m\|^2 - \frac{\gamma}{2\eta} = 0\ \Rightarrow\ \eta = \frac{N-\gamma}{\|y - \Phi m\|^2}$$
+    </div>
+    <div class="box err">
+      <span class="label">课件勘误 · Slide erratum (L2, p.101；另 p.102)</span>
+      <p>课件写 $\gamma = 1 - \sum_i\frac{1}{\alpha+\eta\lambda_i} = \sum_i\frac{\eta\lambda_i}{\alpha+\eta\lambda_i}$。中间那一项是错的，应为 $\gamma = p - \sum_i\frac{\alpha}{\alpha+\eta\lambda_i}$（由 $\gamma = p - \alpha\operatorname{tr}A^{-1}$ 得来）；最右边的结果是对的。p.102 的 $\|y - Xm\|^2$ 应为 $\|y-\Phi m\|^2$。</p>
+    </div>
+    <p><b>$\gamma$ 的含义</b>：它在 0 和 $p$ 之间，是模型的<b>有效参数个数</b>。每个特征方向贡献 $\frac{\eta\lambda_i}{\alpha+\eta\lambda_i}\in(0,1)$：数据信息充分的方向（$\eta\lambda_i\gg\alpha$）贡献接近 1，主要由先验决定的方向贡献接近 0。贝叶斯线性回归也是线性平滑器：$\hat y = \Phi m = \eta\Phi(\alpha I + \eta\Phi^\top\Phi)^{-1}\Phi^\top y$，帽子矩阵 $H = \eta\Phi(\alpha I+\eta\Phi^\top\Phi)^{-1}\Phi^\top$ 与 $\lambda = \alpha/\eta$ 的岭回归相同，而且 $\operatorname{tr}(H) = \gamma$：<b>两种"有效参数个数"的定义完全一致</b>。$\eta$ 的更新里出现 $N - \gamma$，和经典统计里用 $\text{RSS}/(N - p)$ 估计噪声方差是同一个道理：拟合用掉了 $\gamma$ 个自由度。</p>
+    <div class="box note">
+      <span class="label">算法 · 不动点迭代估计 α、η（Type-II ML）</span>
+      <p>给定初值 $\alpha, \eta$，重复以下步骤直到收敛：① $A = \alpha I + \eta\Phi^\top\Phi$；② $S = A^{-1}$，$m = \eta S\Phi^\top y$；③ $\gamma = \sum_i\frac{\eta\lambda_i}{\alpha+\eta\lambda_i}$；④ $\alpha\leftarrow\gamma/(m^\top m)$；⑤ $\eta\leftarrow(N-\gamma)/\|y-\Phi m\|^2$。</p>
+    </div>
+    <figure class="demo" id="demo-bayes">
+      <figcaption>
+        <span class="t">交互：贝叶斯线性回归与证据最大化</span>
+        <span class="s">基函数是 1 个常数加 11 个高斯 RBF（3.2），共 12 个。数据故意在 1.3 &lt; x &lt; 2.6 之间留了空档。紫色带是后验预测的 ±2 个标准差；灰线是从后验 $\mathcal N(m, S)$ 里抽出的 β 对应的函数。</span>
+      </figcaption>
+      <canvas id="bayes-plot" aria-label="贝叶斯线性回归"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="bayes-alpha">先验精度 α <output id="bayes-alpha-out">1.0e-2</output></label><input type="range" id="bayes-alpha" min="-5" max="1" step="0.05" value="-2"></div>
+        <div class="ctl"><label for="bayes-eta">噪声精度 η <output id="bayes-eta-out">0.10</output></label><input type="range" id="bayes-eta" min="-3" max="0.5" step="0.05" value="-1"></div>
+        <div class="ctl check"><label for="bayes-samples"><input type="checkbox" id="bayes-samples" checked> 显示后验抽样的函数</label></div>
+      </div>
+      <div class="btns"><button class="btn primary" id="bayes-opt" type="button">证据最大化 Type-II ML</button></div>
+      <div class="readout" id="bayes-readout"></div>
+      <ul class="try">
+        <li><b>模型知道自己哪里不知道</b>：看数据空档里的紫色带，比有数据的地方宽得多。读数给出两处的预测标准差。点估计（ML、ridge）给不出这个信息。</li>
+        <li><b>点「证据最大化」</b>：几次迭代后 α、η 自动收敛，有效参数 γ 约为 6（共 12 个），估出的 η 和真实值 0.25 在同一量级。全程没有用验证集。</li>
+        <li><b>α 很大</b>（强先验）：系数被压向 0，均值曲线被拉平（欠拟合）。<b>α 很小</b>（弱先验）：曲线开始追着噪声跑，灰色样本在空档里发散。</li>
+        <li><b>η 的作用</b>：η 小代表"我认为噪声很大"，紫色带整体变宽，均值曲线也变平滑。读数里的 λ = α/η 就是等价岭回归的正则系数。</li>
+      </ul>
+    </figure>
+    <div class="box en" lang="en">
+      <span class="label">EN · Exam phrasing</span>
+      <p>In Bayesian linear regression we place a prior $p(\beta) = \mathcal N(0,\alpha^{-1}I)$ on the weights. With Gaussian noise of precision $\eta$ the posterior is Gaussian, $\beta\mid y\sim\mathcal N(m,S)$ with $S = (\alpha I + \eta\Phi^\top\Phi)^{-1}$ and $m = \eta S\Phi^\top y$. Predictions marginalise over $\beta$, giving $p(y\mid x_*) = \mathcal N\big(m^\top\phi(x_*),\ \eta^{-1} + \phi(x_*)^\top S\phi(x_*)\big)$, whose variance grows away from the data. The MAP estimate coincides with ridge regression with $\lambda = \alpha/\eta$. The hyperparameters can be chosen by maximising the evidence $p(y\mid\alpha,\eta)$ (Type-II maximum likelihood), which yields the updates $\alpha = \gamma/m^\top m$ and $\eta = (N-\gamma)/\|y-\Phi m\|^2$, where $\gamma = \sum_i\eta\lambda_i/(\alpha+\eta\lambda_i)$ is the effective number of parameters.</p>
+    </div>
+  </section>
+
+  <div class="quiz">
+    <span class="label">自测 · Check yourself — Part 3</span>
+    <details class="qa"><summary><span class="q">为什么不能直接在"所有函数"上做 ERM？</span></summary><div class="ans"><p>任何一条穿过所有数据点的曲线都能让经验风险为 0，但它只是记住了训练数据（包括噪声），对新数据毫无预测能力。在所有函数上求最小化的问题是病态的，必须限制假设空间（参数模型）或加正则化。</p></div></details>
+    <details class="qa"><summary><span class="q">在 [0, 1] 上放 k = 5 个节点做三次回归样条，需要几个基函数？如果改成分段线性、只要求函数连续呢？</span></summary><div class="ans"><p>三次：$k + 4 = 9$。分段线性：$k+1 = 6$ 段，每段 2 个系数，共 12 个；每个节点 1 个连续性约束，共 5 个；剩 $12 - 5 = 7 = k + 2$ 个。</p></div></details>
+    <details class="qa"><summary><span class="q">$1/\eta_{\text{ML}}$ = 残差的样本方差。它倾向于高估还是低估真实的噪声方差？</span></summary><div class="ans"><p><b>低估</b>。$\beta_{\text{ML}}$ 是用同一组数据拟合出来的，它会尽量贴近这些点，所以残差平方和偏小。无偏估计要除以 $N - (p+1)$ 而不是 $N$。证据最大化的 $\eta = (N-\gamma)/\|y-\Phi m\|^2$ 用的是同一个思想。</p></div></details>
+    <details class="qa"><summary><span class="q">某点的杠杆值 $H_{nn} = 0.9$，它的训练残差是 0.2。去掉它重新拟合后，该点的预测误差是多少？</span></summary><div class="ans"><p>$0.2/(1 - 0.9) = 2$，是训练残差的 10 倍。这个点几乎独自决定了自己那里的拟合，训练残差严重低估了真实误差。</p></div></details>
+    <details class="qa"><summary><span class="q">在边界上，为什么 Nadaraya–Watson 有偏差，而局部线性没有（或小得多）？</span></summary><div class="ans"><p>边界附近只有一侧有数据，权重不对称（$S_1\ne0$）。NW 是加权平均，如果函数在边界处有斜率，一侧的点系统性地偏高或偏低，平均值就有偏差。局部线性多拟合了一个斜率，能精确重现直线，从而消除了一阶偏差。代价是外推斜率带来更大的方差。</p></div></details>
+    <details class="qa"><summary><span class="q">为什么说"正则化 = 先验"？请写出岭回归的 λ 与贝叶斯超参数的关系。</span></summary><div class="ans"><p>MAP 估计最大化 $\log p(y\mid\beta) + \log p(\beta) = -\frac\eta2\|y-\Phi\beta\|^2 - \frac\alpha2\|\beta\|^2 + \text{常数}$，等价于岭回归，$\lambda = \alpha/\eta$。先验越强（α 越大）或噪声越大（η 越小），正则化越强。</p></div></details>
+  </div>
 </div>
+
 
 <!-- ============================================================ PART 4 -->
 <div class="part" id="p4">
@@ -1374,13 +1773,13 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
 <!-- ============================================================ PRACTICE -->
 <div class="part" id="practice">
   <div class="part-head">
-    <span class="eyebrow">Practice · 覆盖三份课件</span>
+    <span class="eyebrow">Practice · Parts 1–4</span>
     <h2>期末模拟题</h2>
-    <p class="src">题干用英文，和考试一样；解答用中文，关键术语附英文。先在纸上完整做一遍，再展开对照。所有数字都用代码验算过。</p>
+    <p class="src">覆盖四份课件。题干用英文，和考试一样；解答用中文，关键术语附英文。先在纸上完整做一遍，再展开对照。所有数字都用代码验算过。</p>
   </div>
 
   <section class="sec" id="s5-1">
-    <div class="sec-head"><span class="eyebrow">12 题 · 完整解答</span><h3><span class="no">P1</span>计算与证明 · Calculations and proofs</h3></div>
+    <div class="sec-head"><span class="eyebrow">16 题 · 完整解答</span><h3><span class="no">P1</span>计算与证明 · Calculations and proofs</h3></div>
     <h4>Part 1–2：回归与概率</h4>
 
     <details class="qa prob"><summary><span class="q"><b class="pn">1</b> <span lang="en">Fit $y = ax + b$ by least squares to the data $(x, y) = (-1, 0),\ (0, 1),\ (1, 1),\ (2, 3)$ using the normal equations. Report $a$, $b$ and the total square error $E$.</span></span></summary><div class="ans">
@@ -1428,9 +1827,34 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <p>二阶导数 $-\frac6{\mu^2} - \frac{14}{(1-\mu)^2} \lt 0$，确实是最大值。方差估计为 $\hat\mu(1-\hat\mu) = 0.3\times0.7 = 0.21$。</p>
     </div></details>
 
+    <h4>Part 3：参数回归</h4>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">7</b> <span lang="en">A constant model $f(x) = \beta_0$ is fitted by least squares to $y = (1, 2, 6)^\top$. (a) Find the hat matrix $H$ and the leverages $H_{nn}$. (b) Compute LOOCV with the hat-matrix formula and check it by actually leaving each point out. (c) Compute GCV and the training MSE.</span></span></summary><div class="ans">
+      <p>(a) $\Phi = (1,1,1)^\top$，$\Phi^\top\Phi = 3$，$H = \Phi(\Phi^\top\Phi)^{-1}\Phi^\top = \frac13\mathbf 1\mathbf 1^\top$，每个 $H_{nn} = \frac13$，$\operatorname{tr}H = 1$（一个参数）。拟合值 $\hat y_n = \bar y = 3$。</p>
+      <p>(b) 残差 $(-2, -1, 3)$，除以 $1 - \frac13 = \frac23$ 得留一残差 $(-3, -1.5, 4.5)$，所以 $\text{LOOCV} = \frac{9 + 2.25 + 20.25}{3} = 10.5$。<b>直接验证</b>：去掉第 1 个点，均值是 4，误差 $1 - 4 = -3$；去掉第 2 个，均值 3.5，误差 $-1.5$；去掉第 3 个，均值 1.5，误差 $4.5$。完全一致。</p>
+      <p>(c) 训练 MSE $= \frac{4+1+9}{3} = \frac{14}{3}\approx4.67$；$\text{GCV} = \frac{14/3}{(1 - 1/3)^2} = 10.5$。所有杠杆值相等，所以 GCV 和 LOOCV 恰好相同。LOOCV 是训练误差的两倍多：训练误差明显低估了预测误差。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">8</b> <span lang="en">For an orthonormal design ($\Phi^\top\Phi = I$) the least-squares coefficients are $b = \Phi^\top y = (3,\ -0.5,\ 1.2)^\top$. With $E(\beta) = \frac12\|y - \Phi\beta\|^2$ and $\lambda = 1$, compute (a) the ridge solution and (b) the LASSO solution. (c) Which coefficients does LASSO remove?</span></span></summary><div class="ans">
+      <p>正交设计下目标函数可分离（3.6 的推导）。(a) 岭回归 $\beta_i = b_i/(1+\lambda) = (1.5,\ -0.25,\ 0.6)$。(b) LASSO 软阈值 $\beta_i = \operatorname{sign}(b_i)\max(|b_i| - 1, 0) = (2,\ 0,\ 0.2)$。(c) 第二个系数 $|b_2| = 0.5\le\lambda$，被置为 0。岭回归按比例缩小所有系数；LASSO 把每个系数向 0 平移 λ，碰到 0 就停在 0。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">9</b> <span lang="en">Bayesian linear regression with one feature $\phi(x) = x$, prior $\beta\sim\mathcal N(0, \alpha^{-1})$ with $\alpha = 1$, noise precision $\eta = 4$, and data $x = (1, 2)^\top$, $y = (1, 3)^\top$. (a) Find the posterior mean $m$ and variance $S$. (b) Compare $m$ with the OLS estimate and with ridge regression for a suitable $\lambda$. (c) Give the predictive mean and variance at $x_* = 3$.</span></span></summary><div class="ans">
+      <p>(a) $\Phi^\top\Phi = \sum x_n^2 = 5$，$\Phi^\top y = \sum x_ny_n = 7$。$S = (\alpha + \eta\Phi^\top\Phi)^{-1} = \frac{1}{1 + 20} = \frac1{21}$，$m = \eta S\Phi^\top y = \frac{4\times7}{21} = \frac43\approx1.333$。</p>
+      <p>(b) OLS：$\beta_{\text{ML}} = 7/5 = 1.4$。后验均值被先验往 0 拉了一点。岭回归取 $\lambda = \alpha/\eta = 0.25$：$\beta = \frac{7}{5 + 0.25} = \frac43$，与 MAP（高斯后验的均值 = 众数）完全相同。</p>
+      <p>(c) 均值 $m\,x_* = 4$；方差 $\eta^{-1} + x_*^2S = 0.25 + \frac{9}{21}\approx0.679$，标准差约 0.82。其中 0.25 来自噪声，0.43 来自参数的不确定性。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">10</b> <span lang="en">Data $x = (0, 1, 2)$, $y = (0, 2, 4)$ lie exactly on $y = 2x$. At the boundary point $x_* = 0$ the kernel weights are $w = (1,\ 0.5,\ 0.1)$. Compute the Nadaraya–Watson and the local linear estimates of $f(0)$, and explain the difference.</span></span></summary><div class="ans">
+      <p><b>NW</b>：$\hat f = \frac{\sum w_ny_n}{\sum w_n} = \frac{0 + 1 + 0.4}{1.6} = 0.875$，而真实值是 0。</p>
+      <p><b>局部线性</b>：$d_n = x_n - x_* = (0, 1, 2)$。$S_0 = 1.6$，$S_1 = \sum w_nd_n = 0.7$，$S_2 = \sum w_nd_n^2 = 0.9$，$T_0 = \sum w_ny_n = 1.4$，$T_1 = \sum w_nd_ny_n = 1.8$。行列式 $S_0S_2 - S_1^2 = 0.95$，</p>
+      $$\hat\beta_0 = \frac{S_2T_0 - S_1T_1}{0.95} = \frac{1.26 - 1.26}{0.95} = 0,\qquad \hat\beta_1 = \frac{S_0T_1 - S_1T_0}{0.95} = \frac{2.88 - 0.98}{0.95} = 2$$
+      <p>局部线性给出精确的 $f(0) = 0$ 和斜率 2。NW 在边界只能对右边那些更高的点取平均，所以偏高，这就是<b>边界偏差</b>；局部线性多拟合了一个斜率，能精确重现直线。</p>
+    </div></details>
+
     <h4>Part 4：核方法与神经网络</h4>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">7</b> <span lang="en">(a) Show that if $k_1, k_2$ are valid kernels then so are $k_1 + k_2$ and $c\,k_1$ for $c \gt 0$. (b) Show that $k(x,x') = g(x)\,g(x')$ is a valid kernel for any real function $g$. (c) Show that $d(x,x') = \|x - x'\|^2$ is not a valid kernel.</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">11</b> <span lang="en">(a) Show that if $k_1, k_2$ are valid kernels then so are $k_1 + k_2$ and $c\,k_1$ for $c \gt 0$. (b) Show that $k(x,x') = g(x)\,g(x')$ is a valid kernel for any real function $g$. (c) Show that $d(x,x') = \|x - x'\|^2$ is not a valid kernel.</span></span></summary><div class="ans">
       <p>合法核 = 对称 + 任意 Gram 矩阵半正定。逐条验证：</p>
       <p>(a) Gram 矩阵分别是 $K_1 + K_2$ 和 $cK_1$，仍然对称；对任意 $v$，$v^\top(K_1+K_2)v = v^\top K_1v + v^\top K_2v\ge0$，$v^\top(cK_1)v = c\,v^\top K_1v\ge0$。</p>
       <p>(b) 对称性显然。$\sum_{i,j}v_iv_j\,g(x_i)g(x_j) = \big(\sum_iv_ig(x_i)\big)^2\ge0$。对应的特征映射是一维的 $\psi(x) = g(x)$。</p>
@@ -1438,7 +1862,7 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <p>补充：两个核的<b>乘积</b>也是核（Schur 积定理），所以可以用加法和乘法从简单的核拼出复杂的核。</p>
     </div></details>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">8</b> <span lang="en">Data $x = (0, 1)^\top$, $y = (1, 3)^\top$, features $\phi(x) = (1, x)^\top$ so that $k(x,x') = 1 + xx'$, and $\lambda = 1$. (a) Compute $K$, $\alpha = (K + \lambda I)^{-1}y$ and $f(x) = k(x)^\top\alpha$. (b) Compute the primal ridge solution $\beta = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top y$ and check both give the same $f$. (c) Predict at $x = 2$.</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">12</b> <span lang="en">Data $x = (0, 1)^\top$, $y = (1, 3)^\top$, features $\phi(x) = (1, x)^\top$ so that $k(x,x') = 1 + xx'$, and $\lambda = 1$. (a) Compute $K$, $\alpha = (K + \lambda I)^{-1}y$ and $f(x) = k(x)^\top\alpha$. (b) Compute the primal ridge solution $\beta = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top y$ and check both give the same $f$. (c) Predict at $x = 2$.</span></span></summary><div class="ans">
       <p>(a) $K = \begin{pmatrix}k(0,0) & k(0,1)\\ k(1,0) & k(1,1)\end{pmatrix} = \begin{pmatrix}1 & 1\\ 1 & 2\end{pmatrix}$，$K + I = \begin{pmatrix}2 & 1\\ 1 & 3\end{pmatrix}$，行列式为 5。</p>
       $$\alpha = \frac15\begin{pmatrix}3 & -1\\ -1 & 2\end{pmatrix}\begin{pmatrix}1\\3\end{pmatrix} = \begin{pmatrix}0\\1\end{pmatrix},\qquad f(x) = 0\cdot k(x, 0) + 1\cdot k(x, 1) = 1 + x$$
       <p>(b) $\Phi = \begin{pmatrix}1 & 0\\ 1 & 1\end{pmatrix}$，$\Phi^\top\Phi + I = \begin{pmatrix}3 & 1\\ 1 & 2\end{pmatrix}$，$\Phi^\top y = (4, 3)^\top$，</p>
@@ -1447,13 +1871,13 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <p><b>值得注意</b>：不加正则时，直线会精确穿过两点：$y = 1 + 2x$。岭回归把斜率从 2 <b>收缩</b>到了 1，因为惩罚 $\lambda\|\beta\|^2$ 把系数往 0 拉。这里的 $\alpha$ 用的是 $(K+\lambda I)^{-1}y$ 这种约定，见 4.6 的勘误框。</p>
     </div></details>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">9</b> <span lang="en">For two training points the Gram matrix is $K = \begin{pmatrix}1 & 0.5\\ 0.5 & 1\end{pmatrix}$, $y = (1, -1)^\top$ and $\lambda = 0.5$. For a test point $x_*$, $k(x_*) = (0.8,\ 0.2)^\top$. Compute the KRR prediction $f(x_*)$.</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">13</b> <span lang="en">For two training points the Gram matrix is $K = \begin{pmatrix}1 & 0.5\\ 0.5 & 1\end{pmatrix}$, $y = (1, -1)^\top$ and $\lambda = 0.5$. For a test point $x_*$, $k(x_*) = (0.8,\ 0.2)^\top$. Compute the KRR prediction $f(x_*)$.</span></span></summary><div class="ans">
       <p>$K + \lambda I = \begin{pmatrix}1.5 & 0.5\\ 0.5 & 1.5\end{pmatrix}$，行列式 $= 2.25 - 0.25 = 2$，</p>
       $$\alpha = \frac12\begin{pmatrix}1.5 & -0.5\\ -0.5 & 1.5\end{pmatrix}\begin{pmatrix}1\\-1\end{pmatrix} = \begin{pmatrix}1\\-1\end{pmatrix},\qquad f(x_*) = k(x_*)^\top\alpha = 0.8 - 0.2 = 0.6$$
       <p>检查：$(K+\lambda I)\alpha = (1.5 - 0.5,\ 0.5 - 1.5)^\top = (1, -1)^\top = y$。直觉：$x_*$ 和第一个点更相似（0.8 对 0.2），所以预测偏向第一个标签 $+1$。</p>
     </div></details>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">10</b> <span lang="en">A one-hidden-layer network with $d = d_1 = 1$ uses the logistic sigmoid $\sigma(a) = 1/(1 + e^{-a})$, with $W = 0.5$, $b = -1$, $v = 2$, $c = 0$. For the sample $(x, y) = (2, 0)$ and loss $\ell = \frac12(\hat y - y)^2$: (a) do the forward pass; (b) compute all four gradients by backpropagation; (c) take one SGD step with $\eta = 0.5$ and show that the loss decreases. Hint: $\sigma'(a) = \sigma(a)\big(1 - \sigma(a)\big)$.</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">14</b> <span lang="en">A one-hidden-layer network with $d = d_1 = 1$ uses the logistic sigmoid $\sigma(a) = 1/(1 + e^{-a})$, with $W = 0.5$, $b = -1$, $v = 2$, $c = 0$. For the sample $(x, y) = (2, 0)$ and loss $\ell = \frac12(\hat y - y)^2$: (a) do the forward pass; (b) compute all four gradients by backpropagation; (c) take one SGD step with $\eta = 0.5$ and show that the loss decreases. Hint: $\sigma'(a) = \sigma(a)\big(1 - \sigma(a)\big)$.</span></span></summary><div class="ans">
       <div class="tbl"><table class="steps"><tbody>
         <tr><td>(a) 前向</td><td>$a = 0.5\times2 - 1 = 0$，$z = \sigma(0) = 0.5$，$\hat y = 2\times0.5 + 0 = 1$，$\ell = \frac12(1 - 0)^2 = 0.5$</td></tr>
         <tr><td>输出误差</td><td>$\delta^{(o)} = \hat y - y = 1$</td></tr>
@@ -1466,13 +1890,13 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <p>损失从 0.5 降到约 0.006。注意要<b>先算完全部梯度再统一更新</b>：$\delta^{(h)}$ 用的是更新前的 $v = 2$。</p>
     </div></details>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">11</b> <span lang="en">$n = 1000$ training samples, mini-batch size $|B| = 32$, trained for 10 epochs. (a) How many parameter updates are made? (b) What is $\mathbb P(i\in B)$ for a uniformly sampled mini-batch? (c) How many updates would full-batch gradient descent make in 10 epochs, and why can SGD reach a lower loss for the same computation?</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">15</b> <span lang="en">$n = 1000$ training samples, mini-batch size $|B| = 32$, trained for 10 epochs. (a) How many parameter updates are made? (b) What is $\mathbb P(i\in B)$ for a uniformly sampled mini-batch? (c) How many updates would full-batch gradient descent make in 10 epochs, and why can SGD reach a lower loss for the same computation?</span></span></summary><div class="ans">
       <p>(a) 每个 epoch 有 $\lceil 1000/32\rceil = 32$ 个小批量（31 个满批，最后一批 8 个样本），共 $32\times10 = 320$ 次更新。</p>
       <p>(b) $\mathbb P(i\in B) = |B|/n = 32/1000 = 0.032$。这正是无偏性证明里用到的量。</p>
       <p>(c) 全批量每个 epoch 只更新 1 次，共 10 次。两者的计算量相同（都把每个样本的梯度算了 10 次），但 SGD 走了 32 倍多的步数。每一步虽然有噪声，但方向在期望上是对的，所以通常下降得快得多；噪声还有助于跳出鞍点。</p>
     </div></details>
 
-    <details class="qa prob"><summary><span class="q"><b class="pn">12</b> <span lang="en">A nonparametric estimator attains the minimax rate for $s$-Hölder functions in $d$ dimensions. With $N = 1000$, $s = 1$, $d = 2$, its mean squared error is $0.04$. (a) Roughly how many samples are needed for an MSE of $0.01$? (b) Repeat for $d = 20$. (c) How many would a correctly specified parametric model (rate $N^{-1}$) need?</span></span></summary><div class="ans">
+    <details class="qa prob"><summary><span class="q"><b class="pn">16</b> <span lang="en">A nonparametric estimator attains the minimax rate for $s$-Hölder functions in $d$ dimensions. With $N = 1000$, $s = 1$, $d = 2$, its mean squared error is $0.04$. (a) Roughly how many samples are needed for an MSE of $0.01$? (b) Repeat for $d = 20$. (c) How many would a correctly specified parametric model (rate $N^{-1}$) need?</span></span></summary><div class="ans">
       <p>(a) 速率 $N^{-2s/(2s+d)} = N^{-2/4} = N^{-1/2}$。误差要缩小到 1/4，$N$ 需要乘以 $4^2 = 16$，约 <b>16,000</b>。</p>
       <p>(b) 速率 $N^{-2/22} = N^{-1/11}$。$N$ 需要乘以 $4^{11}\approx4.2\times10^6$，约 <b>$4.2\times10^9$</b>，完全不现实，这就是维数灾难。</p>
       <p>(c) 速率 $N^{-1}$，只需乘以 4，约 <b>4,000</b>。前提是模型设定正确；设定错误时，误差会停在近似误差上不再下降（4.1）。</p>
@@ -1480,7 +1904,7 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
   </section>
 
   <section class="sec" id="s5-2">
-    <div class="sec-head"><span class="eyebrow">8 题 · 英文参考答案</span><h3><span class="no">P2</span>英文简答 · Short answers in English</h3></div>
+    <div class="sec-head"><span class="eyebrow">11 题 · 英文参考答案</span><h3><span class="no">P2</span>英文简答 · Short answers in English</h3></div>
     <p>期末要用英文作答。答题顺序建议：<b>先给定义，再写公式，最后举例或说明意义</b>。下面的参考答案按这个结构写，每题附中文要点，方便你检查自己有没有漏掉关键点。</p>
 
     <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">1</b> Distinguish parametric and nonparametric regression in the modern sense, with an example of each.</span></summary><div class="ans">
@@ -1522,6 +1946,21 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <p lang="en">For $s$-smooth (Hölder) functions in $d$ dimensions, the minimax rate of the mean squared error is $N^{-2s/(2s+d)}$, and no estimator can do better. As $d$ increases the exponent decreases, so the number of samples needed to reach a given accuracy grows exponentially with the dimension. Intuitively, a neighbourhood of fixed radius $h$ contains a fraction of the data that shrinks like $h^d$, so local estimates become very noisy unless the neighbourhood is enlarged, which increases the bias. Greater smoothness $s$ partially offsets this, whereas a correctly specified parametric model attains $N^{-1}$ regardless of $d$.</p>
       <p><b>要点</b>：写出速率；指数随 d 减小 → 所需样本随维度指数增长；邻域里的点越来越少的直觉；与参数模型的对比。</p>
     </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">9</b> What is the Bayes predictor, and why do we use empirical risk minimisation instead?</span></summary><div class="ans">
+      <p lang="en">The Bayes predictor minimises the risk, the expected loss $\mathcal R(f) = \mathbb E[\ell(Y, f(X))]$ under the joint law $P(X,Y)$. For the square loss it is the conditional mean $f^\star(x) = \mathbb E[Y\mid X = x]$, because $\mathbb E[(Y - f(x))^2\mid x] = \operatorname{var}(Y\mid x) + (\mathbb E[Y\mid x] - f(x))^2$. In practice $P(X,Y)$ is unknown, so we minimise the empirical risk $\frac1N\sum_n\ell(y_n, f(x_n))$, a Monte Carlo estimate of the risk, over a restricted hypothesis class such as $f_\beta(x) = \beta^\top\phi(x)$. Without this restriction, any function interpolating the data would achieve zero empirical risk but would not generalise.</p>
+      <p><b>要点</b>：风险的定义；平方损失下是条件均值（最好写出分解）；分布未知 → 经验风险是蒙特卡洛估计；必须限制假设空间。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">10</b> Explain why LASSO can produce sparse solutions while ridge regression cannot.</span></summary><div class="ans">
+      <p lang="en">Both add a norm penalty to the square error; equivalently they minimise the square error subject to $\|\beta\|_2^2\le\eta$ (ridge) or $\|\beta\|_1\le\eta$ (LASSO). The contours of the square error are ellipses centred at the least-squares solution. The $\ell_2$ ball is round, so the contours generally touch it at a point where no coefficient is zero. The $\ell_1$ ball is a diamond with corners on the coordinate axes, so the first contact often occurs at a corner, where some coefficients are exactly zero. For an orthonormal design this is explicit: ridge gives $\beta_i = b_i/(1+\lambda)$, a proportional shrinkage, whereas LASSO gives the soft threshold $\beta_i = \operatorname{sign}(b_i)\max(|b_i| - \lambda, 0)$, which sets small coefficients exactly to zero.</p>
+      <p><b>要点</b>：约束形式；椭圆等高线 + 圆 vs 菱形尖角；正交设计下的两个显式公式。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">11</b> Describe Bayesian linear regression and its relation to ridge regression.</span></summary><div class="ans">
+      <p lang="en">Bayesian linear regression treats the weights as random variables with a prior $\mathcal N(0,\alpha^{-1}I)$. Combined with a Gaussian likelihood of noise precision $\eta$, the posterior is Gaussian, $\mathcal N(m, S)$ with $S = (\alpha I + \eta\Phi^\top\Phi)^{-1}$ and $m = \eta S\Phi^\top y$. Predictions average over the posterior, giving the predictive variance $\eta^{-1} + \phi(x)^\top S\phi(x)$, which quantifies uncertainty and grows away from the data. The MAP estimate is identical to ridge regression with $\lambda = \alpha/\eta$, so the ridge penalty corresponds to a Gaussian prior on the weights. The hyperparameters can be chosen by maximising the evidence (Type-II maximum likelihood) using only the training data.</p>
+      <p><b>要点</b>：先验 → 后验公式；预测分布的两部分方差；MAP = 岭回归且 λ = α/η；证据最大化。</p>
+    </div></details>
   </section>
 </div>
 
@@ -1552,6 +1991,18 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <tr><td>$\mathcal N(\boldsymbol\mu,\boldsymbol\Sigma)$</td><td>$\frac{1}{(2\pi)^{n/2}|\boldsymbol\Sigma|^{1/2}}e^{-\frac12(\mathbf x-\boldsymbol\mu)^\top\boldsymbol\Sigma^{-1}(\mathbf x-\boldsymbol\mu)}$</td><td>$\boldsymbol\mu$</td><td>$\boldsymbol\Sigma$</td></tr>
     </tbody>
   </table></div>
+  <h4>参数回归 · Parametric regression</h4>
+  <div class="tbl"><table class="fs"><tbody>
+    <tr><td>Bayes 预测器</td><td>$f^\star = \operatorname{argmin}_f\mathbb E[\ell(Y,f(X))]$；平方损失下 $f^\star(x) = \mathbb E[Y\mid X=x]$</td></tr>
+    <tr><td>MLE（高斯噪声）</td><td>$\beta_{\text{ML}} = (\Phi^\top\Phi)^{-1}\Phi^\top y$；$1/\eta_{\text{ML}} = \frac1N\|y - \Phi\beta_{\text{ML}}\|^2$</td></tr>
+    <tr><td>岭回归 / LASSO</td><td>$(\Phi^\top\Phi+\lambda I)^{-1}\Phi^\top y$；正交设计：$\frac{b_i}{1+\lambda}$ vs $\operatorname{sign}(b_i)\max(|b_i|-\lambda,0)$</td></tr>
+    <tr><td>帽子矩阵 / LOOCV</td><td>$\hat y = Hy$，$H = \Phi(\Phi^\top\Phi+\lambda I)^{-1}\Phi^\top$；$\text{LOOCV} = \frac1N\sum_n\big(\frac{y_n-\hat y_n}{1-H_{nn}}\big)^2$</td></tr>
+    <tr><td>GCV / 有效自由度</td><td>$\text{GCV} = \frac{\frac1N\sum(y_n-\hat y_n)^2}{(1-\operatorname{tr}H/N)^2}$；$\operatorname{tr}H = \sum_j\frac{d_j^2}{d_j^2+\lambda}$（OLS 为 $p$）</td></tr>
+    <tr><td>局部线性 / NW</td><td>$\hat\beta = (X^\top WX)^{-1}X^\top Wy$，$\hat f(x_*) = \hat\beta_0$；$\hat f_{\text{NW}}(x_*) = \frac{\sum k_h(x_n-x_*)y_n}{\sum k_h(x_n-x_*)}$</td></tr>
+    <tr><td>贝叶斯后验</td><td>$S = (\alpha I+\eta\Phi^\top\Phi)^{-1}$，$m = \eta S\Phi^\top y$；MAP = 岭回归，$\lambda = \alpha/\eta$</td></tr>
+    <tr><td>预测分布</td><td>$\mathcal N\big(m^\top\phi(x_*),\ \eta^{-1}+\phi(x_*)^\top S\phi(x_*)\big)$</td></tr>
+    <tr><td>证据最大化</td><td>$\gamma = \sum_i\frac{\eta\lambda_i}{\alpha+\eta\lambda_i}$，$\alpha\leftarrow\frac{\gamma}{m^\top m}$，$\eta\leftarrow\frac{N-\gamma}{\|y-\Phi m\|^2}$</td></tr>
+  </tbody></table></div>
   <h4>回归与核 · Regression and kernels</h4>
   <div class="tbl"><table class="fs"><tbody>
     <tr><td>最小二乘</td><td>$\theta = (X^\top X)^{-1}X^\top y$；一维：$a = S_{xy}/S_{xx}$，$b = \bar y - a\bar x$</td></tr>
@@ -1608,6 +2059,25 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <tr><td>outer product</td><td>外积</td><td>$uv^\top$，结果是矩阵</td></tr>
       <tr><td>quadratic form / contour</td><td>二次型 / 等高线</td><td>$(\mathbf x-\boldsymbol\mu)^\top\boldsymbol\Sigma^{-1}(\mathbf x-\boldsymbol\mu)$ / 密度相等的曲线</td></tr>
       <tr><td>positive semi-definite</td><td>半正定</td><td>$w^\top Aw\ge0$ 对所有 $w$</td></tr>
+      <tr><td>design points / targets</td><td>设计点 / 目标值</td><td>输入 $x_n$ / 输出 $y_n$</td></tr>
+      <tr><td>risk / empirical risk</td><td>风险 / 经验风险</td><td>期望损失 / 训练集上的平均损失</td></tr>
+      <tr><td>Bayes predictor</td><td>Bayes 预测器</td><td>最小化风险；平方损失下为 $\mathbb E[Y\mid x]$</td></tr>
+      <tr><td>basis functions / splines / knots</td><td>基函数 / 样条 / 节点</td><td>$f = \sum\beta_i\phi_i$ / 分段多项式 / 分段点</td></tr>
+      <tr><td>wavelets / radial basis functions</td><td>小波 / 径向基函数</td><td>伸缩平移的局部振荡函数 / 只依赖 $\|x-c_i\|$</td></tr>
+      <tr><td>feature map / attributes / features</td><td>特征映射 / 属性 / 特征</td><td>$\phi:\mathcal X\to\mathcal F$ / $x$ 的分量 / $\phi(x)$ 的分量</td></tr>
+      <tr><td>additive noise / fixed design / homoskedastic</td><td>加性噪声 / 固定设计 / 同方差</td><td>$y = f(x)+\epsilon$ / 输入不随机 / 噪声方差处处相同</td></tr>
+      <tr><td>likelihood / MLE / precision</td><td>似然 / 最大似然估计 / 精度</td><td>$p_\theta(y\mid X)$ / 使似然最大的参数 / $\eta = 1/\sigma^2$</td></tr>
+      <tr><td>design matrix / pseudoinverse</td><td>设计矩阵 / 伪逆</td><td>行为 $\phi(x_n)^\top$ / $(\Phi^\top\Phi)^{-1}\Phi^\top$</td></tr>
+      <tr><td>capacity / consistency</td><td>容量 / 相合性</td><td>实际表达能力 / $N\to\infty$ 时收敛到真值</td></tr>
+      <tr><td>LASSO / sparsity / elastic net</td><td>LASSO / 稀疏性 / 弹性网</td><td>L1 惩罚 / 系数恰好为 0 / L1 + L2</td></tr>
+      <tr><td>cross-validation / LOOCV / GCV</td><td>交叉验证 / 留一 / 广义交叉验证</td><td>重抽样估计泛化误差</td></tr>
+      <tr><td>hat matrix / leverage</td><td>帽子矩阵 / 杠杆值</td><td>$\hat y = Hy$ / $H_{nn}$</td></tr>
+      <tr><td>effective degrees of freedom</td><td>有效自由度</td><td>$\operatorname{tr}(H)$，有效参数个数</td></tr>
+      <tr><td>local polynomial / Nadaraya–Watson</td><td>局部多项式 / 核回归</td><td>在 $x_*$ 附近加权拟合 / 局部加权平均</td></tr>
+      <tr><td>bandwidth / boundary bias / LOESS</td><td>带宽 / 边界偏差 / 局部加权散点平滑</td><td>$h$ / 边界处一侧取平均造成的偏差 / 局部线性 + 三次立方核</td></tr>
+      <tr><td>prior / posterior / predictive distribution</td><td>先验 / 后验 / 预测分布</td><td>$p(\beta)$ / $p(\beta\mid y)$ / $p(y_*\mid x_*)$</td></tr>
+      <tr><td>MAP / point estimate</td><td>最大后验 / 点估计</td><td>后验的众数 / 只取一组参数值</td></tr>
+      <tr><td>evidence / marginal likelihood / Type-II ML</td><td>证据 / 边缘似然 / 第二类最大似然</td><td>$p(y\mid\alpha,\eta)$，对 $\beta$ 积分后最大化</td></tr>
       <tr><td>model misspecification</td><td>模型设定错误</td><td>真实函数不在假设空间里</td></tr>
       <tr><td>hypothesis space / class</td><td>假设空间 / 假设类</td><td>模型能表示的所有函数</td></tr>
       <tr><td>heteroscedasticity</td><td>异方差</td><td>噪声大小随输入变化</td></tr>
@@ -1657,6 +2127,16 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
       <tr><td>L1 p.28</td><td>$\mathbb E[X] = \frac{b-a}{2}$</td><td>$\mathbb E[X] = \frac{a+b}{2}$</td></tr>
       <tr><td>L1 p.33</td><td>$p(x_1,\dots,x_n) = p(x_1\mid x_2)\,p(x_2\mid x_3)\cdots p(x_n)$</td><td>$p(x_1\mid x_2,\dots,x_n)\,p(x_2\mid x_3,\dots,x_n)\cdots p(x_n)$；课件写法只在马尔可夫假设下成立</td></tr>
       <tr><td>L1 p.43</td><td>二次型 $\gt 0$</td><td>$\ge 0$（在 $\mathbf x = \boldsymbol\mu$ 处等于 0）</td></tr>
+      <tr><td>L2 pp.6–7</td><td>$\beta_0+\dots+\beta_px^{p-1}$，$\beta\in\mathbb R^p$</td><td>$\beta_px^p$，$\beta\in\mathbb R^{p+1}$</td></tr>
+      <tr><td>L2 p.25</td><td>方框标题 “ML estimate of β”</td><td>“ML estimate of η”（框里是噪声精度）</td></tr>
+      <tr><td>L2 p.48</td><td>ln λ = 0.1，ln λ = 10⁶</td><td>λ = 0.1，λ = 10⁶</td></tr>
+      <tr><td>L2 p.51</td><td>LOOCV：“set k = 1, then we have N folds”</td><td>k = N</td></tr>
+      <tr><td>L2 p.63</td><td>$U\in\mathbb R^{N\times p}$ (if $N\lt p$)，$U^\top U = UU^\top = I$</td><td>$N\gt p$；瘦 SVD 只有 $U^\top U = I$</td></tr>
+      <tr><td>L2 p.74</td><td>$\beta_i$ 是 $i$ 阶导数</td><td>$\beta_i = f^{(i)}(x_*)/i!$</td></tr>
+      <tr><td>L2 p.86</td><td>“tri-weight kernel” $(1-u^3)^3$</td><td>这个公式是 tricube（三次立方）核</td></tr>
+      <tr><td>L2 p.87</td><td>$\beta_i$ independent with precision $\alpha^{-1}$</td><td>精度 $\alpha$（方差 $\alpha^{-1}$）</td></tr>
+      <tr><td>L2 p.101</td><td>$\gamma = 1 - \sum_i\frac{1}{\alpha+\eta\lambda_i}$</td><td>$\gamma = p - \sum_i\frac{\alpha}{\alpha+\eta\lambda_i} = \sum_i\frac{\eta\lambda_i}{\alpha+\eta\lambda_i}$</td></tr>
+      <tr><td>L2 其他</td><td>p.26、28 的 θ；p.43 的 ‖θ‖₁；p.50 循环里的 “GS-CV”；p.58 的 Xᵀy；p.102 的 Xm</td><td>β；‖β‖₁；k-fold CV；Φᵀy；Φm（记号笔误）</td></tr>
       <tr><td>L3 p.22</td><td>$\alpha = (\lambda I+K)^{-1}y$</td><td>$\alpha = \lambda(K+\lambda I)^{-1}y$（最终的 KRR 公式不受影响）</td></tr>
       <tr><td>L3 p.23</td><td>$\beta = -\frac1\lambda\Phi^\top\alpha$</td><td>$\beta = +\frac1\lambda\Phi^\top\alpha$（与 p.20 一致）</td></tr>
       <tr><td>L3 p.24</td><td>核必须非负 $k(x,x')\ge0$</td><td>不需要；只需对称 + 半正定（线性核可以为负）</td></tr>

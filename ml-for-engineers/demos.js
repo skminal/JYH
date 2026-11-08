@@ -324,6 +324,12 @@
     ctx.stroke();
   }
 
+  function poly(ctx, F, xs, ys) {
+    ctx.beginPath();
+    for (let i = 0; i < xs.length; i++) { const px = F.X(xs[i]), py = F.Y(ys[i]); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); }
+    ctx.stroke();
+  }
+
   function dots(ctx, F, xs, ys, r, color) {
     ctx.fillStyle = color;
     for (let i = 0; i < xs.length; i++) { ctx.beginPath(); ctx.arc(F.X(xs[i]), F.Y(ys[i]), r, 0, 2 * Math.PI); ctx.fill(); }
@@ -341,7 +347,7 @@
       const y = y0 + i * 17;
       ctx.strokeStyle = it[1];
       ctx.lineWidth = 2.2;
-      ctx.setLineDash(it[2] ? [5, 3] : []);
+      ctx.setLineDash(Array.isArray(it[2]) ? it[2] : (it[2] ? [5, 3] : []));
       ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x0 + 20, y); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = C.ink2;
@@ -669,48 +675,89 @@
 
   // ---------------------------------------------------------------- demo 6: kernel ridge regression
   function demoKRR() {
-    const kEl = $('krr-kernel'), lEl = $('krr-ell'), lamEl = $('krr-lam'), nEl = $('krr-n'), noiseEl = $('krr-noise'), truthEl = $('krr-truth');
+    const kEl = $('krr-kernel'), lEl = $('krr-ell'), lamEl = $('krr-lam'), nEl = $('krr-n'), noiseEl = $('krr-noise'), truthEl = $('krr-truth'), bvEl = $('krr-bv');
     const f = x => Math.sin(2 * Math.PI * x);
-    const GRID = linspace(-0.02, 1.02, 260), ERRGRID = linspace(0, 1, 101);
-    let seed = 3, xs = [], ys = [], sweep = [], cur = null;
-    function gen() {
-      const rand = mulberry32(seed), g = gaussian(mulberry32(seed + 1000));
-      const n = +nEl.value, s = +noiseEl.value;
-      xs = [];
-      for (let i = 0; i < n; i++) xs.push(rand());
-      xs.sort((p, q) => p - q);
-      ys = xs.map(x => f(x) + s * g());
+    const GRID = linspace(-0.02, 1.02, 260), ERRGRID = linspace(0, 1, 101), BVGRID = linspace(0, 1, 51);
+    const NSETS = 20, NSWEEP = 12;
+    let seed = 3, xs = [], ys = [], sets = [], sweep = [], bvSweep = [], cur = null, bv = null;
+    function makeSet(s, n, noise) {
+      const rand = mulberry32(s), g = gaussian(mulberry32(s + 1000));
+      const X = [];
+      for (let i = 0; i < n; i++) X.push(rand());
+      X.sort((p, q) => p - q);
+      return [X, X.map(x => f(x) + noise * g())];
     }
-    function evalFit(kind, ell, lam) {
-      const m = krrFit(xs, ys, kind, ell, lam);
+    function gen() { // the data set you see, plus 20 independent ones from the same distribution
+      const n = +nEl.value, noise = +noiseEl.value;
+      [xs, ys] = makeSet(seed, n, noise);
+      sets = [];
+      for (let j = 0; j < NSETS; j++) sets.push(makeSet(seed * 7919 + 101 * (j + 1), n, noise));
+    }
+    function errs(m) {
       let tr = 0, te = 0;
       for (let i = 0; i < xs.length; i++) { const e = m.predict(xs[i]) - ys[i]; tr += e * e; }
       for (const x of ERRGRID) { const e = m.predict(x) - f(x); te += e * e; }
-      return { m, tr: tr / xs.length, te: te / ERRGRID.length };
+      return [tr / xs.length, te / ERRGRID.length];
+    }
+    // E_D[(f̂ − f)²] = (E_D f̂ − f)² + E_D[(f̂ − E_D f̂)²], estimated from `count` independent data sets, averaged over x
+    function biasVar(kind, ell, lam, count, grid) {
+      const preds = [];
+      for (let j = 0; j < count; j++) { const m = krrFit(sets[j][0], sets[j][1], kind, ell, lam); preds.push(grid.map(m.predict)); }
+      const mean = grid.map((_, k) => preds.reduce((acc, p) => acc + p[k], 0) / count);
+      let b2 = 0, va = 0;
+      grid.forEach((x, k) => {
+        b2 += (mean[k] - f(x)) * (mean[k] - f(x));
+        let acc = 0;
+        for (const p of preds) acc += (p[k] - mean[k]) * (p[k] - mean[k]);
+        va += acc / count;
+      });
+      return { preds, mean, b2: b2 / grid.length, va: va / grid.length };
     }
     const ell = () => Math.pow(10, +lEl.value), lam = () => Math.pow(10, +lamEl.value);
     function computeSweep() {
-      sweep = [];
+      sweep = []; bvSweep = [];
       for (let i = 0; i <= 40; i++) {
-        const le = -2.3 + i * 3 / 40, r = evalFit(kEl.value, Math.pow(10, le), lam());
-        sweep.push([le, r.tr, r.te]);
+        const le = -2.3 + i * 3 / 40;
+        sweep.push([le].concat(errs(krrFit(xs, ys, kEl.value, Math.pow(10, le), lam()))));
+      }
+      if (bvEl.checked) {
+        for (let i = 0; i <= 20; i++) {
+          const le = -2.3 + i * 3 / 20, r = biasVar(kEl.value, Math.pow(10, le), lam(), NSWEEP, BVGRID);
+          bvSweep.push([le, r.b2, r.va, r.b2 + r.va]);
+        }
       }
     }
-    function compute() { cur = evalFit(kEl.value, ell(), lam()); cur.dof = cur.m.dof(); }
+    function compute() {
+      const m = krrFit(xs, ys, kEl.value, ell(), lam()), e = errs(m);
+      cur = { m, tr: e[0], te: e[1], dof: m.dof() };
+      bv = bvEl.checked ? biasVar(kEl.value, ell(), lam(), NSETS, ERRGRID) : null;
+    }
 
     const view = canvasView($('krr-plot'), v => {
       const ctx = v.ctx, F = frame(v, [-0.02, 1.02], [-2.2, 2.2], { l: 38 });
       axes(ctx, F, { xlabel: 'x', ylabel: 'y' });
       ctx.save(); clip(ctx, F);
+      if (bv) {
+        ctx.strokeStyle = C.ink3; ctx.lineWidth = 1; ctx.globalAlpha = 0.5;
+        for (const p of bv.preds) poly(ctx, F, ERRGRID, p);
+        ctx.globalAlpha = 1;
+      }
       if (truthEl.checked) {
         ctx.strokeStyle = C.c3; ctx.lineWidth = 1.8; ctx.setLineDash([6, 4]);
         curve(ctx, F, GRID, f); ctx.setLineDash([]);
+      }
+      if (bv) {
+        ctx.strokeStyle = C.c2; ctx.lineWidth = 2.6; ctx.setLineDash([2, 3]);
+        poly(ctx, F, ERRGRID, bv.mean); ctx.setLineDash([]);
       }
       ctx.strokeStyle = C.accent; ctx.lineWidth = 2.4;
       curve(ctx, F, GRID, cur.m.predict);
       dots(ctx, F, xs, ys, 3.4, C.ink);
       ctx.restore();
-      legend(ctx, F, truthEl.checked ? [['KRR 拟合', C.accent, false], ['真实 f(x)', C.c3, true]] : [['KRR 拟合', C.accent, false]]);
+      const items = [['KRR 拟合', C.accent, false]];
+      if (truthEl.checked) items.push(['真实 f(x)', C.c3, true]);
+      if (bv) { items.push(['20 组数据的平均拟合', C.c2, [2, 3]]); items.push(['每组数据各自的拟合', C.ink3, false]); }
+      legend(ctx, F, items);
     });
     const sv = canvasView($('krr-sweep'), v => {
       const ctx = v.ctx, F = frame(v, [-2.3, 0.7], [-4, 0.5], { l: 44 });
@@ -718,18 +765,19 @@
         xticks: [-2, -1, 0], xfmt: k => ({ '-2': '0.01', '-1': '0.1', '0': '1' })[String(k)],
         yticks: [-4, -3, -2, -1, 0], yfmt: k => (k === 0 ? '1' : pow10(k)), xlabel: '长度尺度 ℓ（对数刻度）', ylabel: '均方误差',
       });
-      ctx.save(); clip(ctx, F);
       const lg = x => Math.log10(Math.max(x, 1e-5));
-      [[1, C.c2, true], [2, C.accent, false]].forEach(([k, col, dashed]) => {
-        ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.setLineDash(dashed ? [5, 3] : []);
-        ctx.beginPath();
-        sweep.forEach((p, i) => { const px = F.X(p[0]), py = F.Y(lg(p[k])); if (i) ctx.lineTo(px, py); else ctx.moveTo(px, py); });
-        ctx.stroke();
-      });
+      const series = bv && bvSweep.length
+        ? [[bvSweep, 1, C.c2, [5, 3], '偏差²'], [bvSweep, 2, C.c3, [2, 3], '方差'], [bvSweep, 3, C.accent, false, '偏差² + 方差']]
+        : [[sweep, 1, C.c2, [5, 3], '训练误差'], [sweep, 2, C.accent, false, '与真实 f 的误差']];
+      ctx.save(); clip(ctx, F);
+      for (const [data, k, col, dash] of series) {
+        ctx.strokeStyle = col; ctx.lineWidth = 2.2; ctx.setLineDash(dash || []);
+        poly(ctx, F, data.map(p => p[0]), data.map(p => lg(p[k])));
+      }
       ctx.setLineDash([3, 3]); ctx.strokeStyle = C.ink2; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(F.X(+lEl.value), F.m.t); ctx.lineTo(F.X(+lEl.value), F.m.t + F.ph); ctx.stroke(); ctx.setLineDash([]);
       ctx.restore();
-      legend(ctx, F, [['训练误差', C.c2, true], ['与真实 f 的误差', C.accent, false]]);
+      legend(ctx, F, series.map(s => [s[4], s[2], s[3]]));
     });
     const NAMES = { gauss: '高斯核', m12: 'Matérn 1/2', m32: 'Matérn 3/2', m52: 'Matérn 5/2', lin: '线性核 1 + x·x′' };
     function update() {
@@ -742,21 +790,82 @@
       $('krr-readout').innerHTML =
         NAMES[kEl.value] + ' · 训练误差 <b>' + cur.tr.toExponential(2) + '</b> · 与真实函数的误差 ‖f̂ − f‖² ≈ <b>' + cur.te.toExponential(2) + '</b>' +
         '<br>有效参数个数 tr(S) = <b>' + cur.dof.toFixed(1) + '</b>（数据点 n = ' + xs.length + '）' +
-        (isLin ? ' — 线性核只有两个特征 (1, x)，所以 tr(S) ≤ 2，怎么调都是直线' : '');
+        (isLin ? ' — 线性核只有两个特征 (1, x)，所以 tr(S) ≤ 2，怎么调都是直线' : '') +
+        (bv ? '<br>20 组独立数据集（同样的 n 和噪声）：偏差² ≈ <b>' + bv.b2.toExponential(2) + '</b>，方差 ≈ <b>' + bv.va.toExponential(2) +
+          '</b>，两者之和 ≈ ' + (bv.b2 + bv.va).toExponential(2) + '，等于各组拟合与真实函数误差的平均值' : '');
       view.draw(); sv.draw();
     }
-    const full = () => { computeSweep(); compute(); update(); };
-    kEl.addEventListener('change', full);
-    lamEl.addEventListener('input', full);
-    lEl.addEventListener('input', () => { compute(); update(); });
-    nEl.addEventListener('input', () => { gen(); full(); });
-    noiseEl.addEventListener('input', () => { gen(); full(); });
+    // coalesce slider events into one recomputation per frame: 1 = current fit, 2 = + sweep, 3 = + new data
+    let pending = 0;
+    function schedule(level) {
+      if (!pending) requestAnimationFrame(() => {
+        const L = pending; pending = 0;
+        if (L >= 3) gen();
+        if (L >= 2) computeSweep();
+        compute(); update();
+      });
+      pending = Math.max(pending, level);
+    }
+    kEl.addEventListener('change', () => schedule(2));
+    lamEl.addEventListener('input', () => schedule(2));
+    bvEl.addEventListener('change', () => schedule(2));
+    lEl.addEventListener('input', () => schedule(1));
+    nEl.addEventListener('input', () => schedule(3));
+    noiseEl.addEventListener('input', () => schedule(3));
     truthEl.addEventListener('change', () => view.draw());
-    $('krr-resample').addEventListener('click', () => { seed++; gen(); full(); });
+    $('krr-resample').addEventListener('click', () => { seed++; schedule(3); });
     gen(); computeSweep(); compute(); update();
   }
 
-  // ---------------------------------------------------------------- demo 7: one-hidden-layer MLP + SGD
+  // ---------------------------------------------------------------- demo 7: functions drawn from a kernel (GP prior)
+  function demoGP() {
+    const kEl = $('gp-kernel'), lEl = $('gp-ell');
+    const XS = linspace(0, 1, 161), n = XS.length;
+    let seed = 21, Z = [], paths = [];
+    function newZ() {
+      const g = gaussian(mulberry32(seed));
+      Z = [];
+      for (let s = 0; s < 4; s++) Z.push(XS.map(() => g()));
+    }
+    function compute() { // K = L Lᵀ, f = L z with z ~ N(0, I)  ⇒  f ~ N(0, K)
+      const kind = kEl.value, ell = Math.pow(10, +lEl.value);
+      const A = new Float64Array(n * n);
+      for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) A[i * n + j] = kernel(kind, XS[i], XS[j], ell);
+      let L = null, jitter = 1e-9;
+      while (!L && jitter < 1) { for (let i = 0; i < n; i++) A[i * n + i] += jitter; L = cholesky(A, n); jitter *= 10; }
+      paths = L ? Z.map(z => XS.map((_, i) => { let acc = 0; for (let k = 0; k <= i; k++) acc += L[i * n + k] * z[k]; return acc; })) : [];
+    }
+    const view = canvasView($('gp-plot'), v => {
+      const ctx = v.ctx, F = frame(v, [0, 1], [-3.2, 3.2], { l: 34 });
+      ctx.fillStyle = C.accent; ctx.globalAlpha = 0.08;
+      ctx.fillRect(F.m.l, F.Y(2), F.pw, F.Y(-2) - F.Y(2));
+      ctx.globalAlpha = 1;
+      axes(ctx, F, { xlabel: 'x', ylabel: 'f(x)', yticks: [-3, -2, -1, 0, 1, 2, 3] });
+      ctx.save(); clip(ctx, F);
+      const cols = [C.accent, C.c2, C.c3, C.ink2];
+      paths.forEach((p, s) => { ctx.strokeStyle = cols[s]; ctx.lineWidth = 1.8; poly(ctx, F, XS, p); });
+      ctx.restore();
+    });
+    const NOTES = {
+      gauss: '高斯核：无穷次可导，曲线极其光滑。平均每单位长度约 1/(πℓ) 次穿过 0',
+      m52: 'Matérn 5/2：二阶可导，光滑，但比高斯核更有"棱角"',
+      m32: 'Matérn 3/2：一阶可导，能看到明显的急转弯',
+      m12: 'Matérn 1/2：连续但处处不可导，像布朗运动一样毛糙',
+    };
+    function update() {
+      const ell = Math.pow(10, +lEl.value);
+      $('gp-ell-out').textContent = ell.toPrecision(2);
+      $('gp-readout').innerHTML = NOTES[kEl.value] + '。ℓ = ' + ell.toPrecision(2) + '：ℓ 越小，曲线变化越快。' +
+        '<br>浅色带是 ±2：因为 k(x, x) = 1，每个点的 f(x) 都服从 N(0, 1)，约 95% 落在带内。';
+      view.draw();
+    }
+    kEl.addEventListener('change', () => { compute(); update(); });
+    lEl.addEventListener('input', () => { compute(); update(); });
+    $('gp-resample').addEventListener('click', () => { seed++; newZ(); compute(); update(); });
+    newZ(); compute(); update();
+  }
+
+  // ---------------------------------------------------------------- demo 8: one-hidden-layer MLP + SGD
   function demoMLP() {
     const hEl = $('mlp-h'), lrEl = $('mlp-lr'), bsEl = $('mlp-bs'), actEl = $('mlp-act'), unitsEl = $('mlp-units');
     const runBtn = $('mlp-run');
@@ -872,8 +981,40 @@
     map.forEach((_, id) => { const el = document.getElementById(id); if (el) io.observe(el); });
   }
 
+  // ---------------------------------------------------------------- per-viewer "got it" ticks (browser storage only)
+  function progress() {
+    const KEY = 'mlfe-done-v1';
+    let done = new Set();
+    try { done = new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (_) { /* storage unavailable: ticks just won't persist */ }
+    const secs = Array.from(document.querySelectorAll('section.sec[id]'));
+    const counter = $('toc-progress');
+    function save() { try { localStorage.setItem(KEY, JSON.stringify(Array.from(done))); } catch (_) { /* ignore */ } }
+    function paint() {
+      secs.forEach(s => {
+        const a = document.querySelector('.toc a[href="#' + s.id + '"]');
+        if (a) a.classList.toggle('done', done.has(s.id));
+      });
+      if (counter) counter.textContent = '已掌握 ' + secs.filter(s => done.has(s.id)).length + ' / ' + secs.length + ' 节';
+    }
+    secs.forEach(s => {
+      const head = s.querySelector('.sec-head');
+      if (!head) return;
+      const lab = document.createElement('label');
+      lab.className = 'done-toggle';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.id = 'done-' + s.id;
+      cb.checked = done.has(s.id);
+      lab.htmlFor = cb.id;
+      lab.append(cb, document.createTextNode('这一节我已经掌握了'));
+      cb.addEventListener('change', () => { if (cb.checked) done.add(s.id); else done.delete(s.id); save(); paint(); });
+      head.appendChild(lab);
+    });
+    paint();
+  }
+
   readColors();
-  [demoLS, demoCoin, demoGauss1, demoGauss2, demoRate, demoKRR, demoMLP, tocSpy].forEach(fn => {
+  [demoLS, demoCoin, demoGauss1, demoGauss2, demoRate, demoKRR, demoGP, demoMLP, tocSpy, progress].forEach(fn => {
     try { fn(); } catch (err) { console.error(fn.name, err); }
   });
   const redraw = () => { readColors(); redrawers.forEach(d => d()); };

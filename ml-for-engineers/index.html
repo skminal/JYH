@@ -164,7 +164,29 @@ html { scroll-behavior: smooth; }
 /* every one-column grid may shrink below its content's min-content width; wide maths and tables scroll inside their own boxes */
 header.top, .part, .part-head, section.sec, .sec-head, .box, figure.demo, figure.demo figcaption, .quiz, .ctl, details.qa .ans { grid-template-columns: minmax(0, 1fr); }
 section.sec > *, .part > *, .box > *, figure.demo > * { min-width: 0; }
-main { overflow-wrap: break-word; } /* keeps raw TeX inside the column if the maths library is slow or blocked */
+main { overflow-wrap: break-word; }
+
+/* roadmap, progress ticks, practice problems, formula sheet */
+ol.roadmap { list-style: none; counter-reset: step; padding: 0; margin: 0; border: 1px solid var(--rule); border-radius: 10px; background: var(--surface); }
+ol.roadmap > li { counter-increment: step; display: grid; grid-template-columns: 2rem minmax(0, 1fr); column-gap: 10px; padding: 12px 16px; margin: 0; border-top: 1px solid var(--rule); }
+ol.roadmap > li:first-child { border-top: 0; }
+ol.roadmap > li::before { content: counter(step, decimal-leading-zero); grid-row: 1 / span 2; font-family: var(--font-mono); font-size: 13px; color: var(--accent); padding-top: 3px; }
+ol.roadmap > li > div { grid-column: 2; min-width: 0; }
+ol.roadmap .why { font-size: 14.5px; color: var(--ink-2); line-height: 1.6; }
+ol.roadmap a.go { font-family: var(--font-mono); font-size: 12px; text-decoration: none; margin-left: 8px; padding: 1px 6px; border: 1px solid var(--rule); border-radius: 4px; white-space: nowrap; }
+ol.roadmap a.go:hover { background: var(--accent-soft); }
+.toc-progress { font-family: var(--font-mono); font-size: 11.5px; color: var(--ok); margin: -4px 0 8px; min-height: 1em; }
+.toc a.done::after { content: " ✓"; color: var(--ok); font-weight: 600; }
+.done-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-3); cursor: pointer; justify-self: start; margin-top: 2px; }
+.done-toggle:has(input:checked) { color: var(--ok); }
+details.qa summary > .q { display: block; min-width: 0; flex: 1; }
+.pn { font-family: var(--font-mono); color: var(--accent); margin-right: 4px; }
+table.fs td:first-child { white-space: nowrap; color: var(--ink-2); font-size: 13.5px; }
+table.steps td:first-child { white-space: nowrap; color: var(--ink-2); }
+@media (max-width: 560px) {
+  table.steps td { display: block; }
+  table.steps td:first-child { padding-bottom: 0; border-bottom: 0; font-weight: 600; }
+} /* keeps raw TeX inside the column if the maths library is slow or blocked */
 </style>
 <script>
 window.MathJax = {
@@ -183,6 +205,8 @@ function fitWideMath() {
 }
 var fitTimer;
 window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer = setTimeout(fitWideMath, 150); });
+/* maths inside a closed answer has no width until it opens, so re-fit on every open */
+document.addEventListener('toggle', function (e) { if (e.target.tagName === 'DETAILS' && e.target.open) fitWideMath(); }, true);
 </script>
 <script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
 
@@ -190,8 +214,10 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
 <nav class="toc" aria-label="目录 Contents">
   <div class="toc-inner">
     <p class="toc-title">目录 · Contents</p>
+    <p class="toc-progress" id="toc-progress"></p>
     <ol class="top">
       <li class="grp"><a href="#intro">怎么用这份讲义</a></li>
+      <li class="grp"><a href="#roadmap">全课主线</a></li>
       <li class="grp"><a href="#p1">Part 1 · 引言</a>
         <ol>
           <li><a href="#s1-1">1.1 什么是机器学习</a></li>
@@ -233,6 +259,13 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
           <li><a href="#s4-12">4.12 ERM 与 SGD</a></li>
         </ol>
       </li>
+      <li class="grp"><a href="#practice">期末模拟题</a>
+        <ol>
+          <li><a href="#s5-1">P1 计算与证明</a></li>
+          <li><a href="#s5-2">P2 英文简答</a></li>
+        </ol>
+      </li>
+      <li class="grp"><a href="#formulas">公式速查</a></li>
       <li class="grp"><a href="#glossary">术语表 Glossary</a></li>
       <li class="grp"><a href="#errata">课件勘误汇总</a></li>
     </ol>
@@ -249,11 +282,31 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
     <ul>
       <li><b>每节结构</b>：<span class="eyebrow">Slides x–y</span> 标出对应的课件页码 → 中文讲解（术语后附英文）→ <b>EN</b> 框是英文要点，背下来答题用 → <b>Erratum</b> 框是课件笔误 → 节末「自测」先自己做再展开答案。</li>
       <li><b>带 * 的小节</b>（极小极大理论、RKHS、表示定理）在课件里也标了星号，属于进阶内容。第一遍可以只读结论和直觉部分。</li>
-      <li><b>七个交互图</b>可以拖动滑块。亲手把参数调坏、再调好，比把公式读十遍更有效。</li>
+      <li><b>八个交互图</b>可以拖动滑块。亲手把参数调坏、再调好，比把公式读十遍更有效。</li>
+      <li><b>复习工具</b>：每节标题下都可以勾选「已掌握」，左侧目录会打勾并统计进度（只保存在你自己的浏览器里）。文末有<a href="#practice">期末模拟题</a>（英文题干、完整解答、英文简答参考答案）和<a href="#formulas">公式速查表</a>。</li>
       <li>文件名是 Lecture 0、1、3，课件标题是 Part 1、2、4。中间的 Part 3（线性回归与分类）你没有上传，但 Part 4 大量用到它的概念，所以我写了一个简短的<a href="#p3">衔接小节</a>。</li>
     </ul>
   </div>
 </header>
+
+<!-- ============================================================ ROADMAP -->
+<div class="part" id="roadmap">
+  <div class="part-head">
+    <span class="eyebrow">Roadmap · 先看全局</span>
+    <h2>一条主线：这门课在讲什么</h2>
+    <p class="src">后面每一节都是这条链上的一环。学完一部分再回来看，就知道自己走到了哪里。</p>
+  </div>
+  <ol class="roadmap">
+    <li><div><b>数据有限、还带噪声，所以需要概率。</b><a class="go" href="#s1-3">1.3</a><a class="go" href="#p2">Part 2</a></div><div class="why">真实关系 $y = f(x) + \varepsilon$ 永远看不全，只能找"最可能"的模型。</div></li>
+    <li><div><b>假设高斯噪声，最大似然就等于最小二乘。</b><a class="go" href="#s1-2">1.2</a><a class="go" href="#s1-3">1.3</a></div><div class="why">损失函数不是随便选的，每一种都对应一个噪声假设。</div></li>
+    <li><div><b>用基函数 φ(x) 表达非线性，再加惩罚 λ‖β‖² 防止过拟合：岭回归。</b><a class="go" href="#p3">Part 3</a></div><div class="why">模型对参数 β 是线性的，所以有闭式解。</div></li>
+    <li><div><b>岭回归只依赖内积，把内积换成核函数，就得到核岭回归。</b><a class="go" href="#s4-6">4.6</a><a class="go" href="#s4-7">4.7</a></div><div class="why">不用写出特征，就能在无穷维特征空间里做线性回归。</div></li>
+    <li><div><b>RKHS 和表示定理保证这样做是对的。</b><a class="go" href="#s4-8">4.8</a><a class="go" href="#s4-9">4.9</a></div><div class="why">在无穷维空间里优化，最优解却只需要 n 个系数。</div></li>
+    <li><div><b>另一条路：让基函数本身也可学，这就是神经网络。</b><a class="go" href="#s4-10">4.10</a></div><div class="why">每个隐藏单元 σ(wᵀx + b) 都是一个带参数的基函数。</div></li>
+    <li><div><b>训练网络：反向传播算梯度，SGD 更新参数。</b><a class="go" href="#s4-11">4.11</a><a class="go" href="#s4-12">4.12</a></div><div class="why">链式法则把误差逐层往回传；小批量给出便宜而无偏的梯度估计。</div></li>
+    <li><div><b>贯穿始终的问题：模型该有多复杂？</b><a class="go" href="#s4-3">4.3</a><a class="go" href="#s4-4">4.4</a></div><div class="why">偏差–方差权衡决定 ℓ、λ、网络宽度怎么选；维数灾难决定需要多少数据。</div></li>
+  </ol>
+</div>
 
 <!-- ============================================================ PART 1 -->
 <div class="part" id="p1">
@@ -853,7 +906,7 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
     <ul>
       <li><b>偏差</b>：平均来看，模型离真相有多远。模型太简单（直线拟合正弦）时偏差大，叫<b>欠拟合</b> <span class="en-term">(underfitting)</span>。</li>
       <li><b>方差</b>：换一批训练数据，模型变化有多大。模型太复杂时会追着噪声跑，方差大，叫<b>过拟合</b> <span class="en-term">(overfitting)</span>。</li>
-      <li>课件原话：高复杂度对应低偏差、高方差；低复杂度对应高偏差、低方差。好模型要在两者之间取得平衡。在 4.7 的交互图里，你可以用长度尺度 ℓ 和正则 λ 亲眼看到这个权衡。</li>
+      <li>课件原话：高复杂度对应低偏差、高方差；低复杂度对应高偏差、低方差。好模型要在两者之间取得平衡。在 <a href="#demo-krr">4.7 的核岭回归交互图</a>里勾选「偏差–方差分解」，可以直接看到这个公式：同一组超参数在 20 组不同数据上的拟合有多分散（方差），它们的平均离真实函数有多远（偏差）。</li>
     </ul>
     <p>课件 p.7 补充说：偏差–方差分解依赖平方损失，所以在 PAC 学习理论中已被更一般的<b>近似–估计</b> <span class="en-term">(approximation–estimation)</span> 框架取代。超额风险 = 近似误差（假设空间里最好的函数离真相多远）+ 估计误差（有限数据导致我们找不到那个最好的函数）。思想是一样的。</p>
   </section>
@@ -974,6 +1027,32 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
     </table></div>
     <p>一般的 Matérn 核：$k = \sigma^2\frac{2^{1-\nu}}{\Gamma(\nu)}\big(\frac{\sqrt{2\nu}\,r}{\ell}\big)^\nu K_\nu\big(\frac{\sqrt{2\nu}\,r}{\ell}\big)$，其中 $r = \|x-x'\|$，$\nu \gt 0$ 是光滑度参数，$\ell \gt 0$ 是长度尺度，$\sigma^2 \gt 0$ 是信号方差，$\Gamma$ 是伽马函数，$K_\nu$ 是第二类修正贝塞尔函数。<b>$\nu$ 控制函数的光滑程度</b>，$\nu\to\infty$ 时趋于高斯核（无穷光滑）。真实的工程数据往往没有高斯核假设的那么光滑，所以 Matérn 很常用。</p>
     <p><b>平稳</b> <span class="en-term">(stationary)</span>：$k$ 只依赖于 $x - x'$。<b>各向同性</b> <span class="en-term">(isotropic / homogeneous)</span>：只依赖于距离 $\|x-x'\|$。高斯核和 Matérn 核两者都满足；线性核两者都不满足。</p>
+    <h4>核 = 协方差函数：从核里"抽样"函数</h4>
+    <p>课件 p.25 说，核也可以看作"一类函数上的概率分布"的<b>协方差函数</b> <span class="en-term">(covariance function)</span>。具体含义是：说随机函数 $f$ 服从<b>高斯过程</b> <span class="en-term">(Gaussian process)</span> $f\sim\mathcal{GP}(0, k)$，指的是在任意有限个点 $x_1,\dots,x_n$ 上，函数值组成的向量服从多元高斯分布：</p>
+    $$\big(f(x_1),\dots,f(x_n)\big)^\top\sim\mathcal N(\mathbf 0, K),\qquad K_{ij} = k(x_i,x_j) = \operatorname{cov}\big(f(x_i),\,f(x_j)\big)$$
+    <p>所以核说的是"两点处的函数值有多相关"：距离近的两点核值大，函数值几乎一样；距离远的两点核值接近 0，函数值几乎独立。$K$ 必须是合法的协方差矩阵，这正是核必须半正定的原因（2.9）。要画出一条"随机函数"，只需在密集网格上从 $\mathcal N(\mathbf 0, K)$ 抽样，用的就是 2.10 的技巧：$K = LL^\top$，$f = L\mathbf z$，$\mathbf z\sim\mathcal N(\mathbf 0, I)$。</p>
+    <figure class="demo" id="demo-gp">
+      <figcaption>
+        <span class="t">交互：从核里抽样函数</span>
+        <span class="s">4 条曲线都是 $\mathcal{GP}(0, k)$ 的样本，而且换核时用的是同一组随机数 $\mathbf z$，所以你看到的差别全部来自核本身。依次切换 Matérn 1/2 → 3/2 → 5/2 → 高斯，看 ν 怎样控制光滑度；拖动 ℓ，看长度尺度怎样控制起伏的快慢。</span>
+      </figcaption>
+      <canvas id="gp-plot" class="short" aria-label="从高斯过程先验抽样的函数"></canvas>
+      <div class="controls">
+        <div class="ctl"><label for="gp-kernel">核函数</label>
+          <select id="gp-kernel">
+            <option value="m12">Matérn 1/2</option>
+            <option value="m32">Matérn 3/2</option>
+            <option value="m52">Matérn 5/2</option>
+            <option value="gauss" selected>高斯核 Gaussian</option>
+          </select>
+        </div>
+        <div class="ctl"><label for="gp-ell">长度尺度 ℓ <output id="gp-ell-out">0.20</output></label><input type="range" id="gp-ell" min="-1.7" max="0" step="0.05" value="-0.7"></div>
+      </div>
+      <div class="btns"><button class="btn" id="gp-resample" type="button">换一组随机数</button></div>
+      <div class="readout" id="gp-readout"></div>
+    </figure>
+    <p>这个图也解释了为什么<b>选核就是在选先验</b>：用高斯核做 KRR，相当于事先相信真实函数像图里的高斯样本那么光滑；如果真实数据有尖角，Matérn 往往更合适。延伸：高斯过程回归的预测均值是 $k(x)^\top(K+\sigma_n^2I)^{-1}y$，和 KRR 公式完全一样，λ 对应观测噪声的方差 $\sigma_n^2$。</p>
+
     <h4>核替换与隐式特征映射</h4>
     <p>在对偶形式中，把线性核换成高斯核这样的另一个核，相当于<b>隐式地</b>定义了一个特征映射 $\psi$，使得 $k(x,x') = \psi(x)^\top\psi(x')$。<b>我们不需要知道 $\psi$ 是什么</b>。这就是核岭回归 <span class="en-term">(kernel ridge regression, KRR)</span>：</p>
     $$f(x) = k(x)^\top(K+\lambda I)^{-1}y,\qquad k(x) = \big(k(x,x_1),\dots,k(x,x_N)\big)^\top,\quad K = [k(x_i,x_j)]_{i,j}$$
@@ -987,7 +1066,7 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
     <figure class="demo" id="demo-krr">
       <figcaption>
         <span class="t">交互：核岭回归</span>
-        <span class="s">数据来自 $f(x) = \sin(2\pi x)$ 加高斯噪声。上图是拟合结果；下图是两种误差随长度尺度 ℓ 的变化，竖虚线是当前的 ℓ。用的就是上面那个公式，在浏览器里实时求解 $(K+\lambda I)\alpha = y$。</span>
+        <span class="s">数据来自 $f(x) = \sin(2\pi x)$ 加高斯噪声。上图是拟合结果；下图是两种误差随长度尺度 ℓ 的变化，竖虚线是当前的 ℓ。用的就是上面那个公式，在浏览器里实时求解 $(K+\lambda I)\alpha = y$。勾选「偏差–方差分解」后，下图换成偏差²、方差和两者之和。</span>
       </figcaption>
       <canvas id="krr-plot" aria-label="核岭回归拟合曲线"></canvas>
       <canvas id="krr-sweep" class="short" aria-label="误差随长度尺度变化"></canvas>
@@ -1006,6 +1085,7 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
         <div class="ctl"><label for="krr-n">数据点数 n <output id="krr-n-out">25</output></label><input type="range" id="krr-n" min="5" max="80" step="1" value="25"></div>
         <div class="ctl"><label for="krr-noise">噪声标准差 <output id="krr-noise-out">0.25</output></label><input type="range" id="krr-noise" min="0" max="0.8" step="0.05" value="0.25"></div>
         <div class="ctl check"><label for="krr-truth"><input type="checkbox" id="krr-truth" checked> 显示真实函数</label></div>
+        <div class="ctl check"><label for="krr-bv"><input type="checkbox" id="krr-bv"> 偏差–方差分解（叠加 20 组独立数据集）</label></div>
       </div>
       <div class="btns"><button class="btn" id="krr-resample" type="button">重新采样数据</button></div>
       <div class="readout" id="krr-readout"></div>
@@ -1013,6 +1093,8 @@ window.addEventListener('resize', function () { clearTimeout(fitTimer); fitTimer
         <li><b>过拟合</b>：λ 拉到最小、ℓ 调到 0.01 左右，曲线穿过每个点，点与点之间乱晃。训练误差几乎为 0，真实误差却很大：低偏差、高方差。</li>
         <li><b>欠拟合</b>：ℓ 调到 1 以上，曲线变得几乎平直：高偏差、低方差。</li>
         <li>看下图：训练误差随 ℓ 减小一直下降，真实误差先降后升，呈 <b>U 形</b>。U 形的底就是偏差–方差的平衡点，GSCV 就是在找这个点。</li>
+        <li><b>偏差–方差分解</b>：勾选后，灰线是同一组超参数在 20 组不同数据上各自的拟合，橙色点线是它们的平均。ℓ 很大时灰线几乎重合（方差小），但平均线是一条偏离真实函数的平线（偏差大）。把 ℓ 减到 0.3 左右，平均线贴上了真实函数，偏差迅速下降。继续减小 ℓ，灰线越来越乱（方差变大），这就是过拟合。下图的三条曲线就是 4.3 那个公式的画像，两者之和呈 U 形。</li>
+        <li>一个细节：当 ℓ 比相邻数据点的间距（约 1/n）还小时，各个高斯"鼓包"不再重叠，拟合在数据点之间掉回 0，所以偏差在最左端又升高了。这是另一种失败方式，和噪声无关。</li>
         <li>增大 λ：曲线被压向 0，因为岭惩罚 $\|f\|^2$ 偏好"小"函数。</li>
         <li>换成 Matérn 1/2：拟合曲线由很多尖角连成；高斯核的拟合最光滑。</li>
         <li>线性核：怎么调都是直线，这就是普通岭回归。</li>
@@ -1179,7 +1261,7 @@ yhat = k(xte, xtr) * alpha;                   % f(x) = k(x)ᵀ α
     <div class="box deriv">
       <span class="label">手算例题 · 考试可能这样出</span>
       <p>$d = 1$，$d_1 = 2$，激活函数用 ReLU。参数 $W = \binom{1}{-1}$，$b = \binom00$，$v = \binom21$，$c = 0.5$。训练样本 $x = 1,\ y = 2$，学习率 $\eta = 0.1$。</p>
-      <div class="tbl"><table>
+      <div class="tbl"><table class="steps">
         <tbody>
           <tr><td>前向</td><td>$a = Wx+b = (1, -1)^\top$，$z = \operatorname{ReLU}(a) = (1, 0)^\top$，$\hat y = 2\cdot1 + 1\cdot0 + 0.5 = 2.5$，$\ell = \frac12(0.5)^2 = 0.125$</td></tr>
           <tr><td>输出误差</td><td>$\delta^{(o)} = 2.5 - 2 = 0.5$</td></tr>
@@ -1287,6 +1369,209 @@ W = W - eta*gW;   b = b - eta*gb;</code></pre>
     <details class="qa"><summary>为什么小批量梯度是无偏的，却仍然有噪声？</summary><div class="ans"><p>无偏：它的期望恰好等于全梯度（4.12 的推导）。有噪声：每次抽到的批不同，具体值围绕期望上下波动，方差大约与 $1/|B|$ 成正比。无偏保证平均来说方向正确，噪声则带来随机性，帮助跳出鞍点。</p></div></details>
     <details class="qa"><summary>用表示定理解释：为什么核方法不需要知道无穷维的特征映射 ψ？</summary><div class="ans"><p>表示定理保证最优解是 $\sum_i\alpha_ik(x_i,\cdot)$。求 $\alpha$ 只需要 Gram 矩阵 $K$，预测只需要 $k(x, x_i)$，全过程只用到核函数值，从不需要显式写出 $\psi$。</p></div></details>
   </div>
+</div>
+
+<!-- ============================================================ PRACTICE -->
+<div class="part" id="practice">
+  <div class="part-head">
+    <span class="eyebrow">Practice · 覆盖三份课件</span>
+    <h2>期末模拟题</h2>
+    <p class="src">题干用英文，和考试一样；解答用中文，关键术语附英文。先在纸上完整做一遍，再展开对照。所有数字都用代码验算过。</p>
+  </div>
+
+  <section class="sec" id="s5-1">
+    <div class="sec-head"><span class="eyebrow">12 题 · 完整解答</span><h3><span class="no">P1</span>计算与证明 · Calculations and proofs</h3></div>
+    <h4>Part 1–2：回归与概率</h4>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">1</b> <span lang="en">Fit $y = ax + b$ by least squares to the data $(x, y) = (-1, 0),\ (0, 1),\ (1, 1),\ (2, 3)$ using the normal equations. Report $a$, $b$ and the total square error $E$.</span></span></summary><div class="ans">
+      <p>设计矩阵每行为 $(x_i, 1)$：</p>
+      $$X^\top X = \begin{pmatrix}\sum x_i^2 & \sum x_i\\ \sum x_i & N\end{pmatrix} = \begin{pmatrix}6 & 2\\ 2 & 4\end{pmatrix},\qquad X^\top y = \begin{pmatrix}\sum x_iy_i\\ \sum y_i\end{pmatrix} = \begin{pmatrix}7\\5\end{pmatrix}$$
+      $$\theta = (X^\top X)^{-1}X^\top y = \frac{1}{20}\begin{pmatrix}4 & -2\\ -2 & 6\end{pmatrix}\begin{pmatrix}7\\5\end{pmatrix} = \begin{pmatrix}0.9\\0.8\end{pmatrix}$$
+      <p>所以 $a = 0.9$，$b = 0.8$。<b>用 1.2 的公式验算</b>：$\bar x = 0.5$，$\bar y = 1.25$，$S_{xy} = 4.5$，$S_{xx} = 5$，$a = 0.9$，$b = 1.25 - 0.45 = 0.8$，一致。</p>
+      <p>残差 $y_i - (ax_i + b)$ 为 $0.1,\ 0.2,\ -0.7,\ 0.4$，所以 $E = 0.01 + 0.04 + 0.49 + 0.16 = 0.70$。注意残差之和为 0：只要模型带截距，$\partial E/\partial b = 0$ 就保证了这一点，可以用来快速检查答案。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">2</b> <span lang="en">$X, Y$ have joint p.d.f. $p(x,y) = x + y$ on $[0,1]^2$ (zero elsewhere). (a) Show it is a valid p.d.f. (b) Find the marginal $p(x)$ and the conditional $p(y\mid x)$. (c) Compute $\mathbb E[X]$, $\operatorname{var}(X)$ and $\operatorname{cov}(X, Y)$. (d) Are $X$ and $Y$ independent?</span></span></summary><div class="ans">
+      <p>(a) 非负，且 $\int_0^1\!\int_0^1 (x+y)\,dx\,dy = \frac12 + \frac12 = 1$。</p>
+      <p>(b) <b>边缘</b>：对 $y$ 积分，$p(x) = \int_0^1(x+y)\,dy = x + \frac12$。<b>条件</b>：$p(y\mid x) = \dfrac{p(x,y)}{p(x)} = \dfrac{x+y}{x+\frac12}$。检查：对 $y$ 积分得 $\frac{x + 1/2}{x+1/2} = 1$。</p>
+      <p>(c) $\mathbb E[X] = \int_0^1 x(x+\tfrac12)\,dx = \frac13 + \frac14 = \frac{7}{12}$；$\mathbb E[X^2] = \int_0^1x^2(x+\tfrac12)\,dx = \frac14 + \frac16 = \frac5{12}$；</p>
+      $$\operatorname{var}(X) = \frac{5}{12} - \Big(\frac{7}{12}\Big)^2 = \frac{60 - 49}{144} = \frac{11}{144}$$
+      <p>由对称性，$\mathbb E[Y] = \frac7{12}$。$\mathbb E[XY] = \iint xy(x+y) = \iint (x^2y + xy^2) = \frac16 + \frac16 = \frac13$，所以</p>
+      $$\operatorname{cov}(X,Y) = \frac13 - \frac{49}{144} = -\frac{1}{144},\qquad \rho = \frac{-1/144}{11/144} = -\frac1{11}$$
+      <p>(d) <b>不独立</b>。$p(x)p(y) = (x+\frac12)(y+\frac12) \ne x + y$，例如在 $(0,0)$ 处分别是 $\frac14$ 和 $0$。协方差不为 0 本身就说明了不独立。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">3</b> <span lang="en">$X$ is uniform on $\{-1, 0, 1\}$ and $Y = X^2$. Show that $\operatorname{cov}(X, Y) = 0$ but $X$ and $Y$ are not independent.</span></span></summary><div class="ans">
+      <p>$\mathbb E[X] = 0$，$\mathbb E[XY] = \mathbb E[X^3] = \frac{(-1) + 0 + 1}{3} = 0$，所以 $\operatorname{cov}(X,Y) = 0 - 0\cdot\mathbb E[Y] = 0$。</p>
+      <p>但 $\mathbb P(X = 0, Y = 0) = \mathbb P(X = 0) = \frac13$，而 $\mathbb P(X=0)\,\mathbb P(Y = 0) = \frac13\cdot\frac13 = \frac19$，两者不等，所以不独立。这是 2.8 那个连续反例的离散版本。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">4</b> <span lang="en">Show that $\operatorname{cov}(A\mathbf X + \mathbf b) = A\operatorname{cov}(\mathbf X)A^\top$ for a constant matrix $A$ and vector $\mathbf b$. If $\mathbf X\sim\mathcal N(\mathbf 0, I_2)$ and $A = \begin{pmatrix}1 & 0\\ 1 & 1\end{pmatrix}$, find the covariance matrix and correlation coefficient of $\mathbf Y = A\mathbf X$ and describe its contours.</span></span></summary><div class="ans">
+      <p><b>证明</b>：$\mathbb E[\mathbf Y] = A\boldsymbol\mu + \mathbf b$，所以 $\mathbf Y - \mathbb E[\mathbf Y] = A(\mathbf X - \boldsymbol\mu)$，</p>
+      $$\operatorname{cov}(\mathbf Y) = \mathbb E\big[A(\mathbf X-\boldsymbol\mu)(\mathbf X-\boldsymbol\mu)^\top A^\top\big] = A\,\mathbb E\big[(\mathbf X-\boldsymbol\mu)(\mathbf X-\boldsymbol\mu)^\top\big]A^\top = A\operatorname{cov}(\mathbf X)A^\top$$
+      <p>常数矩阵可以提到期望外面，平移 $\mathbf b$ 不影响协方差。</p>
+      <p><b>计算</b>：$\boldsymbol\Sigma_Y = AIA^\top = AA^\top = \begin{pmatrix}1 & 1\\ 1 & 2\end{pmatrix}$。$\operatorname{var}(Y_1) = 1$，$\operatorname{var}(Y_2) = 2$，$\operatorname{cov} = 1$，所以 $\rho = \frac{1}{\sqrt{1\cdot2}} \approx 0.707$。</p>
+      <p><b>等高线</b>：高斯向量的线性变换仍是高斯的。特征值为 $\frac{3\pm\sqrt5}{2} \approx 2.618,\ 0.382$，长轴沿特征向量 $(1, 1.618)$，与 $x_1$ 轴约成 58°，是倾斜的椭圆，长短轴之比 $\sqrt{2.618/0.382}\approx 2.6$。</p>
+      <p>这正是 2.10 交互图生成样本的方法：取 $\mathbf z\sim\mathcal N(\mathbf 0, I)$，令 $\mathbf x = L\mathbf z$，其中 $LL^\top = \boldsymbol\Sigma$（Cholesky 分解）。本题的 $A$ 就是 $\boldsymbol\Sigma_Y$ 的 Cholesky 因子。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">5</b> <span lang="en">$X\sim\mathcal N(2, 9)$. Estimate (a) $\mathbb P(X \gt 8)$; (b) $\mathbb P(-1\le X\le 5)$. (c) What is the distribution of $Z = (X - 2)/3$?</span></span></summary><div class="ans">
+      <p><b>先看清参数</b>：$\mathcal N(\mu, \sigma^2)$ 的第二个参数是<b>方差</b>，所以 $\sigma = 3$，不是 9。这是最常见的失分点。</p>
+      <p>(a) $8 = \mu + 2\sigma$。高斯分布约 95.4% 落在 $\pm2\sigma$ 内，剩下的 4.6% 两侧对称平分，所以 $\mathbb P(X \gt 8)\approx 2.3\%$。</p>
+      <p>(b) $[-1, 5] = [\mu - \sigma, \mu+\sigma]$，概率 $\approx 68.3\%$。</p>
+      <p>(c) 由 $\mathbb E[aX+b] = a\mathbb E[X]+b$ 和 $\operatorname{var}(aX+b) = a^2\operatorname{var}(X)$：$\mathbb E[Z] = 0$，$\operatorname{var}(Z) = 9/9 = 1$；高斯的线性变换仍是高斯，所以 $Z\sim\mathcal N(0,1)$。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">6</b> <span lang="en">A sensor alarm is modelled as $X\sim\operatorname{Bern}(\mu)$. In 20 independent trials it fires 6 times. Write down the log-likelihood, find the maximum-likelihood estimate $\hat\mu$, and estimate $\operatorname{var}(X)$.</span></span></summary><div class="ans">
+      <p>独立，所以似然是乘积：$\mathcal L(\mu) = \prod_i\mu^{x_i}(1-\mu)^{1-x_i} = \mu^6(1-\mu)^{14}$，于是</p>
+      $$\log\mathcal L(\mu) = 6\log\mu + 14\log(1-\mu),\qquad \frac{d\log\mathcal L}{d\mu} = \frac6\mu - \frac{14}{1-\mu} = 0\ \Rightarrow\ \hat\mu = \frac{6}{20} = 0.3$$
+      <p>二阶导数 $-\frac6{\mu^2} - \frac{14}{(1-\mu)^2} \lt 0$，确实是最大值。方差估计为 $\hat\mu(1-\hat\mu) = 0.3\times0.7 = 0.21$。</p>
+    </div></details>
+
+    <h4>Part 4：核方法与神经网络</h4>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">7</b> <span lang="en">(a) Show that if $k_1, k_2$ are valid kernels then so are $k_1 + k_2$ and $c\,k_1$ for $c \gt 0$. (b) Show that $k(x,x') = g(x)\,g(x')$ is a valid kernel for any real function $g$. (c) Show that $d(x,x') = \|x - x'\|^2$ is not a valid kernel.</span></span></summary><div class="ans">
+      <p>合法核 = 对称 + 任意 Gram 矩阵半正定。逐条验证：</p>
+      <p>(a) Gram 矩阵分别是 $K_1 + K_2$ 和 $cK_1$，仍然对称；对任意 $v$，$v^\top(K_1+K_2)v = v^\top K_1v + v^\top K_2v\ge0$，$v^\top(cK_1)v = c\,v^\top K_1v\ge0$。</p>
+      <p>(b) 对称性显然。$\sum_{i,j}v_iv_j\,g(x_i)g(x_j) = \big(\sum_iv_ig(x_i)\big)^2\ge0$。对应的特征映射是一维的 $\psi(x) = g(x)$。</p>
+      <p>(c) 取两个不同的点，距离为 $d \gt 0$。Gram 矩阵为 $\begin{pmatrix}0 & d^2\\ d^2 & 0\end{pmatrix}$，取 $v = (1, -1)^\top$，得 $v^\top Kv = -2d^2 \lt 0$，不是半正定的。直觉上，核衡量的是<b>相似度</b>，距离恰好相反。高斯核 $e^{-\|x-x'\|^2/\theta}$ 正是把距离转换成了相似度。</p>
+      <p>补充：两个核的<b>乘积</b>也是核（Schur 积定理），所以可以用加法和乘法从简单的核拼出复杂的核。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">8</b> <span lang="en">Data $x = (0, 1)^\top$, $y = (1, 3)^\top$, features $\phi(x) = (1, x)^\top$ so that $k(x,x') = 1 + xx'$, and $\lambda = 1$. (a) Compute $K$, $\alpha = (K + \lambda I)^{-1}y$ and $f(x) = k(x)^\top\alpha$. (b) Compute the primal ridge solution $\beta = (\Phi^\top\Phi + \lambda I)^{-1}\Phi^\top y$ and check both give the same $f$. (c) Predict at $x = 2$.</span></span></summary><div class="ans">
+      <p>(a) $K = \begin{pmatrix}k(0,0) & k(0,1)\\ k(1,0) & k(1,1)\end{pmatrix} = \begin{pmatrix}1 & 1\\ 1 & 2\end{pmatrix}$，$K + I = \begin{pmatrix}2 & 1\\ 1 & 3\end{pmatrix}$，行列式为 5。</p>
+      $$\alpha = \frac15\begin{pmatrix}3 & -1\\ -1 & 2\end{pmatrix}\begin{pmatrix}1\\3\end{pmatrix} = \begin{pmatrix}0\\1\end{pmatrix},\qquad f(x) = 0\cdot k(x, 0) + 1\cdot k(x, 1) = 1 + x$$
+      <p>(b) $\Phi = \begin{pmatrix}1 & 0\\ 1 & 1\end{pmatrix}$，$\Phi^\top\Phi + I = \begin{pmatrix}3 & 1\\ 1 & 2\end{pmatrix}$，$\Phi^\top y = (4, 3)^\top$，</p>
+      $$\beta = \frac15\begin{pmatrix}2 & -1\\ -1 & 3\end{pmatrix}\begin{pmatrix}4\\3\end{pmatrix} = \begin{pmatrix}1\\1\end{pmatrix},\qquad f(x) = \beta^\top\phi(x) = 1 + x$$
+      <p>原问题和对偶问题给出同一个函数，正是 4.6 的结论。(c) $f(2) = 3$。</p>
+      <p><b>值得注意</b>：不加正则时，直线会精确穿过两点：$y = 1 + 2x$。岭回归把斜率从 2 <b>收缩</b>到了 1，因为惩罚 $\lambda\|\beta\|^2$ 把系数往 0 拉。这里的 $\alpha$ 用的是 $(K+\lambda I)^{-1}y$ 这种约定，见 4.6 的勘误框。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">9</b> <span lang="en">For two training points the Gram matrix is $K = \begin{pmatrix}1 & 0.5\\ 0.5 & 1\end{pmatrix}$, $y = (1, -1)^\top$ and $\lambda = 0.5$. For a test point $x_*$, $k(x_*) = (0.8,\ 0.2)^\top$. Compute the KRR prediction $f(x_*)$.</span></span></summary><div class="ans">
+      <p>$K + \lambda I = \begin{pmatrix}1.5 & 0.5\\ 0.5 & 1.5\end{pmatrix}$，行列式 $= 2.25 - 0.25 = 2$，</p>
+      $$\alpha = \frac12\begin{pmatrix}1.5 & -0.5\\ -0.5 & 1.5\end{pmatrix}\begin{pmatrix}1\\-1\end{pmatrix} = \begin{pmatrix}1\\-1\end{pmatrix},\qquad f(x_*) = k(x_*)^\top\alpha = 0.8 - 0.2 = 0.6$$
+      <p>检查：$(K+\lambda I)\alpha = (1.5 - 0.5,\ 0.5 - 1.5)^\top = (1, -1)^\top = y$。直觉：$x_*$ 和第一个点更相似（0.8 对 0.2），所以预测偏向第一个标签 $+1$。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">10</b> <span lang="en">A one-hidden-layer network with $d = d_1 = 1$ uses the logistic sigmoid $\sigma(a) = 1/(1 + e^{-a})$, with $W = 0.5$, $b = -1$, $v = 2$, $c = 0$. For the sample $(x, y) = (2, 0)$ and loss $\ell = \frac12(\hat y - y)^2$: (a) do the forward pass; (b) compute all four gradients by backpropagation; (c) take one SGD step with $\eta = 0.5$ and show that the loss decreases. Hint: $\sigma'(a) = \sigma(a)\big(1 - \sigma(a)\big)$.</span></span></summary><div class="ans">
+      <div class="tbl"><table class="steps"><tbody>
+        <tr><td>(a) 前向</td><td>$a = 0.5\times2 - 1 = 0$，$z = \sigma(0) = 0.5$，$\hat y = 2\times0.5 + 0 = 1$，$\ell = \frac12(1 - 0)^2 = 0.5$</td></tr>
+        <tr><td>输出误差</td><td>$\delta^{(o)} = \hat y - y = 1$</td></tr>
+        <tr><td>输出层梯度</td><td>$\partial\ell/\partial v = \delta^{(o)}z = 0.5$，$\partial\ell/\partial c = \delta^{(o)} = 1$</td></tr>
+        <tr><td>隐藏层误差</td><td>$\sigma'(0) = 0.5\times0.5 = 0.25$，$\delta^{(h)} = \delta^{(o)}\,v\,\sigma'(a) = 1\times2\times0.25 = 0.5$</td></tr>
+        <tr><td>隐藏层梯度</td><td>$\partial\ell/\partial W = \delta^{(h)}x = 1$，$\partial\ell/\partial b = \delta^{(h)} = 0.5$</td></tr>
+        <tr><td>(c) 更新</td><td>$v = 2 - 0.25 = 1.75$，$c = -0.5$，$W = 0.5 - 0.5 = 0$，$b = -1 - 0.25 = -1.25$</td></tr>
+        <tr><td>再前向</td><td>$a = -1.25$，$z = \sigma(-1.25)\approx0.2227$，$\hat y \approx 1.75\times0.2227 - 0.5 \approx -0.110$，$\ell\approx0.0061$</td></tr>
+      </tbody></table></div>
+      <p>损失从 0.5 降到约 0.006。注意要<b>先算完全部梯度再统一更新</b>：$\delta^{(h)}$ 用的是更新前的 $v = 2$。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">11</b> <span lang="en">$n = 1000$ training samples, mini-batch size $|B| = 32$, trained for 10 epochs. (a) How many parameter updates are made? (b) What is $\mathbb P(i\in B)$ for a uniformly sampled mini-batch? (c) How many updates would full-batch gradient descent make in 10 epochs, and why can SGD reach a lower loss for the same computation?</span></span></summary><div class="ans">
+      <p>(a) 每个 epoch 有 $\lceil 1000/32\rceil = 32$ 个小批量（31 个满批，最后一批 8 个样本），共 $32\times10 = 320$ 次更新。</p>
+      <p>(b) $\mathbb P(i\in B) = |B|/n = 32/1000 = 0.032$。这正是无偏性证明里用到的量。</p>
+      <p>(c) 全批量每个 epoch 只更新 1 次，共 10 次。两者的计算量相同（都把每个样本的梯度算了 10 次），但 SGD 走了 32 倍多的步数。每一步虽然有噪声，但方向在期望上是对的，所以通常下降得快得多；噪声还有助于跳出鞍点。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q"><b class="pn">12</b> <span lang="en">A nonparametric estimator attains the minimax rate for $s$-Hölder functions in $d$ dimensions. With $N = 1000$, $s = 1$, $d = 2$, its mean squared error is $0.04$. (a) Roughly how many samples are needed for an MSE of $0.01$? (b) Repeat for $d = 20$. (c) How many would a correctly specified parametric model (rate $N^{-1}$) need?</span></span></summary><div class="ans">
+      <p>(a) 速率 $N^{-2s/(2s+d)} = N^{-2/4} = N^{-1/2}$。误差要缩小到 1/4，$N$ 需要乘以 $4^2 = 16$，约 <b>16,000</b>。</p>
+      <p>(b) 速率 $N^{-2/22} = N^{-1/11}$。$N$ 需要乘以 $4^{11}\approx4.2\times10^6$，约 <b>$4.2\times10^9$</b>，完全不现实，这就是维数灾难。</p>
+      <p>(c) 速率 $N^{-1}$，只需乘以 4，约 <b>4,000</b>。前提是模型设定正确；设定错误时，误差会停在近似误差上不再下降（4.1）。</p>
+    </div></details>
+  </section>
+
+  <section class="sec" id="s5-2">
+    <div class="sec-head"><span class="eyebrow">8 题 · 英文参考答案</span><h3><span class="no">P2</span>英文简答 · Short answers in English</h3></div>
+    <p>期末要用英文作答。答题顺序建议：<b>先给定义，再写公式，最后举例或说明意义</b>。下面的参考答案按这个结构写，每题附中文要点，方便你检查自己有没有漏掉关键点。</p>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">1</b> Distinguish parametric and nonparametric regression in the modern sense, with an example of each.</span></summary><div class="ans">
+      <p lang="en">Parametric regression restricts the regression function to a hypothesis class indexed by a fixed, finite-dimensional parameter vector $\beta$, for example polynomial regression $f(x) = \beta^\top\phi(x)$; its complexity does not grow with the number of data points $n$. Nonparametric regression uses an infinite-dimensional hypothesis class, such as the RKHS in kernel ridge regression or Gaussian process regression, so its effective complexity grows with $n$: kernel ridge regression has one coefficient per data point. A correctly specified parametric model converges faster (rate $N^{-1}$) but suffers from model misspecification; a nonparametric model avoids misspecification at the cost of the slower rate $N^{-2s/(2s+d)}$.</p>
+      <p><b>要点</b>：有限维 vs 无穷维；复杂度是否随 n 增长；各举一例；速率与设定错误之间的取舍。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">2</b> Why is probability used in machine learning even when the data come from deterministic physical laws?</span></summary><div class="ans">
+      <p lang="en">Even when the underlying process is deterministic, measurements contain noise and we only ever observe a finite data set, so the true relationship can never be known exactly. Modelling the data with random variables, e.g. $y = f(x) + \varepsilon$, lets us quantify this uncertainty and choose the most likely model given the data. For example, if the noise is i.i.d. Gaussian, maximising the likelihood is equivalent to minimising the sum of squared errors, which justifies least squares.</p>
+      <p><b>要点</b>：有限数据 + 测量噪声；用概率量化不确定性、找"最可能"的模型；高斯噪声 ⇔ 最小二乘。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">3</b> Explain kernel substitution (the kernel trick) and why it is useful.</span></summary><div class="ans">
+      <p lang="en">The dual form of ridge regression depends on the inputs only through dot products $\phi(x)^\top\phi(x')$, collected in the Gram matrix $K$. Kernel substitution replaces these dot products by a kernel $k(x,x')$, a symmetric positive semi-definite function, which implicitly defines a feature map $\psi$ with $k(x,x') = \psi(x)^\top\psi(x')$. This performs linear ridge regression in a high- or even infinite-dimensional feature space, giving the nonlinear model $f(x) = k(x)^\top(K+\lambda I)^{-1}y$, without ever computing $\psi$. The cost depends on the number of data points $N$ (solving an $N\times N$ system) rather than on the feature dimension.</p>
+      <p><b>要点</b>：对偶形式只含内积 → 换成核 → 隐式特征映射 → 非线性模型；计算量取决于 N 而不是特征维度。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">4</b> State the representer theorem and explain its significance.</span></summary><div class="ans">
+      <p lang="en">Let $\mathcal H_k$ be a RKHS with reproducing kernel $k$. For any loss $\ell$ and any strictly increasing regulariser $\Omega$, every minimiser of $\sum_{i=1}^n\ell(y_i, f(x_i)) + \Omega(\|f\|_{\mathcal H_k})$ over $f\in\mathcal H_k$ has the form $\hat f(x) = \sum_{i=1}^n\alpha_i k(x_i, x)$. Although $\mathcal H_k$ may be infinite-dimensional, the optimal solution lies in the finite span of the kernel sections at the data points, so the problem collapses to learning $n$ coefficients. This is the mathematical foundation of kernel ridge regression, support vector machines and Gaussian process regression.</p>
+      <p><b>要点</b>：定理条件（RKHS、任意损失、严格递增的 Ω）；结论的形式；无穷维问题坍缩为 n 个系数；举出 KRR / SVM / GP。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">5</b> Explain the bias–variance tradeoff using kernel ridge regression as an example.</span></summary><div class="ans">
+      <p lang="en">For a fixed input $x$, the expected squared error of an estimator over random training sets decomposes as $\mathbb E[(\hat f(x) - f(x))^2] = (\mathbb E[\hat f(x)] - f(x))^2 + \mathbb E[(\hat f(x) - \mathbb E[\hat f(x)])^2]$, i.e. squared bias plus variance. In kernel ridge regression, a small lengthscale $\ell$ or a small regularisation parameter $\lambda$ gives a very flexible model with low bias but high variance: the fit follows the noise and changes a lot between data sets (overfitting). A large $\ell$ or $\lambda$ gives a smooth, rigid model with low variance but high bias (underfitting). The hyperparameters are chosen to balance the two, for example by grid-search cross-validation.</p>
+      <p><b>要点</b>：写出分解公式；说明 ℓ、λ 小 → 过拟合，大 → 欠拟合；用交叉验证选超参数。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">6</b> Why is stochastic gradient descent preferred to full gradient descent for large data sets? Is the mini-batch gradient biased?</span></summary><div class="ans">
+      <p lang="en">Each full-gradient step requires a pass over all $n$ samples, which is expensive in time and memory when $n$ is large. SGD estimates the gradient from a random mini-batch $B$, so each update is much cheaper and many more updates can be made for the same cost. The mini-batch gradient is unbiased: since $\mathbb P(i\in B) = |B|/n$ under uniform sampling, $\mathbb E[\nabla_\theta\mathcal R_B] = \nabla_\theta\mathcal R$. It is, however, noisy, and this noise can help the optimiser escape shallow local minima and saddle points.</p>
+      <p><b>要点</b>：全梯度代价随 n 增长；小批量更便宜、更新更频繁；无偏（给出期望的推导）；噪声的好处。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">7</b> Explain why independence implies zero covariance but not the converse.</span></summary><div class="ans">
+      <p lang="en">If $X$ and $Y$ are independent then $p(x,y) = p(x)p(y)$, so the double integral factorises and $\mathbb E[XY] = \mathbb E[X]\,\mathbb E[Y]$, giving $\operatorname{cov}(X,Y) = 0$. The converse fails because covariance only measures linear dependence. For example, if $X$ is uniform on $[-1, 1]$ and $Y = X^2$, then $\operatorname{cov}(X,Y) = \mathbb E[X^3] - \mathbb E[X]\,\mathbb E[X^2] = 0$, yet $Y$ is completely determined by $X$. For jointly Gaussian variables, however, uncorrelated does imply independent.</p>
+      <p><b>要点</b>：正方向的证明（期望分解）；反例；协方差只衡量线性关系；高斯是例外。</p>
+    </div></details>
+
+    <details class="qa prob"><summary><span class="q" lang="en"><b class="pn">8</b> What is the curse of dimensionality in nonparametric regression?</span></summary><div class="ans">
+      <p lang="en">For $s$-smooth (Hölder) functions in $d$ dimensions, the minimax rate of the mean squared error is $N^{-2s/(2s+d)}$, and no estimator can do better. As $d$ increases the exponent decreases, so the number of samples needed to reach a given accuracy grows exponentially with the dimension. Intuitively, a neighbourhood of fixed radius $h$ contains a fraction of the data that shrinks like $h^d$, so local estimates become very noisy unless the neighbourhood is enlarged, which increases the bias. Greater smoothness $s$ partially offsets this, whereas a correctly specified parametric model attains $N^{-1}$ regardless of $d$.</p>
+      <p><b>要点</b>：写出速率；指数随 d 减小 → 所需样本随维度指数增长；邻域里的点越来越少的直觉；与参数模型的对比。</p>
+    </div></details>
+  </section>
+</div>
+
+<!-- ============================================================ FORMULA SHEET -->
+<div class="part" id="formulas">
+  <div class="part-head">
+    <span class="eyebrow">Formula sheet</span>
+    <h2>公式速查</h2>
+    <p class="src">复习时用。考试只能带课件，这一页不能带进考场，所以要把它记熟。</p>
+  </div>
+  <h4>概率 · Probability</h4>
+  <div class="tbl"><table class="fs"><tbody>
+    <tr><td>加法 / 条件 / 贝叶斯</td><td>$\mathbb P(A\cup B) = \mathbb P(A)+\mathbb P(B)-\mathbb P(A\cap B)$，$\mathbb P(A\mid B) = \frac{\mathbb P(A\cap B)}{\mathbb P(B)} = \frac{\mathbb P(B\mid A)\mathbb P(A)}{\mathbb P(B)}$</td></tr>
+    <tr><td>独立</td><td>$\mathbb P(A\cap B) = \mathbb P(A)\mathbb P(B)$；$p(x,y) = p(x)p(y)$</td></tr>
+    <tr><td>边缘 / 链式</td><td>$p(x) = \sum_y p(x,y)$ 或 $\int p(x,y)\,dy$；$p(x,y,z) = p(x\mid y,z)\,p(y\mid z)\,p(z)$</td></tr>
+    <tr><td>期望</td><td>$\mathbb E[f(X)] = \sum_x f(x)p(x)$ 或 $\int f(x)p(x)\,dx$；$\mathbb E[aX+b] = a\mathbb E[X]+b$</td></tr>
+    <tr><td>方差</td><td>$\operatorname{var}(X) = \mathbb E[X^2]-\mathbb E[X]^2$；$\operatorname{var}(aX+b) = a^2\operatorname{var}(X)$</td></tr>
+    <tr><td>协方差</td><td>$\operatorname{cov}(X,Y) = \mathbb E[XY]-\mathbb E[X]\mathbb E[Y]$；$\operatorname{var}(X+Y) = \operatorname{var}X+\operatorname{var}Y+2\operatorname{cov}(X,Y)$</td></tr>
+    <tr><td>协方差矩阵</td><td>$\operatorname{cov}(\mathbf X) = \mathbb E[\mathbf X\mathbf X^\top]-\mathbb E[\mathbf X]\mathbb E[\mathbf X]^\top$；$\operatorname{cov}(A\mathbf X+\mathbf b) = A\operatorname{cov}(\mathbf X)A^\top$</td></tr>
+  </tbody></table></div>
+  <h4>分布 · Distributions</h4>
+  <div class="tbl"><table class="fs">
+    <thead><tr><th>分布</th><th>p.m.f. / p.d.f.</th><th>均值</th><th>方差</th></tr></thead>
+    <tbody>
+      <tr><td>$\operatorname{Bern}(\mu)$</td><td>$\mu^x(1-\mu)^{1-x}$</td><td>$\mu$</td><td>$\mu(1-\mu)$</td></tr>
+      <tr><td>$U(a,b)$</td><td>$\frac{1}{b-a}$ on $[a,b]$</td><td>$\frac{a+b}{2}$</td><td>$\frac{(b-a)^2}{12}$</td></tr>
+      <tr><td>$\mathcal N(\mu,\sigma^2)$</td><td>$\frac{1}{\sqrt{2\pi\sigma^2}}e^{-(x-\mu)^2/(2\sigma^2)}$</td><td>$\mu$</td><td>$\sigma^2$（$\pm1,2,3\sigma$：68.3 / 95.4 / 99.7%）</td></tr>
+      <tr><td>$\mathcal N(\boldsymbol\mu,\boldsymbol\Sigma)$</td><td>$\frac{1}{(2\pi)^{n/2}|\boldsymbol\Sigma|^{1/2}}e^{-\frac12(\mathbf x-\boldsymbol\mu)^\top\boldsymbol\Sigma^{-1}(\mathbf x-\boldsymbol\mu)}$</td><td>$\boldsymbol\mu$</td><td>$\boldsymbol\Sigma$</td></tr>
+    </tbody>
+  </table></div>
+  <h4>回归与核 · Regression and kernels</h4>
+  <div class="tbl"><table class="fs"><tbody>
+    <tr><td>最小二乘</td><td>$\theta = (X^\top X)^{-1}X^\top y$；一维：$a = S_{xy}/S_{xx}$，$b = \bar y - a\bar x$</td></tr>
+    <tr><td>岭回归</td><td>$\beta = (\Phi^\top\Phi+\lambda I)^{-1}\Phi^\top y$</td></tr>
+    <tr><td>核岭回归</td><td>$f(x) = k(x)^\top(K+\lambda I)^{-1}y$，$K_{ij} = k(x_i,x_j)$，$k(x)_i = k(x,x_i)$</td></tr>
+    <tr><td>合法核</td><td>对称，且 $\sum_{i,j}v_iv_jk(x_i,x_j)\ge0$（Gram 矩阵半正定）</td></tr>
+    <tr><td>高斯 / Matérn 1/2</td><td>$\theta_0e^{-\|x-x'\|^2/\theta_1}$；$\sigma^2e^{-r/\ell}$</td></tr>
+    <tr><td>再生性质</td><td>$f(x) = \langle k(x,\cdot),f\rangle_{\mathcal H}$，$k(x,x') = \langle k(x,\cdot),k(x',\cdot)\rangle_{\mathcal H}$</td></tr>
+    <tr><td>表示定理</td><td>$\hat f = \sum_{i=1}^n\alpha_ik(x_i,\cdot)$；$\|\hat f\|^2_{\mathcal H} = \alpha^\top K\alpha$</td></tr>
+    <tr><td>偏差–方差</td><td>$\mathbb E[(\hat f-f)^2] = (\mathbb E\hat f-f)^2+\mathbb E[(\hat f-\mathbb E\hat f)^2]$</td></tr>
+    <tr><td>极小极大速率</td><td>$N^{-2s/(2s+d)}$（非参数）；$N^{-1}$（设定正确的参数模型）</td></tr>
+  </tbody></table></div>
+  <h4>神经网络 · Neural networks</h4>
+  <div class="tbl"><table class="fs"><tbody>
+    <tr><td>前向</td><td>$a = Wx+b$，$z = \sigma(a)$，$\hat y = v^\top z+c$，$\ell = \frac12(\hat y-y)^2$</td></tr>
+    <tr><td>误差</td><td>$\delta^{(o)} = \hat y-y$，$\delta^{(h)} = (\delta^{(o)}v)\odot\sigma'(a)$；深层：$\delta^{(l)} = (W_{l+1}^\top\delta^{(l+1)})\odot\sigma'(a_l)$</td></tr>
+    <tr><td>梯度</td><td>$\frac{\partial\ell}{\partial v} = \delta^{(o)}z$，$\frac{\partial\ell}{\partial c} = \delta^{(o)}$，$\frac{\partial\ell}{\partial W} = \delta^{(h)}x^\top$，$\frac{\partial\ell}{\partial b} = \delta^{(h)}$</td></tr>
+    <tr><td>激活函数导数</td><td>sigmoid：$z(1-z)$；tanh：$1-z^2$；ReLU：$\mathbf 1[a \gt 0]$</td></tr>
+    <tr><td>SGD</td><td>$\theta\leftarrow\theta-\frac{\eta}{|B|}\sum_{i\in B}\nabla_\theta\mathcal L_i$；$\mathbb E[\nabla\mathcal R_B] = \nabla\mathcal R$；每 epoch 更新 $\lceil n/|B|\rceil$ 次</td></tr>
+  </tbody></table></div>
 </div>
 
 <!-- ============================================================ GLOSSARY -->

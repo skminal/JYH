@@ -1,0 +1,59 @@
+--- electrohydro.c.orig	2026-11-13 05:34:42.607116540 +0000
++++ electrohydro.c	2026-11-13 05:34:42.626096553 +0000
+@@ -708,27 +708,44 @@
+   }
+ 
+   if (GFS_IS_MIXED (cell)) {
+-    if (((cell)->flags & GFS_FLAG_DIRICHLET) == 0)
+-      /* Neumann conditions for Phi */
+-      g_assert_not_implemented ();
+-    
+     FttVector m = {1.,1.,1.};
+     gfs_domain_solid_metric (GFS_DOMAIN (elec), cell, &m);
+     gdouble permc = gfs_function_value (perm, cell);
+     gdouble emod = 0., en = 0., a;
+     GfsSolidVector * s = GFS_STATE (cell)->solid;
+     FttVector g, n;
+-    gfs_cell_dirichlet_gradient (cell, phi->i, -1, s->fv, &g);
+     gfs_solid_normal (cell, &n);
+     a = ftt_vector_norm (&n);
+-    for (c = 0; c < FTT_DIMENSION; c++) {
+-      (&n.x)[c] /= a;
+-      (&g.x)[c] /= h;
+-      emod += (&g.x)[c]*(&g.x)[c];
+-      en   += (&g.x)[c]*(&n.x)[c];
++    if (a > 0.) {
++      if (((cell)->flags & GFS_FLAG_DIRICHLET) != 0) {
++	/* electrode: Dirichlet condition for Phi */
++	gfs_cell_dirichlet_gradient (cell, phi->i, -1, s->fv, &g);
++	for (c = 0; c < FTT_DIMENSION; c++) {
++	  (&n.x)[c] /= a;
++	  (&g.x)[c] /= h;
++	  emod += (&g.x)[c]*(&g.x)[c];
++	  en   += (&g.x)[c]*(&n.x)[c];
++	}
++      }
++      else {
++	/* JYH patch: insulating wall (zero normal flux of Phi). The Maxwell
++	   stress on the wall reduces to -eps*Et^2/2 n, with Et the tangential
++	   part of the cell-centred field. */
++	gdouble gn = 0.;
++	for (c = 0; c < FTT_DIMENSION; c++) {
++	  (&n.x)[c] /= a;
++	  (&g.x)[c] = - GFS_VALUE (cell, e[c]);
++	  gn += (&g.x)[c]*(&n.x)[c];
++	}
++	for (c = 0; c < FTT_DIMENSION; c++) {
++	  (&g.x)[c] -= gn*(&n.x)[c];
++	  emod += (&g.x)[c]*(&g.x)[c];
++	}
++	en = 0.;
++      }
++      for (c = 0; c < FTT_DIMENSION; c++) 
++	fe[c] += a*((&g.x)[c]*en*(&m.x)[c] - emod/2.*(&n.x)[c]*radc)*permc;
+     }
+-    for (c = 0; c < FTT_DIMENSION; c++) 
+-      fe[c] += a*((&g.x)[c]*en*(&m.x)[c] - emod/2.*(&n.x)[c]*radc)*permc;
+   }
+ 
+   /* fixme: we need to rescale, not entirely clear why... */

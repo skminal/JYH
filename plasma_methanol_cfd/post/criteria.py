@@ -66,9 +66,9 @@ a = ax[0]
 a.plot(ma['t'][pre], ma['theta_max'][pre], color=C_B, lw=2, label='针体绝热（上限）')
 a.plot(ms['t'], ms['theta_max'], color=C_A, lw=2, label='针体等温散热（钨针，更接近实际）')
 a.axhline(1.0, color=C_INK, lw=1, ls='--')
-a.text(1.0, 1.02, r'沸点 $T_{sat}$ = 64.7 °C', color=C_INK, fontsize=9, va='bottom')
+a.text(1.0, 1.02, '沸点 Tsat = 64.7 °C', color=C_INK, fontsize=9, va='bottom')
 a.set_xlabel('t  [ms]')
-a.set_ylabel(r'针尖液体最高无量纲温升  $\theta=(T-T_0)/(T_{sat}-T_0)$')
+a.set_ylabel('针尖液体最高无量纲温升  θ = (T−T0)/(Tsat−T0)')
 a.set_title('2.6 kV 下针尖液体的焦耳升温（Gerris 计算）', fontsize=11, loc='left')
 a.set_xlim(0, max(ms['t'][-1], ma['t'][pre][-1]) * 1.02)
 a.set_ylim(0, 1.25)
@@ -86,8 +86,8 @@ for s_, lab in ((7e-6, '7 µS/m'), (4.4e-5, '44 µS/m')):
     a.text(s_ * 1e6 * 1.08, 0.012, lab, color=C_MUTE, fontsize=8.5, rotation=90, va='bottom')
 a.text(0.13, 1.25, '能沸腾', fontsize=9, color=C_INK)
 a.text(0.13, 0.55, '到不了沸点', fontsize=9, color=C_INK)
-a.set_xlabel(r'甲醇电导率  $\sigma_e$  [µS/m]')
-a.set_ylabel(r'稳态上限  $\theta_\infty=\sigma_e V^2/(8k\,\Delta T)$')
+a.set_xlabel('甲醇电导率  σe  [µS/m]')
+a.set_ylabel('稳态上限  θ∞ = σe·V²/(8kΔT)')
 a.set_title('焦耳沸腾判据（导热极限，与电极形状无关）', fontsize=11, loc='left')
 a.set_xlim(0.1, 300)
 a.set_ylim(0.01, 100)
@@ -123,9 +123,9 @@ def paschen(d_mm, A, B, gamma=0.01):
 
 d = np.logspace(-2.3, 0.5, 300)
 gases = [  # Raizer, Gas Discharge Physics, table of A, B
-    ('H$_2$', 5.0, 130.0, C_C),
+    ('H₂', 5.0, 130.0, C_C),
     ('空气', 15.0, 365.0, C_A),
-    ('H$_2$O 蒸气', 13.0, 290.0, C_D),
+    ('H₂O 蒸气', 13.0, 290.0, C_D),
 ]
 # alcohol vapour: fit through the measured Paschen minimum (ethanol, ~450 V at
 # pd ~ 0.35 Torr cm; methanol similar, Sivos et al. EPJD 74 (2020) 64)
@@ -138,7 +138,7 @@ fig, ax = plt.subplots(1, 2, figsize=(11, 4.2), dpi=160)
 a = ax[0]
 a.loglog(z_ax, E_ax / 1e6, color=C_INK, lw=2)
 a.axhspan(100, 1000, color='#f4d9c7', lw=0)
-a.text(0.014, 130, '液相直接电离所需场强量级 ≥ 10$^2$ MV/m', fontsize=9, color=C_INK)
+a.text(0.014, 130, '液相直接电离所需场强量级 ≥ 100 MV/m', fontsize=9, color=C_INK)
 a.set_xlabel('距针尖距离 z  [mm]')
 a.set_ylabel('轴线场强 |E|  [MV/m]')
 a.set_title('2.6 kV 下针尖轴线场强（单相液体）', fontsize=11, loc='left')

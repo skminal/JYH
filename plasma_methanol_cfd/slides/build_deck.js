@@ -111,7 +111,7 @@ const f = (v, d = 1) => Number(v).toFixed(d);
   const x2 = 9.0, w2 = Wd - M - x2;
   card(s, x2, 1.4, w2, 1.5, "crit2");
   txt(s, "判据 ②", { x: x2 + 0.25, y: 1.5, w: w2 - 0.5, h: 0.3, fontSize: 12, bold: true, color: C.accent2 });
-  txt(s, "ΔV(d) ≥ V_Paschen(p·d)", { x: x2 + 0.25, y: 1.82, w: w2 - 0.5, h: 0.5, fontSize: 20, bold: true });
+  txt(s, "ΔV(d) ≥ V击穿(p·d)", { x: x2 + 0.25, y: 1.82, w: w2 - 0.5, h: 0.5, fontSize: 20, bold: true });
   txt(s, "气核上的电压 ≥ 该尺寸气隙的击穿电压（Townsend 自持）", { x: x2 + 0.25, y: 2.38, w: w2 - 0.5, h: 0.4, fontSize: 11.5, color: C.text2 });
   bullets(s, D.s4.points, { x: x2, y: 3.1, w: w2, h: 3.7, fontSize: 13, gap: 6 });
   txt(s, D.s4.note, { x: M, y: 4.65, w: 8.1, h: 2.2, fontSize: 13, color: C.text2 });
@@ -120,16 +120,17 @@ const f = (v, d = 1) => Number(v).toFixed(d);
 // ------------------------------------------------------------------ 5 数值实验
 {
   const s = slide(D.s5.title);
-  const gw = 7.9, gh = gw * 720 / 1280;
+  const gw = 7.15, gh = gw * 720 / 1280;
   s.addImage({ path: path.join(RES, D.s5.gif), x: M, y: 1.4, w: gw, h: gh, altText: "放电关闭与开启两种情况下针尖气相演化的动画" });
   txt(s, "动图（放映时播放）：左 放电关闭，右 放电开启；右侧为针尖温升、气相体积、功率曲线", { x: M, y: 1.4 + gh + 0.08, w: gw, h: 0.3, fontSize: 10.5, color: C.text2 });
-  const x2 = 8.8, w2 = Wd - M - x2;
+  const x2 = 8.05, w2 = Wd - M - x2;
   const hdr = (t) => ({ text: t, options: { bold: true, fill: { color: C.background2 }, fontSize: 11.5, color: C.text1 } });
   const cell = (t, b) => ({ text: t, options: { fontSize: 11.5, color: C.text1, bold: !!b } });
   const rows = [D.s5.table[0].map(hdr)].concat(D.s5.table.slice(1).map((r) => r.map((t, i) => cell(t, i === 0))));
-  s.addTable(rows, { x: x2, y: 1.4, w: w2, colW: [1.33, 0.87, 0.87, 0.86], border: { type: "solid", pt: 0.5, color: "D9D7D0" },
+  s.addTable(rows, { x: x2, y: 1.4, w: w2, colW: [1.6, 1.0, 1.04, 1.04], border: { type: "solid", pt: 0.5, color: "D9D7D0" },
     fontFace: THEME.bodyFontFace, margin: [0.04, 0.06, 0.04, 0.06], valign: "middle", objectName: "variants" });
-  bullets(s, D.s5.points, { x: x2, y: 4.3, w: w2, h: 2.6, fontSize: 12.5, gap: 5 });
+  bullets(s, D.s5.points, { x: x2, y: 4.25, w: w2, h: 2.65, fontSize: 12.5, gap: 5 });
+  txt(s, D.s5.note, { x: M, y: 1.4 + gh + 0.5, w: gw, h: 1.1, fontSize: 12.5, color: C.text2 });
 }
 
 // ------------------------------------------------------------------ 6 结论与下一步

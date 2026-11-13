@@ -222,11 +222,11 @@ GModule electrohydro
     PhysicalParams { alpha = 1./(c01(Tf)*(1. - RHOG) + RHOG) }
 
     Init {} { T = 1. Hl = 0. Nc = 0. Kg = 0. Sth = 0. Sd = 0. Qj = 0. Nuc = 0. Th = 0. Lv = Level }
-
+%(seed)s
 %(perstep)s
     SourceViscosity (c01(Tf)*(MUL - MUG) + MUG)
     Source U (-GRAV + GRAV*BT*Th*c01(T))
-%(ehd)s    SourceDiffusion Rhoe (c01(T)*KL + (1. - c01(T))*Kg) { tolerance = %(tolphi)g nitermax = 60 nrelax = 4 erelax = 2 } Phi
+%(ehd)s    SourceDiffusion Rhoe (c01(T)*KL + (1. - c01(T))*Kg) { tolerance = %(tolphi)g nitermax = %(nitphi)d nrelax = 4 erelax = 2 } Phi
     SourceDiffusion Hl ALPHAL
     Source Hl (Qj - Sth/BETAV)
     SourceDiffusion Nc (T < 0.5 ? DG : 0.)
@@ -240,6 +240,8 @@ GModule electrohydro
     AdaptVorticity { istep = 1 } { cmax = %(cvort)g minlevel = lvl(x,y) maxlevel = lmx(x,y,LMAX - 1) }
 
     OutputTime { istep = %(ilog)d } log_time
+    OutputTiming { istep = 200 } log_timing
+    OutputDiffusionStats { istep = %(ilog)d } log_diff
     OutputBalance { istep = %(ilog)d } log_balance
     OutputProjectionStats { istep = %(ilog)d } log_proj
     OutputScalarStats { istep = %(imon)d } mon_Th { v = Th }
@@ -330,6 +332,10 @@ def main():
     ap.add_argument('--sink', action='store_true',
                     help='needle is an isothermal heat sink (theta = 0 on its surface)')
     ap.add_argument('--tolphi', type=float, default=0.01)
+    ap.add_argument('--nitphi', type=int, default=60)
+    ap.add_argument('--dtsave_ms', type=float, default=2.0)
+    ap.add_argument('--seed_mm', type=float, default=0.0,
+                    help='radius of a pre-existing gas nucleus on the tip (0 = none)')
     a = ap.parse_args()
 
     p = params(V=a.V, K_l=a.Kl, lmax=a.lmax)
@@ -341,7 +347,9 @@ def main():
     v['tend'] = a.tend_ms * 1e-3 / d['t0']
     v['dtmax'] = a.dtmax_us * 1e-6 / d['t0']
     v['dtout'] = a.dtout_ms * 1e-3 / d['t0']
-    v['dtsave'] = 5e-3 / d['t0']
+    v['dtsave'] = a.dtsave_ms * 1e-3 / d['t0']
+    v['nitphi'] = a.nitphi
+    v['seed'] = ('    Init {} { T = c01(0.5 + (sqrt((x - XT)*(x - XT) + y*y) - %.10g*MM)/dL) }\n' % a.seed_mm) if a.seed_mm > 0 else ''
     v['ilog'] = 20
     v['imon'] = 10
     v['cvort'] = 5.0
@@ -356,7 +364,7 @@ def main():
     v['boxes'] = boxes(p['nbox'])
     with open(a.out, 'w') as f:
         f.write(TEMPLATE % v)
-    meta = dict(params=p, derived=d, mode=a.mode, ehd=a.ehd, sink=a.sink,
+    meta = dict(params=p, derived=d, mode=a.mode, ehd=a.ehd, sink=a.sink, seed_mm=a.seed_mm,
                 tend_ms=a.tend_ms, dtout_ms=a.dtout_ms, dtmax_us=a.dtmax_us)
     with open(a.out.replace('.gfs', '.json'), 'w') as f:
         json.dump(meta, f, indent=1)

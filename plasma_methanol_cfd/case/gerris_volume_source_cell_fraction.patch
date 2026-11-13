@@ -1,0 +1,14 @@
+--- src/timestep.c.orig	2026-11-13 10:02:51.847894342 +0000
++++ src/timestep.c	2026-11-13 10:02:51.862699096 +0000
+@@ -339,7 +339,10 @@
+   }
+ 
+   /* div*h^2 (units source m^3/s/vol) */
+-  GFS_VALUE (cell, p->div) -= sum*p->L2*ftt_cell_volume (cell);
++  /* JYH patch: weight by the cell fraction (solid fraction and axisymmetric
++     metric) so that div u = source also in cut cells and in GfsAxi */
++  GFS_VALUE (cell, p->div) -= sum*p->L2*ftt_cell_volume (cell)*
++    gfs_domain_cell_fraction (p->v->domain, cell);
+ }
+ 
+ static void volume_sources (GfsDomain * domain, GfsVariable * p, GfsVariable * div) 

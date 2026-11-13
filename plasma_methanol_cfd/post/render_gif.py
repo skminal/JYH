@@ -39,29 +39,47 @@ CM_T = LinearSegmentedColormap.from_list('t', ['#f3f6fb', '#fde6c8', '#f9b877', 
 CM_P = LinearSegmentedColormap.from_list('p', ['#16233f', '#4a2a8a', '#b04fd0', '#ffd9ff'])
 
 
+def _fill_nan(a, fill):
+    """Replace NaN (solid) by the nearest valid value so that smoothing works."""
+    from scipy import ndimage
+    bad = np.isnan(a)
+    if not bad.any():
+        return a
+    if bad.all():
+        return np.full_like(a, fill)
+    idx = ndimage.distance_transform_edt(bad, return_distances=False, return_indices=True)
+    return a[tuple(idx)]
+
+
 def draw_view(ax, case, s, rmax, zmin, zmax, nr, title, color):
+    from scipy import ndimage
     ext = [-rmax, rmax, zmin, zmax]
     T = gfsio.raster(s, 'T', rmax, zmin, zmax, nr, fill=np.nan)
     th = gfsio.raster(s, 'Th', rmax, zmin, zmax, nr, fill=np.nan)
     # discharge power density K_g E^2  [W/m3]
     kg_si = s['Kg'] * 8.8541878128e-12 / case.t0
     pd = gfsio.raster(s, kg_si * s['E']**2, rmax, zmin, zmax, nr, fill=0.0)
+    T = _fill_nan(T, 1.0)
+    # liquid temperature: extend the liquid values into gas / solid before smoothing
+    th = _fill_nan(np.where(T > 0.5, th, np.nan), 0.0)
+    sg = max(nr * case.Lb / 2**case.p['lmax'] / rmax * 0.45, 0.6)   # ~ half a cell
+    Ts = ndimage.gaussian_filter(T, sg, mode='nearest')
+    ths = ndimage.gaussian_filter(th, sg, mode='nearest')
+    pds = ndimage.gaussian_filter(pd, sg, mode='nearest')
     mir = lambda a: np.concatenate([a[:, ::-1], a], axis=1)
-    T, th, pd = mir(T), mir(th), mir(pd)
-    liquid = np.where(T > 0.5, th, np.nan)
-    im = ax.imshow(liquid, origin='lower', extent=ext, cmap=CM_T, vmin=0, vmax=1.1,
-                   interpolation='nearest', aspect='equal', zorder=1)
-    gas = np.where(T <= 0.5, 1.0, np.nan)
-    ax.imshow(gas, origin='lower', extent=ext, cmap=LinearSegmentedColormap.from_list('g', [GAS, GAS]),
-              interpolation='nearest', aspect='equal', zorder=2)
-    glow = np.where((T <= 0.5) & (pd > 1e7), pd, np.nan)
-    ax.imshow(glow, origin='lower', extent=ext, cmap=CM_P, norm=LogNorm(1e7, 1e11),
-              interpolation='nearest', aspect='equal', zorder=3)
-    Tc = np.nan_to_num(T, nan=1.0)
-    if (Tc < 0.5).any():
-        zz = np.linspace(zmin, zmax, T.shape[0], endpoint=False) + (zmax - zmin) / T.shape[0] / 2
-        rr = np.linspace(-rmax, rmax, T.shape[1], endpoint=False) + rmax / T.shape[1]
-        ax.contour(rr, zz, Tc, levels=[0.5], colors='white', linewidths=0.9, zorder=4)
+    Ts, ths, pds = mir(Ts), mir(ths), mir(pds)
+    nz = Ts.shape[0]
+    zz = zmin + (np.arange(nz) + 0.5) * (zmax - zmin) / nz
+    rr = -rmax + (np.arange(2 * nr) + 0.5) * rmax / nr
+    im = ax.imshow(ths, origin='lower', extent=ext, cmap=CM_T, vmin=0, vmax=1.2,
+                   interpolation='bicubic', aspect='equal', zorder=1)
+    if (Ts < 0.5).any():
+        ax.contourf(rr, zz, Ts, levels=[-1, 0.5], colors=[GAS], zorder=2)
+        lp = np.log10(np.maximum(pds, 1.0))
+        lp = np.where(Ts < 0.5, lp, np.nan)
+        if np.nanmax(lp) > 7.0:
+            ax.contourf(rr, zz, lp, levels=np.linspace(7.0, 11.0, 9), cmap=CM_P, extend='max', zorder=3)
+        ax.contour(rr, zz, Ts, levels=[0.5], colors='white', linewidths=1.0, zorder=4)
     r, z = gfsio.needle_outline(case, zmin=zmin - 0.1)
     ax.fill(np.concatenate([-r[::-1], r]), np.concatenate([z[::-1], z]), color='#8f8d87',
             ec='#3d3c39', lw=0.8, zorder=5)
@@ -87,10 +105,10 @@ def main():
     ap.add_argument('out')
     ap.add_argument('--on', default='run_glow')
     ap.add_argument('--off', default='run_off')
-    ap.add_argument('--rmax', type=float, default=0.6)
-    ap.add_argument('--zmin', type=float, default=-0.7)
-    ap.add_argument('--zmax', type=float, default=1.3)
-    ap.add_argument('--nr', type=int, default=150)
+    ap.add_argument('--rmax', type=float, default=0.3)
+    ap.add_argument('--zmin', type=float, default=-0.35)
+    ap.add_argument('--zmax', type=float, default=0.65)
+    ap.add_argument('--nr', type=int, default=96)
     ap.add_argument('--dt_heat', type=float, default=1.0, help='frame spacing before nucleation, ms')
     ap.add_argument('--dt_fast', type=float, default=0.05, help='frame spacing after nucleation, ms')
     ap.add_argument('--tmax', type=float, default=None)
@@ -129,6 +147,7 @@ def main():
         cax = fig.add_axes([0.072, 0.16, 0.011, 0.17])
         cb = fig.colorbar(im, cax=cax)
         cb.set_ticks([0, 0.5, 1.0])
+        cb.ax.axhline(1.0, color=INK, lw=0.6)
         cb.ax.tick_params(labelsize=7, colors=INK, length=2)
         cb.ax.set_title('θ', fontsize=9, color=INK, pad=3)
         cb.outline.set_linewidth(0.5)

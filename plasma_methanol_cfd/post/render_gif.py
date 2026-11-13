@@ -153,7 +153,8 @@ def main():
             for sp in ('left', 'bottom'):
                 ax.spines[sp].set_color(MUTE)
             ax.axvline(t, color=INK, lw=0.9, zorder=5)
-            ax.set_xlim(0, tend)
+            # after nucleation the traces zoom on the two-phase stage
+            ax.set_xlim((0, tend) if t < tnuc - 0.3 else (tnuc - 0.5, max(tend, tnuc + 0.5)))
             if ylog:
                 ax.set_yscale('log')
                 ax.yaxis.set_major_locator(LogLocator(base=10, numticks=6))
@@ -165,7 +166,7 @@ def main():
         ax1.plot(m_off['t'], m_off['theta_max'], color=C_OFF, lw=1.6)
         ax1.plot(m_on['t'], m_on['theta_max'], color=C_ON, lw=1.6)
         ax1.axhline(1.0, color=INK, lw=0.8, ls='--')
-        ax1.text(0.5, 1.03, '沸点 θ = 1', fontsize=8, color=INK, va='bottom')
+        ax1.text(ax1.get_xlim()[0] + 0.02 * (ax1.get_xlim()[1] - ax1.get_xlim()[0]), 1.03, '沸点 θ = 1', fontsize=8, color=INK, va='bottom')
         ax1.set_ylim(0, 1.6)
 
         ax2 = fig.add_subplot(gs[1, 2])

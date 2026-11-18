@@ -249,6 +249,8 @@ window.MathJax = {
     <a href="#syllabus">课程体系</a>
     <a href="#lesson-2-1">第 2 章 第 1 讲 · 流型</a>
     <a href="#lesson-2-2">第 2 章 第 2 讲 · 流型转变机理</a>
+    <a href="#lesson-2-3">第 2 章 第 3 讲 · 相速度与相含率分布</a>
+    <a href="#lesson-2-4">第 2 章 第 4 讲 · 补全与总复习</a>
   </nav>
   <div class="legend">结论标注：<span class="tag ok">已确立</span>经过充分实验检验的理论 <span class="tag approx">合理近似</span>有明确前提的简化 <span class="tag emp">经验关联式</span>拟合数据，非普适定律 <span class="tag open">待验证</span>假说或有争议</div>
 </header>
@@ -305,6 +307,30 @@ window.MathJax = {
       <li><a href="#l22-check">十、总结与自测</a></li>
       <li><a href="#l22-next">下一讲</a></li>
     </ol>
+    <ol class="tocv" data-view="lesson-2-3" hidden>
+      <li><a href="#l23-goal">一、这一讲要解决什么</a></li>
+      <li><a href="#l23-single">二、单相管流的三步法</a></li>
+      <li><a href="#l23-two">三、两相流的剪切应力</a></li>
+      <li><a href="#l23-turner">四、Turner 无量纲数</a></li>
+      <li><a href="#l23-annular">五、例题：环状流</a></li>
+      <li><a href="#l23-bankoff">六、Bankoff 模型</a></li>
+      <li><a href="#l23-drift">七、漂移通量模型</a></li>
+      <li><a href="#l23-research">八、和你课题的联系</a></li>
+      <li><a href="#l23-errors">九、常见误解与局限</a></li>
+      <li><a href="#l23-check">十、总结与自测</a></li>
+    </ol>
+    <ol class="tocv" data-view="lesson-2-4" hidden>
+      <li><a href="#l24-key">一、读图的三个问题</a></li>
+      <li><a href="#l24-heated">二、受热管</a></li>
+      <li><a href="#l24-down">三、竖直下降管</a></li>
+      <li><a href="#l24-bundle">四、横掠管束</a></li>
+      <li><a href="#l24-coil">五、螺旋管</a></li>
+      <li><a href="#l24-ll">六、液液两相流</a></li>
+      <li><a href="#l24-gs">七、气固与液固</a></li>
+      <li><a href="#l24-three">八、三相流</a></li>
+      <li><a href="#l24-review">九、第 2 章总复习</a></li>
+      <li><a href="#l24-research">十、带给课题的工具</a></li>
+    </ol>
   </details>
 </nav>
 <main>
@@ -316,7 +342,7 @@ window.MathJax = {
   <section class="sec" id="syl-intro">
     <h3><span class="no">0.1</span>课程定位与使用方法</h3>
     <div class="read">
-      <p>课程分四个层级，共 35 讲。<b>A 基础层</b>建立单相连续介质力学和热力学的“语法”；<b>B 进阶层</b>把语法用于两相系统，核心是界面和平均模型；<b>C 高级层</b>处理气泡、液滴、颗粒、界面热质传递和电场作用；<b>D 科研层</b>围绕你的课题：液态甲醇中针—板电极放电产生的等离子体气泡。</p>
+      <p>课程分四个层级，共 36 讲。<b>A 基础层</b>建立单相连续介质力学和热力学的“语法”；<b>B 进阶层</b>把语法用于两相系统，核心是界面和平均模型；<b>C 高级层</b>处理气泡、液滴、颗粒、界面热质传递和电场作用；<b>D 科研层</b>围绕你的课题：液态甲醇中针—板电极放电产生的等离子体气泡。</p>
       <p>每一讲都按同一结构推进：学习目标 → 物理现象 → 基本概念 → 物理机制 → 数学模型 → 完整推导 → 典型案例 → 科研应用 → 常见错误与局限 → 理解检验。每个新概念按“是什么、为什么需要、对应什么现象、机制、数学描述、符号单位、来源、成立与失效条件、与已学内容的联系、应用”十二问展开。</p>
       <p>每讲的“课件”一栏指向朱恂教授课件的章节。课件是主干；本课程补足课件默认你已经掌握的推导，并把它们接到你的课题上。</p>
     </div>
@@ -332,15 +358,16 @@ window.MathJax = {
       <tbody>
         <tr><td class="num">—</td><td>第 1 章</td><td>绪论：相、分类、研究方法、两相流参数</td><td>A1、B1</td><td>已自学</td></tr>
         <tr><td class="num">1</td><td>第 2 章 2.1–2.2</td><td><a href="#lesson-2-1">多相流的特征与流型</a></td><td>B2a（补 A5 量纲分析）</td><td>已发布</td></tr>
-        <tr><td class="num">2</td><td>第 2 章 2.3</td><td><a href="#lesson-2-2">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 判据</a></td><td>B2b（补 A6 线性稳定性）</td><td><span class="tag approx">最新</span></td></tr>
-        <tr><td class="num">3</td><td>第 2 章 2.4</td><td>相速度与相含率分布：微分分析、积分分析、Bankoff 模型、漂移通量</td><td>B2c、B7（补 A4 N–S 与混合长度）</td><td>下一讲</td></tr>
-        <tr><td class="num">4–6</td><td>第 3 章</td><td>界面跃迁条件（连续介质到界面）、润湿与接触线、泰勒不稳定性与测量</td><td>A1、B3、B4、B5、C4</td><td></td></tr>
-        <tr><td class="num">7–9</td><td>第 4 章</td><td>成核与生长、Rayleigh–Plesset、脱离与鼓泡</td><td>C1、C2、C3</td><td></td></tr>
-        <tr><td class="num">10–11</td><td>第 5 章</td><td>射流稳定性与雾化、液滴撞击</td><td>C4、C5</td><td></td></tr>
-        <tr><td class="num">12–13</td><td>第 6 章</td><td>颗粒受力、颗粒传热传质</td><td>B6、C6</td><td></td></tr>
-        <tr><td class="num">14–15</td><td>第 7 章</td><td>沸腾系统流动特性、压降、流动不稳定性</td><td>B7、B8</td><td></td></tr>
-        <tr><td class="num">16</td><td>第 8 章</td><td>宏观模型与数值方法</td><td>B7、C10</td><td></td></tr>
-        <tr><td class="num">17 起</td><td>扩展</td><td>界面热质传递、电流体动力学、等离子体气泡专题</td><td>C7–C9、D1–D8</td><td></td></tr>
+        <tr><td class="num">2</td><td>第 2 章 2.3</td><td><a href="#lesson-2-2">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 判据</a></td><td>B2b（补 A6 线性稳定性）</td><td>已发布</td></tr>
+        <tr><td class="num">3</td><td>第 2 章 2.4</td><td><a href="#lesson-2-3">相速度与相含率分布：微分分析、积分分析、Bankoff 模型、漂移通量</a></td><td>B2c、B7（补 A4 N–S 与混合长度）</td><td><span class="tag approx">最新</span></td></tr>
+        <tr><td class="num">4</td><td>第 2 章 2.2 其余部分</td><td><a href="#lesson-2-4">受热管、下降管、管束、螺旋管、液液、气固、液固、三相流；第 2 章总复习</a></td><td>B2d</td><td><span class="tag approx">最新</span></td></tr>
+        <tr><td class="num">5–7</td><td>第 3 章</td><td>界面跃迁条件（连续介质到界面）、润湿与接触线、泰勒不稳定性与测量</td><td>A1、B3、B4、B5、C4</td><td></td></tr>
+        <tr><td class="num">8–10</td><td>第 4 章</td><td>成核与生长、Rayleigh–Plesset、脱离与鼓泡</td><td>C1、C2、C3</td><td></td></tr>
+        <tr><td class="num">11–12</td><td>第 5 章</td><td>射流稳定性与雾化、液滴撞击</td><td>C4、C5</td><td></td></tr>
+        <tr><td class="num">13–14</td><td>第 6 章</td><td>颗粒受力、颗粒传热传质</td><td>B6、C6</td><td></td></tr>
+        <tr><td class="num">15–16</td><td>第 7 章</td><td>沸腾系统流动特性、压降、流动不稳定性</td><td>B7、B8</td><td></td></tr>
+        <tr><td class="num">17</td><td>第 8 章</td><td>宏观模型与数值方法</td><td>B7、C10</td><td></td></tr>
+        <tr><td class="num">18 起</td><td>扩展</td><td>界面热质传递、电流体动力学、等离子体气泡专题</td><td>C7–C9、D1–D8</td><td></td></tr>
       </tbody>
     </table></div>
   </section>
@@ -362,7 +389,7 @@ flowchart LR
   end
   subgraph SB[B 进阶层]
     B1[B1 两相流参数]
-    B2[B2 流型与相分布 三讲]
+    B2[B2 流型与相分布 四讲]
     B3[B3 界面热力学]
     B4[B4 润湿与接触线]
     B5[B5 界面跃迁条件]
@@ -475,7 +502,7 @@ flowchart LR
 
   <section class="sec level" id="lv-b">
     <div class="level-head">
-      <div class="part-label">B 进阶层 · 10 讲</div>
+      <div class="part-label">B 进阶层 · 11 讲</div>
       <h3>多相流基础理论</h3>
       <p class="muted small">目标：理解界面带来的新物理，掌握两相流参数体系与四类宏观模型的假设和相互关系。</p>
     </div>
@@ -490,15 +517,20 @@ flowchart LR
         <div class="m"><span><b>前置</b> B1、A5</span><span><b>课件</b> 第 2 章 2.1–2.2</span></div>
         <div class="eqs">\(J_l=3.0J_g-1.15\left[\frac{g\Delta\rho\sigma}{\rho_l^2}\right]^{1/4}\)，\(\ U_{TB}\approx0.35\sqrt{gD}\)，\(\ \mathrm{Ku}=\frac{\rho_g^{1/2}J_g}{(\sigma g\Delta\rho)^{1/4}}\ge3.1\)</div>
       </div></li>
-      <li class="now"><span class="code">B2b</span><div class="body">
+      <li><span class="code">B2b</span><div class="body">
         <div class="t"><a href="#lesson-2-2">流型转变机理：分层流动量平衡、Kelvin–Helmholtz 不稳定性、Taitel–Dukler 四条判据</a> <span class="tag approx">半理论</span></div>
         <div class="m"><span><b>前置</b> B2a、A6</span><span><b>课件</b> 第 2 章 2.3</span></div>
         <div class="eqs">\(X^2=\frac{(\dd p_F/\dd z)_L}{(\dd p_F/\dd z)_G}\)，\(\ (U_1-U_2)^2\gt\frac{\rho_1+\rho_2}{\rho_1\rho_2}\left[\frac{g\Delta\rho}{k}+\sigma k\right]\)</div>
       </div></li>
-      <li><span class="code">B2c</span><div class="body">
-        <div class="t">相速度与相含率分布：力平衡求剪切应力分布、环状液膜速度剖面、Bankoff 变密度模型</div>
+      <li class="now"><span class="code">B2c</span><div class="body">
+        <div class="t"><a href="#lesson-2-3">相速度与相含率分布：力平衡求剪切应力分布、环状液膜速度剖面、Bankoff 变密度模型</a></div>
         <div class="m"><span><b>前置</b> B2b、A4</span><span><b>课件</b> 第 2 章 2.4</span></div>
         <div class="eqs">\(\tau^*=r^*P^*+\frac{\cos\theta}{r^*}\int_0^{r^*}(1-\alpha)\,2r'\dd r'\)，\(\ \frac{\langle\alpha\rangle}{\beta}=K\) <span class="tag approx">Bankoff</span></div>
+      </div></li>
+      <li class="now"><span class="code">B2d</span><div class="body">
+        <div class="t"><a href="#lesson-2-4">第 2 章补全与总复习：受热管、下降管、管束、螺旋管、液液、气固、液固、三相流</a></div>
+        <div class="m"><span><b>前置</b> B2a–B2c</span><span><b>课件</b> 第 2 章 2.2 第 22–86 页</span></div>
+        <div class="eqs">\(x(z)=\frac{h_{\rm in}+4qz/(GD)-h_f}{h_{lv}}\)，\(\ \mathrm{De}=\mathrm{Re}\sqrt{d/D}\)，\(\ u_p=u_g/\varepsilon-u_t\)</div>
       </div></li>
       <li><span class="code">B3</span><div class="body">
         <div class="t">界面热力学：表面自由能、表面张力的温度与杂质效应、表面活性剂、Marangoni 应力</div>
@@ -668,6 +700,8 @@ flowchart LR
         <li>第 100 页把竖直上升管 \(\alpha_{\rm cr}=0.25\) 判据标为 Taitel 等（1976 年）。1976 年的 Taitel–Dukler 论文研究水平管；竖直上升管的这一判据出自 Taitel、Bornea、Dukler（1980 年）。</li>
         <li>第 88–90、97–98 页把 Lockhart–Martinelli 参数写成 \(X=(\dd P_F/\dd Z)_L/(\dd P_F/\dd Z)_G\)，缺少平方根。X = 1.6 对应液位在管中心，是开平方后的值（第 2 讲 2.5 节验算）。</li>
         <li>第 91 页曲线 A 判据中 \(\tilde u_G\) 应为平方 \(\tilde u_G^2\)，它来自 Bernoulli 方程中的 \(u_G^2\)（第 2 讲第四节）。</li>
+        <li>第 118 页 Bankoff 模型：由 \(G_1/G_2=(1-x)/x\) 解出 \(\alpha_m\) 时，密度比应为 \(\rho_2/\rho_1\)（气/液），课件写成 \(\rho_1/\rho_2\)；最终式应为 \(\langle\alpha\rangle=K\big/\left[1+\frac{\rho_2}{\rho_1}\frac{1-x}{x}\right]=K\beta\)，课件分母缺“1 +”（第 3 讲第六节）。</li>
+        <li>第 66 页流型英文名：起始流态化通常称 incipient fluidization，快速床称 fast fluidized bed，气力输送称 pneumatic transport；课件中的 pulverized-fuel furnace（煤粉炉）是应用设备名。</li>
         <li>第 6 页把界面变形的随机性归因于“界面微层内分子随机运动”。热涨落幅度只有约 \(\sqrt{k_BT/\sigma}\sim0.3\) nm；宏观随机性主要来自失稳对各种扰动的放大（第 2 章第 1 讲 4.1 节）。</li>
       </ol>
     </div>
@@ -1882,7 +1916,761 @@ flowchart LR
     <h3><span class="no">下一讲</span>第 2 章第 3 讲：相速度与相含率分布（课件 2.4）</h3>
     <div class="read">
       <p>内容：为什么管截面上的含气率和速度不均匀；用力平衡求两相流中的剪切应力分布；环状液膜的速度剖面推导；Bankoff 变密度模型与分布系数 \(C_0\) 的来源。仍按这一讲的方式写。</p>
-      <p>读完这一讲后，请告诉我：哪一节最清楚，哪一节还卡着。卡住的地方告诉我是第几节第几步，下一讲开头先把它讲透。</p>
+      <p>下一讲已经写好：<a href="#lesson-2-3">第 2 章第 3 讲</a>。</p>
+    </div>
+  </section>
+</article>
+
+<article class="part view" id="lesson-2-3">
+  <div class="part-label">第 2 章 第 3 讲（B2c）· 对应课件 2.4，第 101–121 页</div>
+  <h2>截面上的速度和含气率怎么分布：从力平衡一步步算出来</h2>
+  <div class="note link">
+    <b>这一讲怎么读</b>
+    <p>写法和第 2 讲相同：每节先给“要回答的问题”和“一句话答案”，再讲直觉，再一步步推导并代入数字，节末有点选题。课件这一节公式很多，但真正的方法只有两个，下面的路线图先把它们摆出来。</p>
+  </div>
+
+  <section class="sec" id="l23-goal">
+    <h3><span class="no">一</span>这一讲要解决什么</h3>
+    <p class="qhead">这一节要回答的问题：第 1 章的含气率、速度都是截面平均值，为什么还要关心截面上每一点的分布？</p>
+    <p class="oneline">一句话答案：平均值之间的关系取决于分布。哪怕每一点上气液同速，只要气体集中在流得快的管中心，截面平均下来气体就“显得”更快；壁面摩擦和传热也由近壁的分布决定。</p>
+    <div class="read">
+      <p>打个比方：一条马路中间是快车道、两边是慢车道。如果大部分红色车都开在快车道上，那么即使每辆红车和旁边的车速度一样，统计下来红车的平均速度也比其他车快。气泡在管中心、液体贴着管壁慢慢走时，就是这种情况。第 1 章的滑动比 S 里，有一部分其实来自这种“分布效应”，而不是真正的相对运动。</p>
+      <p>课件第 102 页说，分布受太多因素影响，没有通解，只能用“简化模型 + 修正系数”。具体有两种方法：</p>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 740 200" role="img" aria-label="两种分析方法：微分分析法依次由力平衡得剪切应力分布、由本构关系得速度梯度、积分得速度分布、再积分得流量；积分分析法先假设速度和含气率分布的形状，再积分得到平均量之间的关系。">
+        <defs><marker id="f29a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <text x="10" y="22" font-weight="500">微分分析法（课件 1.）</text>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="1.1">
+            <rect x="10" y="34" width="150" height="56" rx="6"/><rect x="200" y="34" width="150" height="56" rx="6"/><rect x="390" y="34" width="150" height="56" rx="6"/><rect x="580" y="34" width="150" height="56" rx="6"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="85" y="57" font-weight="500">① 力平衡</text><text x="85" y="77" font-size="11.5">得剪切应力 τ(r)</text>
+            <text x="275" y="57" font-weight="500">② 本构关系</text><text x="275" y="77" font-size="11.5">τ 与 du/dr 的关系</text>
+            <text x="465" y="57" font-weight="500">③ 积分一次</text><text x="465" y="77" font-size="11.5">得速度分布 u(r)</text>
+            <text x="655" y="57" font-weight="500">④ 再积分</text><text x="655" y="77" font-size="11.5">得各相流量 j</text>
+          </g>
+          <g stroke="var(--accent)" stroke-width="1.6"><line x1="162" y1="62" x2="196" y2="62" marker-end="url(#f29a)"/><line x1="352" y1="62" x2="386" y2="62" marker-end="url(#f29a)"/><line x1="542" y1="62" x2="576" y2="62" marker-end="url(#f29a)"/></g>
+          <text x="10" y="128" font-weight="500">积分分析法（课件 2.）</text>
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="1.1"><rect x="10" y="140" width="340" height="50" rx="6"/><rect x="390" y="140" width="340" height="50" rx="6"/></g>
+          <g text-anchor="middle">
+            <text x="180" y="161" font-weight="500">先假设分布的形状</text><text x="180" y="180" font-size="11.5">例如 u ∝ y^(1/m)，α ∝ y^(1/n)</text>
+            <text x="560" y="161" font-weight="500">积分得平均量之间的关系</text><text x="560" y="180" font-size="11.5">例如 ⟨α⟩ = K·β（Bankoff）</text>
+          </g>
+          <line x1="352" y1="165" x2="386" y2="165" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f29a)"/>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-9　这一讲的两条路线。</b>微分法从物理定律出发一步步算，适合结构简单的流型（如环状流）；积分法先猜分布形状，用积分把平均量联系起来，适合结构复杂、算不出来的情形。</figcaption>
+    </figure>
+    <div class="read">
+      <p><b>学完这一讲，你应当能够：</b></p>
+      <ol>
+        <li>在单相圆管中用“力平衡 → 本构关系 → 积分”三步法得到剪切应力和速度分布，并读懂壁面律 \(u^+\)–\(y^+\)。</li>
+        <li>推导两相流中的剪切应力分布，解释它为什么不再是直线。</li>
+        <li>完整推导竖直环状流中液膜和气芯的速度分布与流量（课件第 112–116、120–121 页）。</li>
+        <li>推导 Bankoff 模型 \(\langle\alpha\rangle=K\beta\)，并说明 K 与漂移通量模型中分布系数 \(C_0\) 的关系。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-single">
+    <h3><span class="no">二</span>先在单相管流里练三步法</h3>
+    <p class="qhead">这一节要回答的问题：在最简单的单相圆管里，剪切应力和速度沿半径怎么分布？</p>
+    <p class="oneline">一句话答案：剪切应力从管中心的 0 线性增加到壁面的 \(\tau_w\)，这一点只靠力平衡就能得到，层流湍流都成立；速度分布则取决于第二步的本构关系，层流是抛物线，湍流是近壁很陡、中心很平的“壁面律”。</p>
+
+    <h4>2.1 第一步：力平衡</h4>
+    <figure>
+      <div class="figbox">
+      <svg class="narrow" viewBox="0 0 340 300" role="img" aria-label="竖直圆管中取半径 r、高 dz 的流体圆柱：底面受压力 p 向上推，顶面受压力 p+dp 向下压，侧面受外层流体的剪切应力 τ 向下拖，自身重量向下。">
+        <defs><marker id="f210a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker><marker id="f210b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <line x1="60" y1="20" x2="60" y2="280" stroke="currentColor" stroke-width="2.4"/>
+          <line x1="280" y1="20" x2="280" y2="280" stroke="currentColor" stroke-width="2.4"/>
+          <line x1="170" y1="20" x2="170" y2="280" stroke="currentColor" stroke-width="0.8" stroke-dasharray="4 4" opacity="0.6"/>
+          <rect x="120" y="110" width="100" height="80" fill="var(--accent)" fill-opacity="0.22" stroke="var(--accent)" stroke-width="1.4"/>
+          <line x1="170" y1="240" x2="170" y2="196" stroke="currentColor" stroke-width="1.6" marker-end="url(#f210a)"/>
+          <text x="176" y="236">p（推上）</text>
+          <line x1="170" y1="60" x2="170" y2="104" stroke="currentColor" stroke-width="1.6" marker-end="url(#f210a)"/>
+          <text x="176" y="72">p + dp（压下）</text>
+          <line x1="226" y1="130" x2="226" y2="172" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f210b)"/>
+          <text x="232" y="150" fill="var(--accent)">τ</text>
+          <line x1="114" y1="130" x2="114" y2="172" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f210b)"/>
+          <line x1="150" y1="150" x2="150" y2="186" stroke="currentColor" stroke-width="1.2" marker-end="url(#f210a)"/>
+          <text x="98" y="210" font-size="11">重量</text>
+          <line x1="170" y1="150" x2="220" y2="150" stroke="currentColor" stroke-width="0.8"/>
+          <text x="188" y="146" font-size="11">r</text>
+          <line x1="300" y1="110" x2="300" y2="190" stroke="currentColor" stroke-width="0.8"/>
+          <text x="306" y="154" font-size="11">dz</text>
+          <text x="170" y="296" text-anchor="middle" font-size="11" opacity="0.75">流动向上；管半径 r₀</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-10　管中流体圆柱的受力（课件第 105 页）。</b>半径为 r 的圆柱，被下面的压力推上去，被上面的压力、外层流体的摩擦和自身重量拉下来。第二节先在水平管中忽略重量，第三节再把重量加回来。</figcaption>
+    </figure>
+    <div class="deriv">
+      <h4>推导：单相管流的剪切应力分布</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>水平圆管（暂时不考虑重力），定常、充分发展的流动。在管中取一个半径为 r、长为 dz 的流体圆柱，它不加速，所以受力平衡。</p></div></li>
+        <li><div><p><b>列出力。</b>两端压力差的合力：\(-\dfrac{\dd p}{\dd z}\dd z\cdot\pi r^2\)（沿流动方向）。侧面上，外层流体对圆柱的摩擦力：\(-\tau\cdot2\pi r\,\dd z\)（阻碍流动；τ 是单位面积上的摩擦力）。</p></div></li>
+        <li><div><p><b>令合力为零。</b></p>
+          \[ -\frac{\dd p}{\dd z}\pi r^2\,\dd z-\tau\,2\pi r\,\dd z=0\quad\Longrightarrow\quad \tau=\frac r2\left(-\frac{\dd p}{\dd z}\right). \]</div></li>
+        <li><div><p><b>结果。</b>在壁面 \(r=r_0\) 处 \(\tau_w=\frac{r_0}{2}(-\dd p/\dd z)\)，两式相除：</p>
+          <div class="eq-key">\[ \frac{\tau}{\tau_w}=\frac{r}{r_0} \]</div>
+          <p>剪切应力随半径线性增长。推导只用了力平衡，没有用到流体是层流还是湍流，所以两者都成立。</p></div></li>
+      </ol>
+    </div>
+
+    <h4>2.2 第二、三步：层流</h4>
+    <div class="read">
+      <p>层流中，剪切应力来自分子黏性，与速度梯度成正比（牛顿内摩擦定律）：\(\tau=-\mu\,\dd u/\dd r\)。负号是因为速度从中心向壁面减小，\(\dd u/\dd r\lt0\)，而 τ 取正值。把它与第一步的结果联立：</p>
+      \[ -\mu\frac{\dd u}{\dd r}=\frac r2\left(-\frac{\dd p}{\dd z}\right)\quad\Longrightarrow\quad u(r)=\frac{1}{4\mu}\left(-\frac{\dd p}{\dd z}\right)(r_0^2-r^2). \]
+      <p>积分时用了壁面无滑移条件 \(u(r_0)=0\)。这就是抛物线形的 Poiseuille 流。</p>
+    </div>
+
+    <h4>2.3 第二、三步：湍流与壁面律</h4>
+    <div class="read">
+      <p>湍流中，大部分动量不是靠分子黏性传递，而是靠涡团的搬运：一个涡团从快的地方带着动量跑到慢的地方再和周围混合。Prandtl 把涡团平均跑的距离叫作<b>混合长度</b> l，并假设它与离壁面的距离成正比：\(l=\kappa y\)，κ ≈ 0.4。于是湍流剪切应力写成 \(\tau_t=\rho\,l^2\left|\dfrac{\dd u}{\dd y}\right|\dfrac{\dd u}{\dd y}\)（课件第 104 页）。</p>
+      <p>为了让结果对所有管道都通用，要换一套“尺子”。速度用<b>摩擦速度</b> \(u^*=\sqrt{\tau_w/\rho}\) 来量，它是由壁面摩擦定义的速度，大小就是近壁涡团的典型速度；距离用 \(\nu/u^*\) 来量，它是黏性起作用的长度。于是 \(u^+=u/u^*\)，\(y^+=yu^*/\nu\)。</p>
+    </div>
+    <div class="deriv">
+      <h4>推导：壁面律的两段</h4>
+      <ol class="steps">
+        <li><div><p><b>贴着壁面（黏性底层）。</b>离壁面很近处，剪切应力约等于 \(\tau_w\)，涡团被壁面压住，只剩黏性：\(\tau_w=\mu\,\dd u/\dd y\)，积分得 \(u=\tau_wy/\mu\)。除以 \(u^*\) 并用 \(\tau_w=\rho u^{*2}\)：</p>
+          \[ u^+=\frac{u}{u^*}=\frac{\rho u^{*2}y}{\mu u^*}=\frac{yu^*}{\nu}=y^+. \]</div></li>
+        <li><div><p><b>稍远一点（对数层）。</b>黏性可以忽略，涡团主导，仍取 \(\tau\approx\tau_w\)：\(\rho(\kappa y)^2(\dd u/\dd y)^2=\rho u^{*2}\)，即 \(\dd u/\dd y=u^*/(\kappa y)\)，积分得</p>
+          \[ u^+=\frac1\kappa\ln y^++C=2.5\ln y^++5.5. \]
+          <p>常数 C = 5.5 由实验确定 <span class="tag emp">经验常数</span>。两段之间的过渡层（\(5\lt y^+\le30\)）用拟合式 \(u^+=-3.05+5.0\ln y^+\)。</p></div></li>
+        <li><div><p><b>代入数字：25 mm 水管，平均流速 1 m/s。</b>Re = 28 000，摩擦系数 \(C_f=0.079\,\mathrm{Re}^{-1/4}=0.0061\)，摩擦速度 \(u^*=u_m\sqrt{C_f/2}=0.055\) m/s。黏性底层的外缘 \(y^+=5\) 对应 \(y=5\nu/u^*=0.08\) mm，对数层从 \(y^+=30\) 即 0.48 mm 开始。整个半径 12.5 mm 里，速度变化最剧烈的部分挤在离壁面不到半毫米的薄层里。</p></div></li>
+      </ol>
+    </div>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 640 290" role="img" aria-label="壁面律：横轴 y+ 对数坐标，纵轴 u+；y+ 小于 5 时 u+ 等于 y+，y+ 大于 30 时 u+ 等于 2.5 ln y+ 加 5.5，中间为过渡层。">
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <rect x="70" y="20" width="540" height="230" fill="none" stroke="currentColor" stroke-width="1"/>
+          <rect x="70" y="20" width="229.4" height="230" fill="var(--accent)" fill-opacity="0.08"/>
+          <rect x="299.4" y="20" width="105" height="230" fill="var(--accent)" fill-opacity="0.16"/>
+          <g stroke="currentColor" stroke-width="0.5" opacity="0.25"><line x1="205" y1="20" x2="205" y2="250"/><line x1="340" y1="20" x2="340" y2="250"/><line x1="475" y1="20" x2="475" y2="250"/><line x1="70" y1="204" x2="610" y2="204"/><line x1="70" y1="158" x2="610" y2="158"/><line x1="70" y1="112" x2="610" y2="112"/><line x1="70" y1="66" x2="610" y2="66"/></g>
+          <g font-family="var(--font-mono)" font-size="10.5" text-anchor="middle"><text x="70" y="266">0.1</text><text x="205" y="266">1</text><text x="340" y="266">10</text><text x="475" y="266">100</text><text x="610" y="266">1000</text></g>
+          <g font-family="var(--font-mono)" font-size="10.5" text-anchor="end"><text x="64" y="254">0</text><text x="64" y="208">5</text><text x="64" y="162">10</text><text x="64" y="116">15</text><text x="64" y="70">20</text><text x="64" y="24">25</text></g>
+          <text x="340" y="284" text-anchor="middle">y⁺ = y u*/ν（对数坐标）</text>
+          <text x="20" y="135" text-anchor="middle" transform="rotate(-90 20 135)">u⁺ = u/u*</text>
+          <polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.6" points="299.4,204.0 319.1,185.6 333.8,167.2 345.6,148.8 355.4,130.4 363.8,112.0 374.5,84.4 386.2,47.6"/>
+          <polyline fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="4 4" opacity="0.6" points="205.0,199.4 225.2,191.5 245.5,183.5 265.8,175.6 286.0,167.6 306.2,159.7 326.5,151.7 346.8,143.8 367.0,135.8 387.2,127.9 404.4,121.4"/>
+          <polyline fill="none" stroke="var(--accent)" stroke-width="2.6" points="70.0,249.1 90.2,248.7 110.5,248.2 130.8,247.4 151.0,246.3 171.2,244.8 191.5,242.7 211.8,239.7 232.0,235.4 252.2,229.4 272.5,220.9 286.0,213.4 299.5,203.9 313.0,193.3 326.5,182.7 340.0,172.1 353.5,161.5 367.0,151.0 380.5,140.4 394.0,129.8 404.1,121.8 414.2,117.3 434.5,109.4 454.8,101.4 475.0,93.5 495.2,85.5 515.5,77.6 535.8,69.6 556.0,61.7 576.2,53.8 596.5,45.8 610.0,40.5"/>
+          <text x="140" y="44">黏性底层</text><text x="140" y="60" font-size="11" font-family="var(--font-mono)">u⁺ = y⁺</text>
+          <text x="312" y="44">过渡层</text>
+          <text x="470" y="160">对数层</text><text x="470" y="176" font-size="11" font-family="var(--font-mono)">u⁺ = 2.5 ln y⁺ + 5.5</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-11　湍流壁面律（课件第 104 页三段式，按公式绘制）。</b>虚线是两段公式各自的延长线，它们在过渡层附近相交。用 \(u^+\)、\(y^+\) 这套“尺子”后，不同管径、不同流速的湍流管流的近壁速度分布落在同一条曲线上。</figcaption>
+    </figure>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 3-1：单相圆管中剪切应力从中心到壁面线性增长，这个结论依赖于流动是层流吗？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">依赖，只对层流成立</button>
+        <button type="button" class="opt" data-opt="b">不依赖，它只来自力平衡，层流湍流都成立</button>
+        <button type="button" class="opt" data-opt="c">只对湍流成立</button>
+      </div>
+      <div class="fb closed"><p>τ/τ_w = r/r₀ 只用了第一步“圆柱受力平衡”，没有用到第二步的本构关系。层流和湍流的区别只在第二步：剪切应力怎样和速度梯度联系起来。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-two">
+    <h3><span class="no">三</span>两相流：剪切应力不再是直线</h3>
+    <p class="qhead">这一节要回答的问题：管里有气有液时，第一步的力平衡变成什么样？</p>
+    <p class="oneline">一句话答案：圆柱里装的不再是均匀的流体，而是气液混合物；它的重量取决于半径 r 以内有多少液体。重量沿半径分布不均，剪切应力就不再是直线，具体形状由流型决定。</p>
+    <div class="deriv">
+      <h4>推导：两相流的剪切应力分布（课件第 105–106 页）</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>与竖直方向夹角为 θ 的圆管，轴对称、无分层的定常流动（竖直管 θ = 0）。局部含气率 α(r) 只随半径变化。仍取半径 r、长 dz 的圆柱（图 2-10）。</p></div></li>
+        <li><div><p><b>局部混合物密度。</b>半径 r 处的平均密度</p>\[ \bar\rho=\alpha\rho_g+(1-\alpha)\rho_l=\rho_g+(\rho_l-\rho_g)(1-\alpha). \]<p>课件用下标 1 表示重相（液）、2 表示轻相（气）：\(\bar\rho=\rho_2+(\rho_1-\rho_2)(1-\alpha)\)。</p></div></li>
+        <li><div><p><b>三个力。</b>压力差：\(-\frac{\dd p}{\dd z}\pi r^2\dd z\)；侧面剪切：\(-\tau\,2\pi r\,\dd z\)；重力沿管轴的分量：</p>
+          \[ -\int_0^r\bar\rho\,g\cos\theta\cdot2\pi r'\,\dd r'\,\dd z. \]
+          <p>重力要积分，因为圆柱里不同半径处的密度不同。</p></div></li>
+        <li><div><p><b>令合力为零并解出 τ。</b>除以 \(2\pi r\,\dd z\)，再代入第 2 步的 \(\bar\rho\)：</p>
+          \[ \tau=\frac r2\left(-\frac{\dd p}{\dd z}-\rho_2g\cos\theta\right)-\frac{g(\rho_1-\rho_2)\cos\theta}{2r}\int_0^r(1-\alpha)\,2r'\,\dd r'. \]
+          <p>第一项和单相一样，是一条直线（压力梯度减去“全是气体”时的重量）；第二项是“比气体多出来的液体重量”，它取决于半径 r 以内液体的分布。</p></div></li>
+        <li><div><p><b>无量纲化。</b>取 \(r^*=r/r_0\)、\(\tau^*=\dfrac{4\tau}{Dg(\rho_1-\rho_2)}\)、\(\Delta P^*=\dfrac{-\dd p/\dd z-\rho_2g\cos\theta}{g(\rho_1-\rho_2)}\)。\(\Delta P^*\) 的意思是：扣掉气体重量后的压力梯度，以“液气密度差产生的静压梯度”为单位。代入（\(r=r^*D/2\)，积分变量同样换算）：</p>
+          <div class="eq-key">\[ \tau^*=r^*\Delta P^*-\frac{\cos\theta}{r^*}\int_0^{r^*}(1-\alpha)\,2r^*\,\dd r^* \]</div></div></li>
+        <li><div><p><b>检查一：含气率均匀。</b>α 为常数时积分等于 \((1-\alpha)r^{*2}\)，\(\tau^*=r^*[\Delta P^*-(1-\alpha)\cos\theta]\)，又是直线，就像一个密度为混合密度的单相流体。</p></div></li>
+        <li><div><p><b>检查二：壁面处。</b>\(r^*=1\) 时积分恰好等于截面平均液相份额 \(1-\langle\alpha\rangle\)，所以 \(\tau_w^*=\Delta P^*-(1-\langle\alpha\rangle)\cos\theta\)。<b>壁面切应力只取决于平均含气率，与分布无关</b>：这正是对整个管截面做力平衡的结果。分布只改变管内部的剪切应力形状。</p></div></li>
+      </ol>
+    </div>
+    <div class="calc" id="tau-widget">
+      <h4 style="margin:0">动手：同样的平均含气率，不同的分布</h4>
+      <p class="small muted">竖直管（θ = 0）。四条曲线的平均含气率相同：均匀分布、管中心多（\(\alpha\propto1-r^{*2}\)）、近壁多（\(\alpha\propto r^{*2}\)）、环状（气体全在中心）。注意它们在壁面 \(r^*=1\) 处总是交于一点。</p>
+      <div class="calc-grid">
+        <label for="tw-a">平均含气率 ⟨α⟩（0.05–0.5）<input id="tw-a" type="range" min="5" max="50" value="30" step="1"></label>
+        <label for="tw-p">ΔP*（0–2）<input id="tw-p" type="range" min="0" max="200" value="100" step="1"></label>
+      </div>
+      <svg id="tw-svg" viewBox="0 0 560 280" role="img" aria-label="剪切应力 τ* 沿半径 r* 的分布，四种含气率分布对比" style="width:100%;height:auto"></svg>
+      <div class="legend"><span class="chip" style="--c: currentColor">均匀</span><span class="chip" style="--c: var(--accent)">中心多</span><span class="chip" style="--c: var(--caution)">近壁多</span><span class="chip" style="--c: var(--emp)">环状</span></div>
+      <p class="small" id="tw-note"></p>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">小题 3-2：两个竖直管工况，平均含气率和压力梯度都相同，一个气泡集中在管中心，一个集中在壁面附近。它们的壁面切应力有什么关系？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">相同</button>
+        <button type="button" class="opt" data-opt="b">气泡在中心的大</button>
+        <button type="button" class="opt" data-opt="c">气泡在壁面的大</button>
+      </div>
+      <div class="fb closed"><p>对整个截面做力平衡：压力推力 − 整个截面上混合物的重量 = 壁面摩擦。重量只取决于截面上总共有多少液体，即平均含气率，与液体在截面上怎样分布无关。分布只改变管内部的剪切应力形状（拖动上面的滑块验证）。（这里比较的是同一压力梯度下的受力；实际中分布会反过来影响压力梯度，那是另一个问题。）</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-turner">
+    <h3><span class="no">四</span>从剪切应力到速度：Turner 的无量纲数</h3>
+    <p class="qhead">这一节要回答的问题：课件第 107–111 页定义的 \(R_i、N_i、u_i^*、l^*\) 是什么意思？</p>
+    <p class="oneline">一句话答案：它们是一套“尺子”，把三步法的第二步写成不依赖单位的形式；其中 N 本质上是一个以重力驱动速度为特征速度的雷诺数。</p>
+    <div class="read">
+      <p>两相流中的特征速度从哪来？竖直管里，驱动气液相对运动的是浮力。由密度差、重力和管径能组合出一个速度 \(U_g=\sqrt{gD(\rho_1-\rho_2)/\rho}\)：密度差造成的静压差 \(gD(\rho_1-\rho_2)\) 转化成动压 \(\rho U_g^2\) 时的速度。Turner 的各个量都以它为基础：</p>
+      <ul>
+        <li>\(u_i^*=\dfrac{u\sqrt{\rho_i}}{[Dg(\rho_1-\rho_2)]^{1/2}}\)：用这个重力速度量出的第 i 相速度。</li>
+        <li>以重力速度为特征速度的雷诺数（N 大说明黏性弱）：\[ N_i=\frac{D\rho_i^{1/2}}{\mu_i}[Dg(\rho_1-\rho_2)]^{1/2}=\frac{\rho_iU_{g,i}D}{\mu_i}. \]</li>
+        <li>\(R_i=(\rho_i/\rho)^{1/2}\)：第 i 相与当地混合物之间的换算因子；\(l^*=2l/D\)：无量纲混合长度。</li>
+      </ul>
+    </div>
+    <div class="deriv">
+      <h4>推导：层流时的无量纲速度梯度（课件第 109 页）</h4>
+      <ol class="steps">
+        <li><div><p><b>出发点。</b>第二步的本构关系 \(\tau=-\mu\,\dd u/\dd r\)，μ 是当地流体的黏度。</p></div></li>
+        <li><div><p><b>把每个量换成无量纲量。</b>\(\tau=\tau^*\,Dg(\rho_1-\rho_2)/4\)；\(u=u_i^*[Dg(\rho_1-\rho_2)]^{1/2}/\sqrt{\rho_i}\)；\(r=r^*D/2\)，所以 \(\dd u/\dd r=\frac2D\cdot\frac{[Dg(\rho_1-\rho_2)]^{1/2}}{\sqrt{\rho_i}}\,\dfrac{\dd u_i^*}{\dd r^*}\)。</p></div></li>
+        <li><div><p><b>代入并整理。</b></p>
+          \[ \frac{Dg(\rho_1-\rho_2)}{4}\tau^*=-\mu\cdot\frac2D\cdot\frac{[Dg(\rho_1-\rho_2)]^{1/2}}{\sqrt{\rho_i}}\frac{\dd u_i^*}{\dd r^*}\quad\Longrightarrow\quad\frac{\dd u_i^*}{\dd r^*}=-\frac{D\,[Dg(\rho_1-\rho_2)]^{1/2}\sqrt{\rho_i}}{8\mu}\,\tau^*. \]</div></li>
+        <li><div><p><b>认出 N 和 R。</b>按定义 \(N=D\rho^{1/2}[Dg(\rho_1-\rho_2)]^{1/2}/\mu\)（用当地混合物的 ρ、μ），所以 \(\frac{D[Dg(\rho_1-\rho_2)]^{1/2}}{\mu}=\frac{N}{\sqrt\rho}\)，于是</p>
+          <div class="eq-key">\[ \frac{\dd u_i^*}{\dd r^*}=-\frac{N R_i}{8}\,\tau^*,\qquad R_i=\sqrt{\rho_i/\rho} \]</div>
+          <p>在纯液体区域（如环状流的液膜），当地流体就是液体，\(N=N_f\)、\(R_f=1\)；在纯气体区域，\(N=N_g\)、\(R_g=1\)。</p></div></li>
+        <li><div><p><b>第四步：流量。</b>把速度乘以该相所占份额 \(\alpha_i\) 再在截面上积分，得无量纲流量（课件第 110 页）：</p>
+          \[ j_i^*=\int_0^1\alpha_i\,u_i^*\,2r^*\,\dd r^*=\frac{j_i\sqrt{\rho_i}}{[gD(\rho_1-\rho_2)]^{1/2}}. \]
+          <p>湍流时第二步换成混合长度形式，得 \(\dd u_i^*/\dd r^*=-\frac{HR_i}{l^*}|\tau^*|^{1/2}\)（H 取 τ 的符号），其余步骤相同。</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-annular">
+    <h3><span class="no">五</span>例题：竖直管中的环状流（课件第 112–116、120–121 页）</h3>
+    <p class="qhead">这一节要回答的问题：环状流里，液膜和气芯各以什么速度流动？各自的流量是多少？</p>
+    <p class="oneline">一句话答案：环状流的含气率分布最简单，中心全是气、贴壁全是液，三步法可以一路算到底。液膜受两个力拉动：压力梯度扣除液体重量后的推力，和气芯通过界面传来的拖曳。</p>
+    <div class="deriv">
+      <h4>推导：环状流液膜与气芯</h4>
+      <ol class="steps">
+        <li><div><p><b>几何。</b>竖直管（cos θ = 1）。气芯半径为 \(\sqrt\alpha\)（无量纲），因为气芯面积占比 = \(r^{*2}\) = 平均含气率 α。所以 \(0\lt r^*\lt\sqrt\alpha\) 是气芯（局部 α = 1），\(\sqrt\alpha\lt r^*\lt1\) 是液膜（局部 α = 0）。</p></div></li>
+        <li><div><p><b>剪切应力。</b>代入第三节的公式。气芯里 1 − α = 0，积分为零：\(\tau^*=r^*\Delta P^*\)。液膜里，积分只在 \(\sqrt\alpha\) 到 \(r^*\) 之间有贡献：</p>
+          \[ \tau^*=r^*\Delta P^*-\frac{1}{r^*}\int_{\sqrt\alpha}^{r^*}2r^*\dd r^*=r^*\Delta P^*-\frac{r^{*2}-\alpha}{r^*}=r^*(\Delta P^*-1)+\frac{\alpha}{r^*}. \]
+          <p>读懂这两项：\(\Delta P^*-1\) 是压力梯度扣掉<b>液体</b>重量后的净推力；\(\alpha/r^*\) 来自气芯，气芯受的净推力 \(\sqrt\alpha\,\Delta P^*\) 在界面上以剪切的形式传给液膜。</p></div></li>
+        <li><div><p><b>液膜速度。</b>液膜中 \(\dd u_f^*/\dd r^*=-\frac{N_f}{8}\tau^*\)。从任意 \(r^*\) 积分到壁面，壁面 \(u_f^*(1)=0\)：</p>
+          \[ 0-u_f^*(r^*)=-\frac{N_f}{8}\int_{r^*}^1\left[r(\Delta P^*-1)+\frac{\alpha}{r}\right]\dd r=-\frac{N_f}{8}\left[\frac{(\Delta P^*-1)(1-r^{*2})}{2}-\alpha\ln r^*\right]. \]
+          <div class="eq-key">\[ u_f^*=\frac{N_f}{8}\left[\frac{(\Delta P^*-1)(1-r^{*2})}{2}-\alpha\ln r^*\right] \]</div>
+          <p>注意 \(r^*\lt1\) 时 \(\ln r^*\lt0\)，所以 \(-\alpha\ln r^*\) 恒为正：气芯的拖曳总是把液膜往上带。</p></div></li>
+        <li><div><p><b>液膜流量。</b>液膜中 \(\alpha_f=1\)，积分范围从界面到壁面：\(j_f^*=\int_{\sqrt\alpha}^1u_f^*\,2r^*\dd r^*\)。逐项积分（课件第 120 页）要用到 \(\int r\ln r\,\dd r=\frac{r^2}{2}\ln r-\frac{r^2}{4}\)，代入上下限后整理得：</p>
+          <div class="eq-key">\[ j_f^*=\frac{N_f}{32}\left\{(\Delta P^*-1)(1-\alpha)^2+2\alpha\left[(1-\alpha)+\alpha\ln\alpha\right]\right\} \]</div>
+          <p>我用数值积分核对过这个结果（α = 0.8、\(\Delta P^*=1.2\) 时两者都等于 \(0.01059\times N_f/8\)）。</p></div></li>
+        <li><div><p><b>界面速度。</b>令 \(r^{*2}=\alpha\)：\(u_f^*\big|_i=\frac{N_f}{16}\left[(\Delta P^*-1)(1-\alpha)-\alpha\ln\alpha\right]\)。界面上气液速度相等（无滑移），换成气相的无量纲速度要乘 \((\rho_g/\rho_f)^{1/2}\)，因为 \(u^*\) 的定义里含 \(\sqrt{\rho_i}\)。</p></div></li>
+        <li><div><p><b>气芯速度与流量。</b>气芯中 \(\dd u_g^*/\dd r^*=-\frac{N_g}{8}r^*\Delta P^*\)，从 \(r^*\) 积分到界面：\(u_g^*=(u_g^*)_i+\frac{N_g}{16}\Delta P^*(\alpha-r^{*2})\)，抛物线形。再积分：</p>
+          \[ j_g^*=\int_0^{\sqrt\alpha}u_g^*2r^*\dd r^*=\frac{N_g}{32}\left\{\alpha^2\Delta P^*+2\alpha\frac{N_f}{N_g}\left(\frac{\rho_g}{\rho_f}\right)^{1/2}\left[(\Delta P^*-1)(1-\alpha)-\alpha\ln\alpha\right]\right\}. \]
+          <p>第一项是气芯自己被压力推动的抛物线流，第二项是“整个气芯骑在以界面速度运动的液膜上”带来的流量。</p></div></li>
+        <li><div><p><b>壁面切应力与摩擦系数。</b>\(r^*=1\)：\(\tau_w^*=\Delta P^*-(1-\alpha)\)，与第三节第 7 步一致。液膜雷诺数 \(\mathrm{Re}_f=j_f^*N_f=\rho_fj_fD/\mu_f\)；以液膜平均速度 \(j_f/(1-\alpha)\) 定义的摩擦系数为 \(C_{fw}=\frac{[\Delta P^*-(1-\alpha)](1-\alpha)^2}{2j_f^{*2}}\)（课件第 116 页）。</p></div></li>
+        <li><div><p><b>局限。</b>这个例题假设气芯和液膜都是层流。实际环状流的气芯几乎总是湍流（25 mm 管中气芯以 15 m/s 流动时雷诺数约 2.4×10⁴），液膜在 \(\mathrm{Re}_f\) 超过几百后也会出现波动和湍流。所以这个例题的价值在于方法，定量计算需要第二步换成湍流本构关系 <span class="tag approx">层流示例</span>。</p></div></li>
+      </ol>
+    </div>
+    <div class="calc" id="film-widget">
+      <h4 style="margin:0">动手：液膜速度剖面</h4>
+      <p class="small muted">画的是 \(u_f^*/(N_f/8)=\frac{(\Delta P^*-1)(1-r^{*2})}{2}-\alpha\ln r^*\)，它只取决于 α 和 \(\Delta P^*\)。横轴只显示液膜区（界面 \(r^*=\sqrt\alpha\) 到壁面 \(r^*=1\)）。把 \(\Delta P^*\) 调到 1 以下，看看近壁液体会怎样。</p>
+      <div class="calc-grid">
+        <label for="fw-a">含气率 α（0.50–0.98）<input id="fw-a" type="range" min="50" max="98" value="80" step="1"></label>
+        <label for="fw-p">ΔP*（0–2.5）<input id="fw-p" type="range" min="0" max="250" value="120" step="1"></label>
+      </div>
+      <svg id="fw-svg" viewBox="0 0 560 260" role="img" aria-label="液膜速度沿半径的分布" style="width:100%;height:auto"></svg>
+      <div class="calc-out" id="fw-out"></div>
+      <p class="small" id="fw-note"></p>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">小题 3-3：环状流中 \(\Delta P^*\lt1-\alpha\)（即壁面切应力为负）意味着什么？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">液膜整体停止流动</button>
+        <button type="button" class="opt" data-opt="b">气芯向下流动</button>
+        <button type="button" class="opt" data-opt="c">贴近壁面的液体向下流（局部倒流），而靠近界面的液体仍可能被气芯拖着向上</button>
+      </div>
+      <div class="fb closed"><p>壁面切应力为负，说明壁面附近速度梯度方向反了：压力梯度连那里液体的重量都托不住，近壁液体向下滑落。靠近界面处，气芯的拖曳 \(-\alpha\ln r^*\) 仍可能占上风。这种“近壁倒流、近界面上行”的液膜正是环状流向搅混流退化（第 1 讲 Ku 判据讨论的情形）的前兆。用上面的工具保持 α = 0.8、把 \(\Delta P^*\) 调到 0.15 左右可以看到。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-bankoff">
+    <h3><span class="no">六</span>积分分析法：Bankoff 变密度模型（课件第 117–118 页）</h3>
+    <p class="qhead">这一节要回答的问题：泡状流、弹状流算不出精确分布，怎么估计分布对平均含气率的影响？</p>
+    <p class="oneline">一句话答案：先假设速度和含气率都按幂函数从壁面增到中心，再积分出两相各自的流量，就能得到 \(\langle\alpha\rangle=K\beta\)。K &lt; 1 表示：即使局部没有滑移，气体集中在快速的管中心，截面平均含气率也会小于容积含气率。</p>
+    <div class="deriv">
+      <h4>推导：⟨α⟩ = Kβ</h4>
+      <ol class="steps">
+        <li><div><p><b>假设。</b>局部均匀流动，气液在每一点上同速（无局部滑移）。用离壁面的距离 \(y=r_0-r\)，两种分布都写成幂函数：</p>
+          \[ \frac{u}{u_m}=\left(\frac{y}{r_0}\right)^{1/m},\qquad\frac{\alpha}{\alpha_m}=\left(\frac{y}{r_0}\right)^{1/n}. \]
+          <p>\(u_m,\alpha_m\) 是管中心的值。m 越大，速度剖面越平（湍流常取 m ≈ 7）；n 越大，含气率越均匀，n → ∞ 为完全均匀。</p></div></li>
+        <li><div><p><b>平均含气率。</b>令 \(\eta=y/r_0\)，面积元 \(2\pi r\,\dd r=2\pi r_0^2(1-\eta)\dd\eta\)：</p>
+          \[ \langle\alpha\rangle=2\alpha_m\int_0^1\eta^{1/n}(1-\eta)\,\dd\eta=2\alpha_m\left[\frac{n}{n+1}-\frac{n}{2n+1}\right]=\frac{2n^2\alpha_m}{(1+n)(1+2n)}. \]</div></li>
+        <li><div><p><b>气相质量流量。</b>被积函数是 \(\alpha u\rho_2\)，指数相加 \(s=\frac1n+\frac1m\)，用 \(\int_0^1\eta^s(1-\eta)\dd\eta=\frac{1}{(s+1)(s+2)}\)：</p>
+          \[ G_2=\alpha_mu_m\rho_2\,\frac{2n^2m^2}{(m+n+mn)(n+m+2nm)}. \]</div></li>
+        <li><div><p><b>液相质量流量。</b>被积函数是 \((1-\alpha)u\rho_1\)：</p>
+          \[ G_1=u_m\rho_1\left[\frac{2m^2}{(1+m)(1+2m)}-\alpha_m\frac{2n^2m^2}{(m+n+mn)(n+m+2nm)}\right]. \]</div></li>
+        <li><div><p><b>用干度联系两者。</b>\(G_1/G_2=(1-x)/x\)。代入后解出 \(\alpha_m\)：</p>
+          \[ \alpha_m=\frac{(m+n+mn)(n+m+2nm)}{n^2(1+m)(1+2m)}\cdot\frac{1}{1+\dfrac{\rho_2}{\rho_1}\dfrac{1-x}{x}}. \]</div></li>
+        <li><div><p><b>代回平均含气率。</b>注意 \(\dfrac{1}{1+\frac{\rho_2}{\rho_1}\frac{1-x}{x}}=\dfrac{x}{x+(1-x)\rho_g/\rho_l}\) 正是第 1 章的容积含气率 β：</p>
+          <div class="eq-key">\[ \langle\alpha\rangle=K\beta,\qquad K=\frac{2(m+n+mn)(n+m+2nm)}{(1+n)(1+2n)(1+m)(1+2m)} \]</div>
+          <p>课件第 118 页把这里和上一步的密度比写成了 \(\rho_1/\rho_2\)，最终式的分母也少了“1 +”。按那种写法，x → 1 时 ⟨α⟩ 会趋于无穷大；正确的极限是 ⟨α⟩ → K。</p></div></li>
+        <li><div><p><b>检查极限。</b>n → ∞（含气率均匀）：K → 1；m → ∞（速度均匀）：K → 1。只有速度和含气率<b>同时</b>不均匀、而且都在管中心偏高时 K &lt; 1。这说明 K 衡量的正是“气体是否集中在流得快的地方”。</p></div></li>
+        <li><div><p><b>代入数字。</b>m = 7，n = 1：K = 0.917。容积含气率 β = 0.5 时 ⟨α⟩ = 0.46。按第 1 章的滑动比公式，这相当于 S = 1.18：每一点上气液同速，截面平均看起来却有 18% 的“滑移”。</p></div></li>
+      </ol>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>m（速度）</th><th>n（含气率）</th><th class="num">K</th><th class="num">C₀ = 1/K</th><th class="num">β = 0.5 时 ⟨α⟩</th><th class="num">表观滑动比 S</th></tr></thead>
+      <tbody>
+        <tr><td>7</td><td>7</td><td class="num">0.980</td><td class="num">1.02</td><td class="num">0.49</td><td class="num">1.04</td></tr>
+        <tr><td>7</td><td>2</td><td class="num">0.946</td><td class="num">1.06</td><td class="num">0.47</td><td class="num">1.12</td></tr>
+        <tr><td>7</td><td>1</td><td class="num">0.917</td><td class="num">1.09</td><td class="num">0.46</td><td class="num">1.18</td></tr>
+        <tr><td>4</td><td>1</td><td class="num">0.867</td><td class="num">1.15</td><td class="num">0.43</td><td class="num">1.31</td></tr>
+        <tr><td>2</td><td>0.5</td><td class="num">0.700</td><td class="num">1.43</td><td class="num">0.35</td><td class="num">1.86</td></tr>
+      </tbody>
+    </table></div>
+    <div class="calc" id="bk-widget">
+      <h4 style="margin:0">动手：分布形状与 K</h4>
+      <div class="calc-grid">
+        <label for="bk-m">速度指数 m（1–12）<input id="bk-m" type="range" min="10" max="120" value="70" step="5"></label>
+        <label for="bk-n">含气率指数 n（0.5–12）<input id="bk-n" type="range" min="5" max="120" value="10" step="5"></label>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+        <svg id="bk-svg" viewBox="0 0 300 170" role="img" aria-label="管截面上的速度和含气率分布" style="width:300px;max-width:100%;height:auto"></svg>
+        <div class="calc-out" id="bk-out" style="flex:1;min-width:220px"></div>
+      </div>
+      <div class="legend"><span class="chip" style="--c: currentColor">速度 u/u_m</span><span class="chip" style="--c: var(--accent)">含气率 α/α_m</span></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-drift">
+    <h3><span class="no">七</span>从 Bankoff 到漂移通量模型</h3>
+    <p class="qhead">这一节要回答的问题：第 1 讲提到的 \(U=1.2J+0.35\sqrt{gD}\) 里的 1.2 是从哪来的？</p>
+    <p class="oneline">一句话答案：1.2 就是分布系数 \(C_0\)，它衡量“气体是否集中在流得快的地方”，与 Bankoff 的 K 互为倒数；后面的 0.35√(gD) 才是真正的局部相对运动。</p>
+    <div class="deriv">
+      <h4>推导：Zuber–Findlay 漂移通量关系</h4>
+      <ol class="steps">
+        <li><div><p><b>局部关系。</b>每一点上，气体速度 = 混合物总折算速度 J + 局部漂移速度 \(v_{gj}\)：\(v_g=J+v_{gj}\)。乘以局部含气率：\(\alpha v_g=\alpha J+\alpha v_{gj}\)。左边就是局部气相折算速度。</p></div></li>
+        <li><div><p><b>截面平均。</b>用 ⟨ ⟩ 表示截面平均：\(\langle J_g\rangle=\langle\alpha J\rangle+\langle\alpha v_{gj}\rangle\)。两边除以 ⟨α⟩，并把 \(\langle\alpha J\rangle\) 写成 \(C_0\langle\alpha\rangle\langle J\rangle\)：</p>
+          <div class="eq-key">\[ \frac{\langle J_g\rangle}{\langle\alpha\rangle}=C_0\langle J\rangle+V_{gj},\qquad C_0=\frac{\langle\alpha J\rangle}{\langle\alpha\rangle\langle J\rangle},\quad V_{gj}=\frac{\langle\alpha v_{gj}\rangle}{\langle\alpha\rangle}. \]</div>
+          <p>左边是按含气率加权的平均气速。“平均的乘积 ≠ 乘积的平均”（第 1 讲概念卡 1）在这里变成了一个具体的系数 \(C_0\)。</p></div></li>
+        <li><div><p><b>与 Bankoff 对接。</b>Bankoff 假设无局部滑移，即 \(V_{gj}=0\)，于是 \(\langle\alpha\rangle=\langle J_g\rangle/(C_0\langle J\rangle)=\beta/C_0\)。与 \(\langle\alpha\rangle=K\beta\) 对比：\(C_0=1/K\)。把幂函数分布代入 \(C_0\) 的定义直接计算，也得到同样结果。</p></div></li>
+        <li><div><p><b>典型值。</b>管中心含气率高的湍流泡状流和弹状流，实测 \(C_0\) 常在 1.1–1.2 左右 <span class="tag emp">经验值</span>；竖直上升流中小气泡在壁面附近聚集（第 1 讲 4.1 节的剪切升力）时，气体反而在慢的地方多，\(C_0\) 可以小于 1。这是幂函数分布表达不了的情形。</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-research">
+    <h3><span class="no">八</span>和你课题的联系</h3>
+    <div class="read">
+      <ul>
+        <li><b>“平均的乘积 ≠ 乘积的平均”在脉冲实验里同样存在。</b>用高速图像估计产气量时，如果把“平均气泡体积 × 平均脉冲频率”当作产气速率，而气泡大小和脉冲间隔又相关（例如间隔长的脉冲产生更大的气泡），就会出现与 \(C_0\) 完全相同的偏差。正确做法是逐个脉冲求乘积再平均，并报告两者的相关系数。</li>
+        <li><b>积分法是分析气泡周围热边界层的标准工具</b> <span class="tag approx">方法迁移</span>。放电加热的气泡外，液体中有一层很薄的热边界层。和 Bankoff 一样，可以先假设温度剖面的形状（例如抛物线），再对能量方程沿厚度积分，得到边界层厚度随时间变化的常微分方程。课程体系 C7、D4 两讲会用到这个方法。</li>
+        <li><b>三步法适用于任何薄液膜。</b>只要能写出力平衡（第一步），就能得到剪切应力，再接上本构关系积分。气泡与针尖之间、气泡与壁面之间若有薄液膜，方法相同。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-errors">
+    <h3><span class="no">九</span>常见误解与理论局限</h3>
+    <div class="read">
+      <ol>
+        <li><b>“剪切应力总是线性分布”</b>只对单相或含气率均匀的流动成立。</li>
+        <li><b>壁面切应力只由平均含气率决定，但内部剪切应力取决于分布。</b>两者不要混淆。</li>
+        <li><b>环状流例题是层流示例。</b>定量计算要用湍流本构关系。</li>
+        <li><b>Bankoff 模型假设没有局部滑移。</b>真实气泡相对液体有上升速度，完整描述需要漂移通量模型中的 \(C_0\) 和 \(V_{gj}\) 两部分。</li>
+        <li><b>幂函数只能描述“中心高、壁面低”的分布</b>，描述不了近壁聚集的含气率峰。</li>
+        <li><b>课件第 118 页的两处写法问题</b>（密度比与“1 +”）见第六节第 6 步。</li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="l23-check">
+    <h3><span class="no">十</span>一页总结与自测</h3>
+    <div class="note link">
+      <b>这一讲的五句话</b>
+      <ol style="margin:0;padding-left:1.4em;display:grid;gap:4px">
+        <li>三步法：力平衡得剪切应力，本构关系联系剪切应力与速度梯度，积分得速度，再积分得流量。</li>
+        <li>两相流中剪切应力多了一个“液体重量分布”项，所以不再是直线；但壁面切应力只取决于平均含气率。</li>
+        <li>环状流中液膜被两件事推上去：扣除液体重量后的压力推力，和气芯通过界面传来的拖曳。</li>
+        <li>Bankoff：气体集中在快速的管中心时，\(\langle\alpha\rangle=K\beta\lt\beta\)。</li>
+        <li>\(C_0=1/K\)：漂移通量模型中的分布系数就是这个分布效应。</li>
+      </ol>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 3-4：某竖直上升流实验测得 \(C_0=0.9\)。最可能的含气率分布是什么样的？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">气泡集中在管中心</button>
+        <button type="button" class="opt" data-opt="b">气泡集中在壁面附近</button>
+        <button type="button" class="opt" data-opt="c">完全均匀</button>
+      </div>
+      <div class="fb closed"><p>\(C_0=\langle\alpha J\rangle/(\langle\alpha\rangle\langle J\rangle)\lt1\) 说明含气率高的地方 J 偏低，也就是气体多在流得慢的近壁区。这正是竖直上升流中小气泡受剪切升力向壁面迁移的结果。完全均匀时 \(C_0=1\)。</p></div>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">小题 3-5：为什么单相湍流的速度剖面比层流“平”得多？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">湍流涡团在管中心大范围地混合动量，把速度差抹平；只有贴近壁面、涡团被压住的薄层里速度变化才剧烈</button>
+        <button type="button" class="opt" data-opt="b">湍流的黏度比层流小</button>
+        <button type="button" class="opt" data-opt="c">湍流的剪切应力分布不是线性的</button>
+      </div>
+      <div class="fb closed"><p>剪切应力分布两者都是线性的（小题 3-1）。区别在第二步：湍流中动量由涡团搬运，混合长度 \(l=\kappa y\) 在远离壁面处很大，很小的速度梯度就能传递很大的剪切应力，所以中心速度几乎不变；近壁处 \(y^+\lt5\) 的黏性底层里才有陡峭的梯度（图 2-11）。流体本身的分子黏度并没有变。</p></div>
+    </div>
+  </section>
+</article>
+
+<article class="part view" id="lesson-2-4">
+  <div class="part-label">第 2 章 第 4 讲（B2d）· 对应课件 2.2 第 22–86 页 · 第 2 章总复习</div>
+  <h2>其余流道与多相组合的流型，以及第 2 章总复习</h2>
+  <div class="note link">
+    <b>这一讲怎么读</b>
+    <p>第 1 讲只详细讲了竖直上升管和水平管。课件 2.2 还用五十多页展示了受热管、下降管、管束、螺旋管、液液、气固、液固、三相流的流型图。逐张背下来没有意义，这一讲给你一套固定的读图方法，再用它把每一类过一遍。最后一节是整章复习和自测。</p>
+  </div>
+
+  <section class="sec" id="l24-key">
+    <h3><span class="no">一</span>读懂任何流型图的三个问题</h3>
+    <p class="qhead">这一节要回答的问题：面对一张没见过的流型图，先看什么？</p>
+    <p class="oneline">一句话答案：依次问三个问题：重力相对流动方向朝哪里？有没有额外的力或几何效应？哪一相是连续相、两相的密度和黏度差多少？答完这三个问题，流型大致会是什么样就能预判出来。</p>
+    <div class="read">
+      <ol>
+        <li><b>重力朝哪里？</b>沿着流动方向（竖直管），重力只改变两相的相对速度；垂直于流动方向（水平管），重力把两相上下分开，最先出现分层流。</li>
+        <li><b>有没有额外的力或几何效应？</b>加热（不断产汽，干度沿程增加）、弯管或螺旋管（离心力和二次流）、管束（流动反复绕过圆管）、颗粒（颗粒与气流之间的曳力）。</li>
+        <li><b>谁是连续相，差别有多大？</b>气液两相密度相差约千倍，液液两相只差百分之十几；连续相是油还是水、是气还是液，决定了谁接触壁面、谁被分散成颗粒或液滴。</li>
+      </ol>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>流道或组合</th><th>重力方向</th><th>额外因素</th><th>最有特点的流型</th></tr></thead>
+      <tbody>
+        <tr><td>受热竖直管</td><td>沿流动</td><td>沿程产汽</td><td>流型由位置决定，依次出现</td></tr>
+        <tr><td>竖直下降管</td><td>沿流动（与浮力反向）</td><td>—</td><td>下降液膜流</td></tr>
+        <tr><td>受热水平管</td><td>垂直流动</td><td>沿程产汽</td><td>管顶先干（间歇干涸）</td></tr>
+        <tr><td>横掠管束</td><td>与横掠方向有关</td><td>反复绕流圆管</td><td>雾状分层流</td></tr>
+        <tr><td>螺旋管</td><td>沿管圈周期变化</td><td>离心力、Dean 二次流</td><td>不稳定停滞脉冲流</td></tr>
+        <tr><td>液液（油水）</td><td>同气液</td><td>密度差小、界面张力小</td><td>混合状流、相反转</td></tr>
+        <tr><td>气固、液固</td><td>沿流动或垂直</td><td>颗粒曳力与沉降</td><td>鼓泡床、沉积流</td></tr>
+        <tr><td>油气水、气液固</td><td>同上</td><td>两个界面</td><td>油基或水基流型</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="sec" id="l24-heated">
+    <h3><span class="no">二</span>受热管：流型由位置决定（课件第 22–26、41 页）</h3>
+    <p class="qhead">这一节要回答的问题：受热管中为什么一根管子里会同时出现好几种流型？热流密度越大，沸腾起点为什么越靠近入口？</p>
+    <p class="oneline">一句话答案：管壁不断加热，工质的焓和干度沿管长线性增加，所以流型随位置依次演变；热流越大，焓涨得越快，越早达到饱和。</p>
+    <div class="deriv">
+      <h4>推导：干度沿管长的分布</h4>
+      <ol class="steps">
+        <li><div><p><b>研究对象。</b>内径 D 的竖直管，管壁均匀热流密度 q（W/m²），质量流速 G（kg/(m²·s)），入口焓 \(h_{\rm in}\)，定常流动。</p></div></li>
+        <li><div><p><b>能量守恒。</b>从入口到高度 z，管壁传入的热量全部用来提高工质的焓：\(q\cdot\pi Dz=GA\,[h(z)-h_{\rm in}]\)，\(A=\pi D^2/4\)。</p>
+          \[ h(z)=h_{\rm in}+\frac{4qz}{GD}. \]</div></li>
+        <li><div><p><b>热力学干度。</b>\(x(z)=\dfrac{h(z)-h_f}{h_{lv}}\)（\(h_f\) 饱和液焓，\(h_{lv}\) 汽化潜热）。x 随 z 线性增加，所以流型沿管长依次为：单相液 → 泡状 → 弹状 → 块状 → 环状 → 雾状 → 过热蒸汽（课件第 23–24 页）。</p></div></li>
+        <li><div><p><b>沸腾起点。</b>焓达到饱和液焓的位置 \(z_{\rm sat}=\dfrac{GD(h_f-h_{\rm in})}{4q}\propto\dfrac1q\)：热流加倍，饱和点离入口的距离减半。这就是课件第 24 页“沸腾起始点逐渐移向管子进口”。</p></div></li>
+        <li><div><p><b>局限。</b>这里算的是热力学平衡干度。实际上壁面附近的液体先被加热到饱和温度以上，在主流还没饱和时就开始产生气泡（过冷沸腾），而雾状流中液滴和过热蒸汽也不平衡。真实干度与平衡干度的差别是第 7 章“非平衡含汽率”的内容。</p></div></li>
+      </ol>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>沿管长的区段（课件第 25–26 页）</th><th>换热方式</th><th>换热系数</th><th>原因</th></tr></thead>
+      <tbody>
+        <tr><td>单相液体</td><td>液相强迫对流</td><td>较低</td><td>只靠液体导热和对流</td></tr>
+        <tr><td>过冷沸腾、泡状、弹状</td><td>核态沸腾</td><td>迅速升高</td><td>壁面汽泡的产生和脱离强烈扰动边界层，并带走潜热</td></tr>
+        <tr><td>环状流</td><td>液膜蒸发</td><td>最高</td><td>液膜很薄，热量穿过薄膜在界面上蒸发</td></tr>
+        <tr><td>蒸干之后（雾状）</td><td>液滴蒸发、汽相对流</td><td>骤降</td><td>壁面只接触导热差的蒸汽，管壁温度急剧上升</td></tr>
+      </tbody>
+    </table></div>
+    <div class="read">
+      <p><b>受热水平管（课件第 41 页）。</b>重力把液体压在管底，环状流中管顶的液膜比管底薄得多，所以管顶最先蒸干。随之而来的四种危害都可以从这一点推出：管顶壁温高于管底，产生<b>温差应力</b>；干湿交界面随液面波动来回移动，管壁某处时干时湿，产生<b>交变应力</b>；交界处的水反复蒸干，盐分沉积，造成<b>腐蚀</b>；干涸区冷却变差，造成<b>超温</b>。</p>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">小题 4-1：一根蒸发管的热流密度不变，把质量流速 G 提高一倍，沸腾起点会怎样移动？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">向入口移动</button>
+        <button type="button" class="opt" data-opt="b">远离入口，距离加倍</button>
+        <button type="button" class="opt" data-opt="c">不变</button>
+      </div>
+      <div class="fb closed"><p>\(z_{\rm sat}=GD(h_f-h_{\rm in})/(4q)\) 正比于 G。流量加倍，同样的加热要摊给两倍的工质，每千克工质的焓涨得慢一半，所以要走两倍的距离才达到饱和。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-down">
+    <h3><span class="no">三</span>竖直下降管（课件第 34–36 页）</h3>
+    <div class="read">
+      <p>按三个问题：重力沿流动方向，但浮力与流动<b>反向</b>；没有额外的力；连续相随流量变化。由此可以预判两点。第一，液体在重力作用下会自己沿壁面流下，气体占据管芯，所以出现上升管中没有的<b>下降液膜流型</b>和<b>带气泡的下降液膜流型</b>。第二，小气泡集中在管芯而不是散布全截面：第 1 讲 4.1 节说过，剪切升力的方向取决于气泡相对液体的运动方向，下降流中它把气泡推向管中心。</p>
+      <p>Oshinowo–Charles 图（课件第 36 页）的坐标：纵坐标 \(\sqrt{\beta/(1-\beta)}\)，即气、液容积流量之比的平方根；横坐标 \(\mathrm{Fr}/\sqrt Y\)，其中 \(\mathrm{Fr}=(J_G+J_L)^2/(gD)\) 是混合物的 Froude 数，\(Y=\dfrac{\mu_L}{\mu_W}\left[\dfrac{\rho_L}{\rho_W}\left(\dfrac{\sigma}{\sigma_W}\right)^3\right]^{-1/4}\) 是以 20 °C 水为参照的液体物性修正，作用类似第 1 讲中 Baker 的 ψ <span class="tag emp">经验组合</span>。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-bundle">
+    <h3><span class="no">四</span>横掠管束（课件第 46–48 页）</h3>
+    <div class="read">
+      <p>这是管壳式换热器壳侧、蒸汽发生器、釜式再沸器中的流动：气液混合物横着冲刷一排排圆管。按三个问题：管束本身是“额外因素”，流动在管间缝隙中反复加速、减速，大的气团或液团被管子不断切碎；重力方向取决于横掠方向。</p>
+      <ul>
+        <li><b>水平方向横掠</b>（重力垂直于流动）：和水平管一样会出现<b>分层流</b>；气速高时，上部气流中夹带液滴，形成管束特有的<b>雾状分层流</b>；再提高气速，大部分液体变成液滴，成为雾状流。低气速高液速时为细泡状流。</li>
+        <li><b>垂直方向横掠</b>（重力沿流动）：和竖直上升管类似，依次为细泡状、气弹状、壁上有液膜的雾状流，没有分层流。</li>
+      </ul>
+      <p>Grant 图（课件第 47 页）的纵坐标 \(J_G(\rho_G/\rho_L)^{1/2}\) 可以写成 \(\sqrt{\rho_GJ_G^2/\rho_L}\)：气相动量通量换算成的“液体速度”，与第 1 讲 Hewitt–Roberts 用动量通量作坐标是同一个思路；横坐标是带物性修正的液相折算速度，属于有量纲的经验组合 <span class="tag emp">经验坐标</span>。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-coil">
+    <h3><span class="no">五</span>螺旋管（课件第 50–58 页）</h3>
+    <p class="qhead">这一节要回答的问题：螺旋管和直管相比，多了什么物理？</p>
+    <p class="oneline">一句话答案：多了两样东西：离心力把重的液体甩向管圈外侧；离心力在截面上不均匀又产生一对旋涡（Dean 二次流）。卧式螺旋管还多一样：每一圈都有上升段和下降段，重力的方向沿管圈周期变化。</p>
+    <h4>5.1 立式螺旋管（轴线竖直）</h4>
+    <div class="read">
+      <p>管圈几乎是水平的，所以流型和水平直管基本相同：分层、波状分层、弹块状、柱塞状、环状、分散泡状（课件第 50 页）。螺旋曲率直径比 D/d 越大，管子越接近直管：分散泡状流的转变推迟到更高液速，环状流区向高气速移动，分层流区扩大（课件第 51 页）。</p>
+    </div>
+    <h4>5.2 Dean 二次流：离心力为什么会产生旋涡</h4>
+    <figure>
+      <div class="figbox">
+      <svg class="narrow" viewBox="0 0 340 250" role="img" aria-label="弯管截面中的 Dean 二次流：管中心流速快、离心力大，被甩向外侧；流体沿上下管壁流回内侧，形成一对反向旋转的旋涡。">
+        <defs><marker id="f212a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker><marker id="f212b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <circle cx="170" cy="120" r="90" fill="var(--panel)" stroke="currentColor" stroke-width="1.6"/>
+          <g fill="none" stroke="var(--accent)" stroke-width="1.8">
+            <path d="M115,108 L225,108 Q250,85 220,58 Q170,42 120,58 Q92,80 115,104" marker-end="url(#f212a)"/>
+            <path d="M115,132 L225,132 Q250,155 220,182 Q170,198 120,182 Q92,160 115,136" marker-end="url(#f212a)"/>
+          </g>
+          <line x1="170" y1="120" x2="240" y2="120" stroke="currentColor" stroke-width="1.6" marker-end="url(#f212b)"/>
+          <text x="40" y="124" text-anchor="middle">内侧</text>
+          <text x="300" y="124" text-anchor="middle">外侧</text>
+          <text x="170" y="236" text-anchor="middle" font-size="11">螺旋中心在左侧；离心力指向右（外侧）</text>
+          <text x="244" y="112" font-size="11">离心力</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-12　Dean 二次流（课件第 57–58 页）。</b>管中心流速最快，离心力 \(\rho u^2/R_c\) 最大，中心流体被甩向外侧；为满足质量守恒，流体沿上下管壁流回内侧，形成一对反向旋转的旋涡。</figcaption>
+    </figure>
+    <div class="read">
+      <p>二次流的强弱用 Dean 数衡量：\(\mathrm{De}=\mathrm{Re}\sqrt{d/D}\)（d 管内径，D 螺旋直径）<span class="tag ok">已确立</span>。它就是雷诺数乘以“弯得多厉害”。例：水以 1 m/s 流过 d = 19 mm 的管，Re ≈ 21 000；D/d = 12 时 De ≈ 6100，D/d = 50 时 De ≈ 3000。D/d 越大，二次流越弱，越接近直管，与课件第 51、56 页的趋势一致。</p>
+      <p>二次流对两相流型的作用（课件第 57–58 页）：它不断把液体沿管壁输运、把气柱中的液滴打散，帮助液体在管壁上铺开，所以环状流比直管更早出现；它的扰动也帮助打碎气泡，所以分散泡状流也更早出现。</p>
+    </div>
+    <h4>5.3 卧式螺旋管（轴线水平）：重力方向周期变化</h4>
+    <div class="read">
+      <p>每一圈都有上升段和下降段（课件第 52 页用圆周角 θ 表示位置）。这带来一种直管中没有的流型：<b>不稳定停滞脉冲流</b>。它的机理可以一步步推出来：</p>
+      <ol>
+        <li>流速很低时，液体在重力作用下聚到每圈的下部（课件中 θ ≈ −5°–150°），气体聚到上部（θ ≈ 180°–300°）。</li>
+        <li>要让混合物前进，液块必须被推着翻过管圈的最高点，需要克服一段液柱的重力。</li>
+        <li>推力来自上游积聚的气体。气体可压缩，压力要先升高一段时间才够推动液块，所以流动在这段时间里停滞，上段气体被压缩（课件第 52 页）。</li>
+        <li>压力够了，液块被突然推过最高点，压力释放，又回到第 1 步。如此往复，就是周期性的脉冲。</li>
+      </ol>
+      <p>这是一种“弛豫振荡”：重力相当于门槛，气体的可压缩性相当于储能的弹簧。课件第 58 页说转变由“混合物总动能”决定、重力和气体压缩性不利于转变，正是这个意思：动能足够大时，液块不需要停下来蓄力就能被直接推过最高点。</p>
+      <p>流速提高后依次出现间歇状流、环状流（上升段液膜比下降段厚）和分散泡状流（离心力使液体在外侧、气体在内侧，θ ≈ 180°–270° 区段含气率明显偏高，课件第 55 页）。</p>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">小题 4-2：卧式螺旋管中的“不稳定停滞脉冲流”为什么在立式螺旋管中不出现？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">立式螺旋管没有离心力</button>
+        <button type="button" class="opt" data-opt="b">立式螺旋管中气体不可压缩</button>
+        <button type="button" class="opt" data-opt="c">立式螺旋管的管圈几乎水平，液体不需要反复被推过管圈的最高点</button>
+      </div>
+      <div class="fb closed"><p>脉冲流的“门槛”是每圈上升段的液柱重力。立式螺旋管的每一圈几乎在同一高度上，没有这个门槛，所以流型和水平直管相似。两种螺旋管都有离心力，气体也都可压缩。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-ll">
+    <h3><span class="no">六</span>液液两相流（课件第 60–61 页）</h3>
+    <p class="qhead">这一节要回答的问题：油水两相流和气液两相流的流型名称差不多，物理上差在哪里？</p>
+    <p class="oneline">一句话答案：两相密度很接近、界面张力较小、黏度可能相差很大。浮力弱，分开得慢；两相惯性相当，界面很容易被搅乱；而且要多问一个问题：现在是油包水还是水包油。</p>
+    <div class="read">
+      <ul>
+        <li><b>浮力弱。</b>课件中油的相对密度 0.851，与水的密度差约 150 kg/m³，只有空气–水的约 1/7。分散的油滴或水滴要很久才能浮起或沉降，所以分散状流型在油水中更常见。</li>
+        <li><b>毛细长度更大。</b>取油水界面张力约 0.03 N/m（不同油品在 0.02–0.05 N/m 之间），\(\ell_c=\sqrt{\sigma/(\Delta\rho g)}\approx4.5\) mm，比空气–水的 2.7 mm 大。较大的油滴仍能保持圆形。</li>
+        <li><b>界面容易失稳。</b>第 2 讲的 Kelvin–Helmholtz 判据中，恢复力来自密度差和表面张力，两者都小，很小的速度差就能使界面起波，所以水平管中波状流和“混合状流”出现在较低流速（课件第 61 页）。</li>
+        <li><b>谁是连续相。</b>分散相份额增加到某个值时，乳状液会突然由“水包油”变为“油包水”，叫作<b>相反转</b> <span class="tag ok">已确立的现象</span>。反转点与两相黏度、润湿性、流动历史有关，压降在反转附近往往有明显跳变。课件第 60 页图 4 中，雾滴是水，说明那时油是连续相。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-gs">
+    <h3><span class="no">七</span>气固与液固两相流（课件第 63–79 页）</h3>
+    <p class="qhead">这一节要回答的问题：颗粒在气流中的“流型”由什么决定？</p>
+    <p class="oneline">一句话答案：由气流曳力和颗粒重力的比赛决定。两个锚点是最小流化速度 \(u_{mf}\)（曳力刚好托住整个床层）和带出速度 \(u_t\)（曳力托住单个颗粒）；在两者之间，多余的气体以气泡形式穿过床层。</p>
+    <h4>7.1 颗粒速度：和第 1 章是同一个关系</h4>
+    <div class="read">
+      <p>课件第 63 页：颗粒间隙中的真实气速 \(u_1=u_g/\varepsilon\)（ε 为孔隙率），颗粒绝对速度 \(u_p=u_1-u_t\)。第一个式子就是第 1 章的“真实速度 = 折算速度 ÷ 所占面积份额”，这里气体占的份额是孔隙率。第二个式子说：颗粒相对气流以终端速度下沉，所以它的绝对速度是气速减去终端速度。\(u_p\gt0\) 时颗粒被带走。</p>
+    </div>
+    <h4>7.2 床层压降曲线</h4>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 700 250" role="img" aria-label="左图：流化床压降随表观气速变化，固定床阶段压降上升，在最小流化速度处出现小峰后变为平台，超过带出速度后下降。右图：水平气力输送单位管长压降随气速变化呈 U 形，最低点对应沉积速度。">
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <line x1="40" y1="20" x2="40" y2="210" stroke="currentColor" stroke-width="1.2"/><line x1="40" y1="210" x2="330" y2="210" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M45,200 L130,96 Q138,84 146,92 L150,96 L250,96 Q262,96 270,120 L300,190" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+          <line x1="140" y1="88" x2="140" y2="210" stroke="currentColor" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <line x1="262" y1="96" x2="262" y2="210" stroke="currentColor" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <text x="140" y="226" text-anchor="middle" font-family="var(--font-mono)" font-size="11">u_mf</text>
+          <text x="262" y="226" text-anchor="middle" font-family="var(--font-mono)" font-size="11">u_t</text>
+          <text x="80" y="160" font-size="11.5">固定床</text>
+          <text x="200" y="86" text-anchor="middle" font-size="11.5">流化床：Δp = 床层重量/截面积</text>
+          <text x="286" y="150" font-size="11.5">颗粒被带出</text>
+          <text x="185" y="246" text-anchor="middle">表观气速（对数）</text>
+          <text x="22" y="115" text-anchor="middle" transform="rotate(-90 22 115)">床层压降（对数）</text>
+          <line x1="400" y1="20" x2="400" y2="210" stroke="currentColor" stroke-width="1.2"/><line x1="400" y1="210" x2="690" y2="210" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M430,40 Q470,150 520,160 Q580,166 680,70" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+          <line x1="526" y1="160" x2="526" y2="210" stroke="currentColor" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <text x="526" y="226" text-anchor="middle" font-size="11.5">沉积速度</text>
+          <text x="440" y="120" font-size="11.5">颗粒沉积</text><text x="440" y="136" font-size="11.5">通道变窄</text>
+          <text x="610" y="160" font-size="11.5">气体摩擦</text><text x="610" y="176" font-size="11.5">∝ 速度平方</text>
+          <text x="545" y="246" text-anchor="middle">气速</text>
+          <text x="382" y="115" text-anchor="middle" transform="rotate(-90 382 115)">单位管长压降</text>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-13　两条压降曲线（示意，无具体数值）。</b>左：流化床（课件第 64–65 页），平台的高度就是床层的有效重量；\(u_{mf}\) 处的小峰来自颗粒之间的咬合和壁面摩擦，床层要“挣脱”一下才开始流化。右：水平气力输送（课件第 78 页），U 形曲线的最低点是沉积速度，它是稀相输送和密相输送的分界。</figcaption>
+    </figure>
+    <h4>7.3 竖直上升气固流的七种流型（课件第 66–75 页）</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>流型</th><th>气速</th><th>发生了什么</th><th>为什么</th></tr></thead>
+      <tbody>
+        <tr><td>1 固定床</td><td>\(u_g\lt u_{mf}\)</td><td>颗粒不动，气体从缝隙流过</td><td>曳力小于重力；压降按 Ergun 方程随气速上升</td></tr>
+        <tr><td>2 起始流态化</td><td>\(u_g=u_{mf}\)</td><td>床层微胀，颗粒可原位转动</td><td>压降恰好等于单位截面上的床层有效重量</td></tr>
+        <tr><td>3 鼓泡床</td><td>\(u_{mf}\lt u_g\)</td><td>多余气体以气泡穿过“乳化相”，床面清晰</td><td>乳化相大致维持在最小流化状态，超过 \(u_{mf}\) 的气体以气泡形式通过 <span class="tag approx">两相理论</span></td></tr>
+        <tr><td>4 节涌（腾涌）</td><td>\(u_g\) 更高</td><td>气泡长到接近床径，与颗粒层交替上升</td><td>气泡聚并；条件是最大稳定气泡直径大于约 0.6 倍床径（课件第 71 页）</td></tr>
+        <tr><td>5 湍动床</td><td>\(u_g\) 更高</td><td>气泡被打碎变小，压力脉动达到最大，床面模糊</td><td>气泡破碎超过聚并</td></tr>
+        <tr><td>6 快速床</td><td>接近 \(u_t\)</td><td>颗粒大量被带出，需要循环补料；颗粒聚成絮团</td><td>颗粒团的终端速度大于单颗粒，团块在高气速下仍能存在</td></tr>
+        <tr><td>7 气力输送</td><td>\(u_g\gt u_t\)</td><td>颗粒稀疏、各自随气流运动，滑移速度小</td><td>曳力远大于重力</td></tr>
+      </tbody>
+    </table></div>
+    <div class="read">
+      <p>第 6、7 两种的区别（课件第 75 页）：颗粒浓度升高时，后面的颗粒进入前面颗粒的尾迹，受到的曳力减小，于是落向前面的颗粒，两者聚在一起；聚团的“有效直径”大、终端速度大，所以快速床里颗粒以团块形式运动。课件第 77 页把这些流型对应到设备：固定床、鼓泡流化床、循环流化床锅炉、煤粉炉，气速依次升高、床层孔隙率依次增大。</p>
+      <p>名称上的小提示：课件第 66 页给出的英文名中，起始流态化通常称 incipient fluidization，快速床称 fast fluidized bed，气力输送称 pneumatic transport（“pulverized-fuel furnace”是煤粉炉，是这一流型的应用设备）。</p>
+    </div>
+    <h4>7.4 水平管中的气固流与液固流（课件第 78–79 页）</h4>
+    <div class="read">
+      <p>水平管中重力垂直于流动，颗粒要靠气流的湍流脉动和升力悬浮。气速从高到低，依次出现：散布状、带颗粒丘的不对称散布状、带移动床、带固定床。图 2-13 右图的 U 形压降曲线就来自这个过程：气速高时，压降主要是气体摩擦，随气速降低而减小；气速降到不足以悬浮颗粒时，颗粒在管底沉积，气流通道变窄，压降反而随气速降低而急剧增大。最低点的气速叫<b>沉积速度</b>。</p>
+      <p>液固两相流的流型与气固相似（课件第 79 页）。那张图以颗粒平均直径和混合物流速为坐标：颗粒越大，终端速度越大（6.5 节的公式），需要更高的流速才能保持悬浮。</p>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">小题 4-3：鼓泡流化床中继续提高表观气速，床层压降会怎样？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">基本不变，因为压降等于床层有效重量除以截面积，多出来的气体以气泡形式通过</button>
+        <button type="button" class="opt" data-opt="b">按 Ergun 方程继续增大</button>
+        <button type="button" class="opt" data-opt="c">迅速下降到零</button>
+      </div>
+      <div class="fb closed"><p>流化以后，床层整体被气流“托住”，压降只需平衡颗粒的有效重量，与气速无关，所以是平台（图 2-13 左）。Ergun 方程描述的是颗粒不动的固定床。压降迅速下降发生在气速超过带出速度、颗粒被吹走之后。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-three">
+    <h3><span class="no">八</span>三相流（课件第 81–85 页）</h3>
+    <div class="read">
+      <p><b>油气水三相流</b>出现在石油天然气开采和集输管道中。它比两相流多一个界面，还多一个问题：两种液体中哪一种是连续相、哪一种接触管壁。课件第 81 页说得很直接：至今没有统一的流型定义，也没有通用的流型图。两项代表性研究（课件第 82–83 页）：</p>
+      <ul>
+        <li>Acikgoz 等（1992，管径 19 mm）：按“油基”（油为连续液相）和“水基”划分出 10 种流型。名称能体现三相特征，但过于繁琐，不便推广；管径小，很难观察到分层流。</li>
+        <li>Lee 等（1993，管径 75 mm，CO₂ 为气相）：分为分层流、间歇流、环状流 3 类 7 种。名称简洁，但和气液两相流的名称一样，体现不出油水的区别。</li>
+      </ul>
+      <p>这两项研究正好说明流型分类的一个普遍难题：分得越细越能反映物理，但越难用于预测。</p>
+      <p><b>气液固三相流化床</b>（课件第 84–85 页）：颗粒是第三相，它是否被流化，会反过来改变气泡的行为。气液并流向上时有四种流型：气泡分散于液相、气泡在液相中聚并、气弹状、气相为连续相。气液逆流时有四种：气泡分散的固定床（颗粒不流化或部分流化）、聚式流化床、过渡流型、气弹状。课件第 85 页用两种密度的颗粒（388 和 822 kg/m³）做了对比，颗粒越轻越容易流化，边界随之移动。</p>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-review">
+    <h3><span class="no">九</span>第 2 章总复习</h3>
+    <figure>
+      <div class="figbox">
+      <svg viewBox="0 0 760 250" role="img" aria-label="第 2 章结构：2.1 多相流的特征引出 2.2 流型；流型由主导力决定并用流型图表示；2.3 用稳定性分析解释流型转变；2.4 用力平衡和积分法求截面分布，其结果是第 7、8 章宏观模型的基础。">
+        <defs><marker id="f214a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+        <g font-size="12" font-family="var(--font-body)" fill="currentColor">
+          <g fill="var(--panel)" stroke="currentColor" stroke-width="1.1">
+            <rect x="10" y="20" width="160" height="96" rx="6"/><rect x="200" y="20" width="170" height="96" rx="6"/><rect x="400" y="20" width="170" height="96" rx="6"/><rect x="600" y="20" width="150" height="96" rx="6"/>
+          </g>
+          <g text-anchor="middle">
+            <text x="90" y="42" font-weight="500">2.1 特征</text><text x="90" y="62" font-size="11.5">不均匀性</text><text x="90" y="78" font-size="11.5">多值性、随机性</text><text x="90" y="94" font-size="11.5">不可逆性</text>
+            <text x="285" y="42" font-weight="500">2.2 流型</text><text x="285" y="62" font-size="11.5">主导力决定形态</text><text x="285" y="78" font-size="11.5">流型图 = 高维切片</text><text x="285" y="94" font-size="11.5">三个读图问题</text>
+            <text x="485" y="42" font-weight="500">2.3 转变机理</text><text x="485" y="62" font-size="11.5">基础状态 + 小扰动</text><text x="485" y="78" font-size="11.5">K–H、聚并、液滴悬浮</text><text x="485" y="94" font-size="11.5">湍流打散</text>
+            <text x="675" y="42" font-weight="500">2.4 分布</text><text x="675" y="62" font-size="11.5">三步法</text><text x="675" y="78" font-size="11.5">积分法</text><text x="675" y="94" font-size="11.5">K 与 C₀</text>
+          </g>
+          <g stroke="var(--accent)" stroke-width="1.6"><line x1="172" y1="68" x2="196" y2="68" marker-end="url(#f214a)"/><line x1="372" y1="68" x2="396" y2="68" marker-end="url(#f214a)"/><line x1="572" y1="68" x2="596" y2="68" marker-end="url(#f214a)"/></g>
+          <rect x="200" y="160" width="550" height="56" rx="6" fill="var(--accent)" fill-opacity="0.12" stroke="var(--accent)" stroke-width="1.1"/>
+          <text x="475" y="184" text-anchor="middle" font-weight="500">通往第 7、8 章：按流型选模型（均相、分相、漂移通量、双流体）</text>
+          <text x="475" y="204" text-anchor="middle" font-size="11.5">漂移通量模型的 C₀ 来自 2.4，Vgj 来自 2.2 中的气泡和气弹上升速度</text>
+          <path d="M675,118 L675,156" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f214a)"/>
+          <path d="M285,118 L285,156" stroke="var(--accent)" stroke-width="1.6" marker-end="url(#f214a)"/>
+        </g>
+      </svg>
+      </div>
+      <figcaption><b>图 2-14　第 2 章的结构。</b>从现象（特征、流型）到机理（转变的稳定性分析），再到定量（截面分布），最后汇入后续章节的宏观模型。</figcaption>
+    </figure>
+    <h4>本章最重要的式子</h4>
+    <div class="tbl"><table>
+      <thead><tr><th>内容</th><th>式子</th><th>出处</th></tr></thead>
+      <tbody>
+        <tr><td>泡状 → 弹状边界</td><td>\(J_l=3.0J_g-1.15\left[\frac{g\Delta\rho\sigma}{\rho_l^2}\right]^{1/4}\)</td><td>第 1 讲 6.2</td></tr>
+        <tr><td>Taylor 气弹上升速度</td><td>\(U_{TB}\approx0.35\sqrt{gD}\)；Eo &lt; 3.37 时不上升</td><td>第 1 讲 6.3</td></tr>
+        <tr><td>环状流维持</td><td>\(\mathrm{Ku}=\rho_g^{1/2}J_g/(\sigma g\Delta\rho)^{1/4}\ge3.1\)–3.2</td><td>第 1 讲 6.4</td></tr>
+        <tr><td>最小流化、带出速度</td><td>\(u_{mf}=\frac{d_p^2\Delta\rho g}{1650\mu}\)；\(u_t=\sqrt{\frac{4d_p\Delta\rho g}{3C_D\rho_f}}\)</td><td>第 1 讲 6.5</td></tr>
+        <tr><td>分层流液位</td><td>\(\tilde h_L=f(X)\)，\(X=\sqrt{(\dd p/\dd z)_{LS}/(\dd p/\dd z)_{GS}}\)；X = 1.6 时 \(\tilde h_L=0.5\)</td><td>第 2 讲第二节</td></tr>
+        <tr><td>波失控（A 线）</td><td>\(F^2\frac{\tilde u_G^2\tilde S_i}{(1-\tilde h_L)^2\tilde A_G}\ge1\)</td><td>第 2 讲第四节</td></tr>
+        <tr><td>起波（C 线）</td><td>\(K\ge20/(\tilde u_G\sqrt{\tilde u_L})\)</td><td>第 2 讲第三节</td></tr>
+        <tr><td>湍流打散（B 线）</td><td>\(T^2\ge8\tilde A_G/[\tilde S_i\tilde u_L^2(\tilde u_L\tilde D_L)^{-n}]\)</td><td>第 2 讲第六节</td></tr>
+        <tr><td>两相剪切应力</td><td>\(\tau^*=r^*\Delta P^*-\frac{\cos\theta}{r^*}\int_0^{r^*}(1-\alpha)2r^*\dd r^*\)</td><td>第 3 讲第三节</td></tr>
+        <tr><td>Bankoff 与分布系数</td><td>\(\langle\alpha\rangle=K\beta\)，\(C_0=1/K\)</td><td>第 3 讲第六、七节</td></tr>
+      </tbody>
+    </table></div>
+    <h4>整章自测</h4>
+    <div class="quiz" data-answer="b">
+      <p class="q">复习 1：同一组 \((J_g,J_l)\)，在 25 mm 竖直上升管中是弹状流，在 0.5 mm 竖直微通道中却看不到浮力驱动的 Taylor 气弹。最直接的原因是？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">微通道中雷诺数太大</button>
+        <button type="button" class="opt" data-opt="b">微通道的 Eo ≪ 3.37，表面张力压倒浮力</button>
+        <button type="button" class="opt" data-opt="c">微通道中气体密度变大</button>
+      </div>
+      <div class="fb closed"><p>空气–水在 0.5 mm 管中 Eo ≈ 0.03，远小于 Bretherton 极限 3.37，气泡靠浮力根本不能上升，只能被液体推着走（第 1 讲 6.3、案例 3）。</p></div>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">复习 2：Taitel–Dukler 理论中哪一条线来自“能量输入与黏性耗散”的比较？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">A 线</button>
+        <button type="button" class="opt" data-opt="b">B 线</button>
+        <button type="button" class="opt" data-opt="c">C 线</button>
+        <button type="button" class="opt" data-opt="d">D 线</button>
+      </div>
+      <div class="fb closed"><p>C 线（起波）：风通过遮蔽效应向波输入能量，黏性消耗波的能量（Jeffreys）。A 线是 Bernoulli 吸力与重力的比较，B 线是湍流推挤与浮力的比较，D 线是液量够不够堵满截面。</p></div>
+    </div>
+    <div class="quiz" data-answer="a">
+      <p class="q">复习 3：一个实验报告称“泡状流中测得截面含气率总是小于容积含气率”。这一定说明气泡相对液体有上升速度吗？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">不一定：即使没有局部滑移，只要气泡集中在流速快的管中心，也有 ⟨α⟩ = Kβ &lt; β</button>
+        <button type="button" class="opt" data-opt="b">一定：⟨α⟩ &lt; β 只能来自局部滑移</button>
+        <button type="button" class="opt" data-opt="c">说明测量有误</button>
+      </div>
+      <div class="fb closed"><p>这是第 3 讲 Bankoff 模型的核心结论：分布效应本身就会造成“表观滑移”。要区分两种来源，需要测量截面上的分布，或者用漂移通量模型同时拟合 \(C_0\) 和 \(V_{gj}\)。</p></div>
+    </div>
+    <div class="quiz" data-answer="b">
+      <p class="q">复习 4：受热水平蒸发管中，管壁最先超温的位置在哪里？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">管底</button>
+        <button type="button" class="opt" data-opt="b">管顶</button>
+        <button type="button" class="opt" data-opt="c">各处同时</button>
+      </div>
+      <div class="fb closed"><p>重力把液体压在管底，管顶液膜最薄、最先蒸干，壁面只接触蒸汽，换热骤降，温度飙升。上下壁温差进一步带来温差应力和交变应力（第二节）。</p></div>
+    </div>
+    <div class="quiz" data-answer="c">
+      <p class="q">复习 5：为什么油水两相流在较低流速下就会出现界面波和混合状流？</p>
+      <div class="opts">
+        <button type="button" class="opt" data-opt="a">油的黏度太小</button>
+        <button type="button" class="opt" data-opt="b">油水之间有化学反应</button>
+        <button type="button" class="opt" data-opt="c">密度差和界面张力都小，Kelvin–Helmholtz 失稳中的恢复力弱，很小的速度差就能使界面失稳</button>
+      </div>
+      <div class="fb closed"><p>界面稳定靠两种恢复力：重力（与密度差成正比）和表面张力。油水的密度差只有空气–水的约 1/7，界面张力也更小，所以起波需要的速度差小得多（第六节、第 2 讲第四节）。</p></div>
+    </div>
+  </section>
+
+  <section class="sec" id="l24-research">
+    <h3><span class="no">十</span>第 2 章带给你课题的四件工具</h3>
+    <div class="read">
+      <ol>
+        <li><b>主导力分析 + 无量纲相图</b>（第 1 讲）：列出针尖气泡上的浮力、表面张力、液体惯性、黏性、电应力、蒸发反冲，用 π 定理组合成无量纲数，把实验中看到的气泡行为画成“行为相图”。</li>
+        <li><b>稳定性分析</b>（第 2 讲）：写出基础状态，加小扰动，比较推动力和恢复力。加速膨胀或塌缩的气泡界面上的 Rayleigh–Taylor 失稳可以这样估算。</li>
+        <li><b>三步法与积分法</b>（第 3 讲）：薄液膜、热边界层都可以用它们处理。</li>
+        <li><b>统计与平均</b>（第 1、3 讲）：脉冲实验要做系综平均；“平均的乘积 ≠ 乘积的平均”会直接影响产气速率和能量效率的估算。</li>
+      </ol>
+      <p>第 2 章到此讲完。下一章是课件第 3 章“界面现象”：界面上的速度和应力边界条件、Young–Laplace 方程、润湿与接触角。这一章与你的针尖气泡关系最直接。</p>
     </div>
   </section>
 </article>
@@ -1986,7 +2774,7 @@ flowchart LR
 <script>
 (function () {
   /* ---------- view routing (tabs) ---------- */
-  var DEFAULT_VIEW = 'lesson-2-2';
+  var DEFAULT_VIEW = 'lesson-2-3';
   var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
   function route() {
     var id = '';
@@ -2211,4 +2999,119 @@ flowchart LR
   calcTD();
 })();
 </script>
+<script>
+(function () {
+  function el(id) { return document.getElementById(id); }
+  function f3(x) { if (!isFinite(x)) return '—'; var a = Math.abs(x); if (a >= 100) return x.toFixed(0); if (a >= 10) return x.toFixed(1); if (a !== 0 && a < 0.01) return x.toPrecision(2); return x.toFixed(3); }
+  function niceTicks(lo, hi, n) {
+    var span = hi - lo, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw))), st = mag;
+    [1, 2, 2.5, 5, 10].some(function (m) { st = m * mag; return st >= raw; });
+    var t = [], v = Math.ceil(lo / st) * st;
+    for (; v <= hi + 1e-9; v += st) t.push(Math.abs(v) < 1e-12 ? 0 : v);
+    return t;
+  }
+  /* generic line plot into an <svg> with viewBox W×H */
+  function plot(svg, W, H, xr, series, opt) {
+    var ml = 52, mr = 14, mt = 14, mb = 40, pw = W - ml - mr, ph = H - mt - mb;
+    var ymin = Infinity, ymax = -Infinity;
+    series.forEach(function (s) { s.pts.forEach(function (p) { ymin = Math.min(ymin, p[1]); ymax = Math.max(ymax, p[1]); }); });
+    ymin = Math.min(ymin, 0); ymax = Math.max(ymax, 0);
+    if (ymax - ymin < 1e-9) { ymax += 1; }
+    var pad = 0.08 * (ymax - ymin); ymin -= pad; ymax += pad;
+    function X(x) { return ml + (x - xr[0]) / (xr[1] - xr[0]) * pw; }
+    function Y(y) { return mt + (ymax - y) / (ymax - ymin) * ph; }
+    var h = '<g font-family="var(--font-mono)" font-size="10.5" fill="currentColor">';
+    h += '<rect x="' + ml + '" y="' + mt + '" width="' + pw + '" height="' + ph + '" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/>';
+    niceTicks(ymin, ymax, 5).forEach(function (t) {
+      h += '<line x1="' + ml + '" x2="' + (ml + pw) + '" y1="' + Y(t).toFixed(1) + '" y2="' + Y(t).toFixed(1) + '" stroke="currentColor" stroke-width="' + (t === 0 ? 1 : 0.4) + '" opacity="' + (t === 0 ? 0.7 : 0.25) + '"/>';
+      h += '<text x="' + (ml - 6) + '" y="' + (Y(t) + 3.5).toFixed(1) + '" text-anchor="end">' + (+t.toFixed(3)) + '</text>';
+    });
+    (opt.xticks || niceTicks(xr[0], xr[1], 4)).forEach(function (t) {
+      h += '<line x1="' + X(t).toFixed(1) + '" x2="' + X(t).toFixed(1) + '" y1="' + (mt + ph) + '" y2="' + (mt + ph + 4) + '" stroke="currentColor"/>';
+      h += '<text x="' + X(t).toFixed(1) + '" y="' + (mt + ph + 16) + '" text-anchor="middle">' + (+t.toFixed(3)) + '</text>';
+    });
+    h += '<text x="' + (ml + pw / 2) + '" y="' + (H - 6) + '" text-anchor="middle" font-family="var(--font-body)" font-size="12">' + opt.xlabel + '</text>';
+    h += '<text x="14" y="' + (mt + ph / 2) + '" text-anchor="middle" font-family="var(--font-body)" font-size="12" transform="rotate(-90 14 ' + (mt + ph / 2) + ')">' + opt.ylabel + '</text>';
+    (opt.vlines || []).forEach(function (v) {
+      h += '<line x1="' + X(v.x).toFixed(1) + '" x2="' + X(v.x).toFixed(1) + '" y1="' + mt + '" y2="' + (mt + ph) + '" stroke="currentColor" stroke-dasharray="4 3" opacity="0.6"/>';
+      h += '<text x="' + (X(v.x) + 4).toFixed(1) + '" y="' + (mt + 12) + '" font-family="var(--font-body)" font-size="11">' + v.label + '</text>';
+    });
+    h += '</g>';
+    series.forEach(function (s) {
+      h += '<polyline fill="none" stroke="' + s.color + '" stroke-width="' + (s.w || 2.2) + '"' + (s.dash ? ' stroke-dasharray="' + s.dash + '"' : '') + ' points="' +
+        s.pts.map(function (p) { return X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1); }).join(' ') + '"/>';
+    });
+    svg.innerHTML = h;
+  }
+
+  /* τ* profiles for four void distributions */
+  function drawTau() {
+    var svg = el('tw-svg'); if (!svg) return;
+    var a = parseFloat(el('tw-a').value) / 100, P = parseFloat(el('tw-p').value) / 100, k = 2 * a;
+    var N = 120, uni = [], core = [], wall = [], ann = [], ra = Math.sqrt(a);
+    for (var i = 0; i <= N; i++) {
+      var r = i / N;
+      uni.push([r, r * (P - (1 - a))]);
+      core.push([r, r * P - r + k * (r - r * r * r / 2)]);
+      wall.push([r, r * P - r + k * r * r * r / 2]);
+      ann.push([r, r < ra ? r * P : r * P - (r * r - a) / Math.max(r, 1e-9)]);
+    }
+    plot(svg, 560, 280, [0, 1], [
+      { pts: uni, color: 'currentColor' }, { pts: core, color: 'var(--accent)' },
+      { pts: wall, color: 'var(--caution)' }, { pts: ann, color: 'var(--emp)', dash: '6 4' }
+    ], { xlabel: 'r*（0 为管中心，1 为壁面）', ylabel: 'τ*', xticks: [0, 0.25, 0.5, 0.75, 1] });
+    el('tw-note').textContent = '四条曲线在壁面处都等于 τw* = ΔP* − (1 − ⟨α⟩) = ' + f3(P - (1 - a)) + '；内部形状各不相同。';
+  }
+  ['tw-a', 'tw-p'].forEach(function (id) { var e = el(id); if (e) e.addEventListener('input', drawTau); });
+
+  /* annular film velocity */
+  function drawFilm() {
+    var svg = el('fw-svg'); if (!svg) return;
+    var a = parseFloat(el('fw-a').value) / 100, P = parseFloat(el('fw-p').value) / 100, ri = Math.sqrt(a);
+    function U(r) { return (P - 1) * (1 - r * r) / 2 - a * Math.log(r); }
+    var pts = [], N = 120, neg = false;
+    for (var i = 0; i <= N; i++) { var r = ri + (1 - ri) * i / N; var u = U(r); pts.push([r, u]); if (u < -1e-12 && i < N) neg = true; }
+    var jf = (P - 1) * Math.pow(1 - a, 2) + 2 * a * ((1 - a) + a * Math.log(a));
+    var tw = P - (1 - a);
+    plot(svg, 560, 260, [ri, 1], [{ pts: pts, color: 'var(--accent)', w: 2.6 }],
+      { xlabel: 'r*（液膜区）', ylabel: 'u_f* / (N_f/8)', vlines: [{ x: ri, label: '界面' }] });
+    el('fw-out').innerHTML =
+      '<div><span>界面速度 u_f*/(N_f/8)</span><span>' + f3(U(ri)) + '</span></div>' +
+      '<div><span>液膜流量 j_f*/(N_f/32)</span><span>' + f3(jf) + '</span></div>' +
+      '<div><span>壁面切应力 τw*</span><span>' + f3(tw) + '</span></div>' +
+      '<div><span>液膜厚度 / 管半径</span><span>' + f3(1 - ri) + '</span></div>';
+    var msg;
+    if (tw < 0 && jf > 0) msg = '壁面切应力为负：贴近壁面的液体向下倒流，但靠近界面的液体被气芯拖着向上，液膜净流量仍向上。';
+    else if (tw < 0) msg = '壁面切应力为负且液膜净流量向下：压力梯度和气芯拖曳都托不住液膜，环状流难以维持。';
+    else if (neg) msg = '液膜局部向下流动。';
+    else msg = '整层液膜都向上流动：扣除液体重量后的压力推力和气芯拖曳都向上。';
+    el('fw-note').textContent = msg;
+  }
+  ['fw-a', 'fw-p'].forEach(function (id) { var e = el(id); if (e) e.addEventListener('input', drawFilm); });
+
+  /* Bankoff power-law profiles */
+  function drawBk() {
+    var svg = el('bk-svg'); if (!svg) return;
+    var m = parseFloat(el('bk-m').value) / 10, n = parseFloat(el('bk-n').value) / 10;
+    var K = 2 * (m + n + m * n) * (m + n + 2 * m * n) / ((1 + n) * (1 + 2 * n) * (1 + m) * (1 + 2 * m));
+    var b = 0.5, aa = K * b, S = (1 - aa) / (K * (1 - b));
+    function X(r) { return 150 + r * 130; } function Y(v) { return 150 - v * 125; }
+    var pu = [], pa = [];
+    for (var i = 0; i <= 120; i++) { var r = -1 + 2 * i / 120, y = 1 - Math.abs(r); pu.push(X(r).toFixed(1) + ',' + Y(Math.pow(y, 1 / m)).toFixed(1)); pa.push(X(r).toFixed(1) + ',' + Y(Math.pow(y, 1 / n)).toFixed(1)); }
+    svg.innerHTML = '<g font-family="var(--font-body)" font-size="11" fill="currentColor">' +
+      '<line x1="20" y1="150" x2="280" y2="150" stroke="currentColor"/><line x1="20" y1="20" x2="20" y2="150" stroke="currentColor" stroke-width="2.4"/><line x1="280" y1="20" x2="280" y2="150" stroke="currentColor" stroke-width="2.4"/>' +
+      '<line x1="150" y1="20" x2="150" y2="150" stroke="currentColor" stroke-dasharray="3 3" opacity="0.5"/>' +
+      '<text x="20" y="166" text-anchor="middle">壁</text><text x="150" y="166" text-anchor="middle">管中心</text><text x="280" y="166" text-anchor="middle">壁</text>' +
+      '</g><polyline fill="none" stroke="currentColor" stroke-width="2" points="' + pu.join(' ') + '"/><polyline fill="none" stroke="var(--accent)" stroke-width="2.4" points="' + pa.join(' ') + '"/>';
+    el('bk-out').innerHTML =
+      '<div><span>m（速度）</span><span>' + m.toFixed(1) + '</span></div><div><span>n（含气率）</span><span>' + n.toFixed(1) + '</span></div>' +
+      '<div><span>K</span><span>' + K.toFixed(3) + '</span></div><div><span>C₀ = 1/K</span><span>' + (1 / K).toFixed(3) + '</span></div>' +
+      '<div><span>β = 0.5 时 ⟨α⟩</span><span>' + aa.toFixed(3) + '</span></div><div><span>表观滑动比 S</span><span>' + S.toFixed(3) + '</span></div>';
+  }
+  ['bk-m', 'bk-n'].forEach(function (id) { var e = el(id); if (e) e.addEventListener('input', drawBk); });
+
+  drawTau(); drawFilm(); drawBk();
+})();
+</script>
+
 

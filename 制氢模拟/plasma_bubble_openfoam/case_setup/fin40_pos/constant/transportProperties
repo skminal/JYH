@@ -1,0 +1,20 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: plasma bubble case (generated)
+   \\    /   O peration     |
+    \\  /    A nd           |
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      transportProperties;
+}
+
+phases (ethanol helium);
+ethanol { transportModel Newtonian; nu 1.47914e-06; rho 791; }
+helium  { transportModel Newtonian; nu 0.000122462; rho 0.1625; }
+sigma 0.02214;

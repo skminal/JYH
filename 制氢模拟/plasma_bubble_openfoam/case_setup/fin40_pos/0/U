@@ -1,0 +1,30 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: plasma bubble case (generated)
+   \\    /   O peration     |
+    \\  /    A nd           |
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volVectorField;
+    location    "0";
+    object      U;
+}
+
+dimensions [0 1 -1 0 0 0 0];
+internalField uniform (0 0 0);
+boundaryField
+{
+    inlet     { type fixedValue; value uniform (0 0 0.707355); }
+    capillary { type noSlip; }
+    bottom    { type noSlip; }
+    outer     { type slip; }
+    top       { type pressureInletOutletVelocity; value uniform (0 0 0); }
+
+    front { type wedge; }
+    back  { type wedge; }
+    axis  { type empty; }
+}

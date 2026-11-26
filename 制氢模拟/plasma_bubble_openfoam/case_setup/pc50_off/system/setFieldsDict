@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: plasma bubble case (generated)
+   \\    /   O peration     |
+    \\  /    A nd           |
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      setFieldsDict;
+}
+
+defaultFieldValues ( volScalarFieldValue alpha.ethanol 1 );
+regions
+(
+    sphereToCell
+    {
+        centre (0 0 0.0001);
+        radius 0.00154;
+        fieldValues ( volScalarFieldValue alpha.ethanol 0 );
+    }
+    cylinderToCell
+    {
+        p1 (0 0 -0.004);
+        p2 (0 0 0);
+        radius 0.0001515;
+        fieldValues ( volScalarFieldValue alpha.ethanol 0 );
+    }
+);

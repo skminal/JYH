@@ -28,7 +28,7 @@
     scalarField& pf = plasmaForcef.primitiveFieldRef();
     forAll(pf, i)
     {
-        pf[i] = plK[n]*(1.0 - alpha1f[i]) - xi[n]*snGradAlpha[i];
+        pf[i] = plK[n]*(1.0 - alpha1f[i]) + xi[n]*snGradAlpha[i];
         ++n;
     }
     auto& bf = plasmaForcef.boundaryFieldRef();
@@ -39,7 +39,7 @@
         const fvsPatchScalarField& pg = snGradAlpha.boundaryField()[p];
         forAll(pp, i)
         {
-            pp[i] = plK[n]*(1.0 - pa[i]) - xi[n]*pg[i];
+            pp[i] = plK[n]*(1.0 - pa[i]) + xi[n]*pg[i];
             ++n;
         }
     }

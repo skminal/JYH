@@ -36,6 +36,9 @@ const label  plSeed = plasmaDict.get<label>("seed");
 // mean outward (ion-wind) stress on the upper interface: Pup*max(cos theta,0)^nUp
 const scalar plPup = plasmaDict.getOrDefault<scalar>("Pup", 0);   // Pa
 const scalar plnUp = plasmaDict.getOrDefault<scalar>("nUp", 2);
+// seed radius and dilation layers of the electrode-connected gas region
+const scalar plSeedR = plasmaDict.getOrDefault<scalar>("seedR", 3e-4);
+const label  plNlayer = plasmaDict.getOrDefault<label>("nLayer", 2);
 
 Random plRnd(plSeed);
 const label plNm = plM1 - plM0 + 1;

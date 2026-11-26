@@ -10,6 +10,58 @@
     }
     const scalar norm = 1.0/Foam::sqrt(scalar(plNm));
 
+    // ---- gas connected to the discharge point (the plasma lives only there) ----
+    // flood fill over gas cells (alpha1 < 0.5) from the cells near x0, then grow
+    // the region by plNlayer cell layers so that the interface cells are included
+    const labelListList& cc = mesh.cellCells();
+    const scalarField& a1 = alpha1.primitiveField();
+    const vectorField& C = mesh.C().primitiveField();
+    boolList conn(mesh.nCells(), false);
+    {
+        DynamicList<label> front;
+        forAll(C, ci)
+        {
+            if (a1[ci] < 0.5 && mag(C[ci] - plX0) < plSeedR)
+            {
+                conn[ci] = true;
+                front.append(ci);
+            }
+        }
+        while (front.size())
+        {
+            DynamicList<label> next;
+            forAll(front, k)
+            {
+                const labelList& nb = cc[front[k]];
+                forAll(nb, j)
+                {
+                    const label c = nb[j];
+                    if (!conn[c] && a1[c] < 0.5)
+                    {
+                        conn[c] = true;
+                        next.append(c);
+                    }
+                }
+            }
+            front.transfer(next);
+        }
+        for (label layer = 0; layer < plNlayer; ++layer)
+        {
+            boolList grown(conn);
+            forAll(conn, ci)
+            {
+                if (conn[ci])
+                {
+                    const labelList& nb = cc[ci];
+                    forAll(nb, j) { grown[nb[j]] = true; }
+                }
+            }
+            conn.transfer(grown);
+        }
+    }
+    const labelUList& own = mesh.owner();
+    const labelUList& nei = mesh.neighbour();
+
     const surfaceScalarField alpha1f(fvc::interpolate(alpha1));
     const surfaceScalarField snGradAlpha(fvc::snGrad(alpha1));
 
@@ -28,7 +80,8 @@
     scalarField& pf = plasmaForcef.primitiveFieldRef();
     forAll(pf, i)
     {
-        pf[i] = plK[n]*(1.0 - alpha1f[i]) + xi[n]*snGradAlpha[i];
+        const scalar mk = (conn[own[i]] || conn[nei[i]]) ? 1.0 : 0.0;
+        pf[i] = mk*(plK[n]*(1.0 - alpha1f[i]) + xi[n]*snGradAlpha[i]);
         ++n;
     }
     auto& bf = plasmaForcef.boundaryFieldRef();
@@ -39,7 +92,8 @@
         const fvsPatchScalarField& pg = snGradAlpha.boundaryField()[p];
         forAll(pp, i)
         {
-            pp[i] = plK[n]*(1.0 - pa[i]) + xi[n]*pg[i];
+            const scalar mk = conn[pp.patch().faceCells()[i]] ? 1.0 : 0.0;
+            pp[i] = mk*(plK[n]*(1.0 - pa[i]) + xi[n]*pg[i]);
             ++n;
         }
     }

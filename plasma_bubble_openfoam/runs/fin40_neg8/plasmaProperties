@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: plasma bubble case (generated)
+   \\    /   O peration     |
+    \\  /    A nd           |
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      plasmaProperties;
+}
+
+F0      310388;        // N/m3  (= 40 rho_l g)
+RE      0.0015;
+wE      0.00015;
+d0      5e-05;
+x0      (0 0 0);
+axis    (0 0 1);
+Pfl     8;        // Pa
+Rfl     4e-03;
+tau     3e-04;
+mMin    4;
+mMax    24;
+seed    1234;
+Pup     60;        // Pa
+nUp     2;
+seedR   0.0008;
+nLayer  2;

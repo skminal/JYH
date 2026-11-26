@@ -33,6 +33,9 @@ const scalar plTau = plasmaDict.get<scalar>("tau");    // s
 const label  plM0  = plasmaDict.get<label>("mMin");
 const label  plM1  = plasmaDict.get<label>("mMax");
 const label  plSeed = plasmaDict.get<label>("seed");
+// mean outward (ion-wind) stress on the upper interface: Pup*max(cos theta,0)^nUp
+const scalar plPup = plasmaDict.getOrDefault<scalar>("Pup", 0);   // Pa
+const scalar plnUp = plasmaDict.getOrDefault<scalar>("nUp", 2);
 
 Random plRnd(plSeed);
 const label plNm = plM1 - plM0 + 1;
@@ -90,6 +93,7 @@ scalarField plK(plNf), plSw(plNf), plTh(plNf);
     }
     plK.setSize(n); plSw.setSize(n); plTh.setSize(n);
 }
+scalarField plUp(plPup*plSw*pow(max(cos(plTh), scalar(0)), plnUp));
 PtrList<scalarField> plCos(plNm), plSin(plNm);
 for (label k = 0; k < plNm; ++k)
 {

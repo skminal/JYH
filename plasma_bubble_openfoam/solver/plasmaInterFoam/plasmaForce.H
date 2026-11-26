@@ -14,7 +14,7 @@
     const surfaceScalarField snGradAlpha(fvc::snGrad(alpha1));
 
     // fluctuating stress amplitude per face
-    scalarField xi(plK.size(), Zero);
+    scalarField xi(plUp);
     if (plPfl > 0)
     {
         for (label k = 0; k < plNm; ++k)

@@ -136,6 +136,7 @@ def main():
     ap.add_argument('--seed', type=int, default=1234)
     ap.add_argument('--Pup', type=float, default=0.0, help='upward (ion-wind) interfacial stress, Pa')
     ap.add_argument('--nUp', type=float, default=2.0)
+    ap.add_argument('--seedR', type=float, default=0.8e-3, help='gas within this distance of the needle tip counts as electrode-connected')
     a = ap.parse_args()
     o = a.out
 
@@ -262,7 +263,9 @@ mMax    24;
 seed    %d;
 Pup     %g;        // Pa
 nUp     %g;
-''' % (F0, a.kappa if F0 else 0, a.RE, a.wE, Pfl, a.seed, a.Pup if F0 else 0.0, a.nUp))
+seedR   %g;
+nLayer  2;
+''' % (F0, a.kappa if F0 else 0, a.RE, a.wE, Pfl, a.seed, a.Pup if F0 else 0.0, a.nUp, a.seedR))
 
     bnd_common = '''
     front { type wedge; }
@@ -307,7 +310,7 @@ boundaryField
 ''' % (a.theta, bnd_common))
 
     meta = dict(mode=a.mode, dx=a.dx, ncell=ncell, U_in=U_in, Q=Q, F0=F0, kappa=a.kappa if F0 else 0,
-                RE=a.RE, wE=a.wE, Pfl=Pfl, Pup=a.Pup if F0 else 0.0, nUp=a.nUp, Rb0=a.Rb0, zb0=a.zb0, tend=a.tend, dtw=a.dtw, theta=a.theta,
+                RE=a.RE, wE=a.wE, Pfl=Pfl, Pup=a.Pup if F0 else 0.0, nUp=a.nUp, seedR=a.seedR, Rb0=a.Rb0, zb0=a.zb0, tend=a.tend, dtw=a.dtw, theta=a.theta,
                 rho_l=RHO_L, mu_l=MU_L, sigma=SIGMA, rho_g=RHO_G, mu_g=MU_G, R_in=R_IN, R_out=R_OUT)
     json.dump(meta, open(o + '/case.json', 'w'), indent=1)
     print('wrote', o, 'cells ~', ncell, 'U_in %.3f m/s' % U_in, 'F0 %.4g N/m3' % F0, 'Pfl', Pfl)

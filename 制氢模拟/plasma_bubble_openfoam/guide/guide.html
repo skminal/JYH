@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>零基础读懂：用 OpenFOAM 复刻乙醇中的等离子体气泡</title>
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm; }
+  :root { --ink:#1a1a19; --mute:#55534e; --line:#d9d7d0; --soft:#f3f2ee; --blue:#0b3d7a; --orange:#eb6c15; --red:#b3261e; --green:#137a55; }
+  html { font-family: "WenQuanYi Zen Hei", "Noto Sans CJK SC", sans-serif; color: var(--ink); font-size: 10.6pt; line-height: 1.72; }
+  body { margin: 0; }
+  h1 { font-size: 24pt; line-height: 1.3; margin: 0 0 6mm; color: var(--blue); }
+  h2 { font-size: 15.5pt; color: var(--blue); margin: 9mm 0 3mm; padding-bottom: 1.5mm; border-bottom: 1.2pt solid var(--blue); page-break-after: avoid; }
+  h3 { font-size: 12pt; margin: 5mm 0 1.5mm; page-break-after: avoid; }
+  p { margin: 1.6mm 0 2.4mm; text-align: justify; }
+  .chapter { }
+  .newpage { page-break-before: always; }
+  .cover { height: 245mm; display: flex; flex-direction: column; justify-content: center; }
+  .cover .sub { font-size: 13pt; color: var(--mute); margin-bottom: 14mm; }
+  .cover .meta { font-size: 10pt; color: var(--mute); line-height: 1.9; }
+  figure { margin: 3mm 0 4mm; text-align: center; page-break-inside: avoid; }
+  figure img { max-width: 100%; }
+  figcaption { font-size: 9.2pt; color: var(--mute); margin-top: 1.5mm; text-align: left; }
+  .eq { text-align: center; margin: 2.5mm 0; page-break-inside: avoid; }
+  .eq img { max-width: 100%; }
+  .box { background: var(--soft); border-radius: 2.5mm; padding: 3mm 4.5mm; margin: 3mm 0 4mm; page-break-inside: avoid; }
+  .box.key { background: #eaf1fa; }
+  .box.warn { background: #fbeeea; }
+  .box b.t { display: block; margin-bottom: 1mm; }
+  table { border-collapse: collapse; width: 100%; margin: 2.5mm 0 4mm; font-size: 9.6pt; page-break-inside: avoid; }
+  th, td { border: 0.6pt solid var(--line); padding: 1.4mm 2.2mm; text-align: left; vertical-align: top; }
+  th { background: var(--soft); }
+  td.c, th.c { text-align: center; }
+  ol, ul { margin: 1mm 0 3mm; padding-left: 6mm; }
+  li { margin: 0.8mm 0; }
+  .term { display: inline-block; min-width: 6mm; margin-right: 2.5mm; font-weight: bold; color: var(--blue); }
+  .small { font-size: 9.2pt; color: var(--mute); }
+  .toc li { margin: 1.2mm 0; }
+  code { font-family: "DejaVu Sans Mono", monospace; font-size: 9pt; background: var(--soft); padding: 0 1mm; border-radius: 1mm; }
+  .two { display: flex; gap: 5mm; align-items: flex-start; }
+  .two > div { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ cover -->
+<section class="cover">
+  <h1>零基础读懂：<br>用 OpenFOAM 复刻乙醇中的等离子体气泡</h1>
+  <div class="sub">从“什么是 CFD”讲到控制方程、表面张力、等离子体建模、调参和结果</div>
+  <div class="meta">
+    复刻对象：Wang, Zhang 等，<i>Matter</i> 7 (2024) 3024–3035，补充视频 mmc7<br>
+    “Stability of plasma bubble at positive / negative polarity (2.0 kV)”<br>
+    软件：OpenFOAM v1912 + 自编求解器 plasmaInterFoam<br>
+    配套文件：GIF <code>results/plasma_bubble_2p0kV.gif</code>，组会 PPT，源码与算例设置
+  </div>
+</section>
+
+<!-- ============================================================ 0 summary -->
+<section class="chapter newpage">
+<h2>一页读懂</h2>
+<div class="box key">
+<b class="t">这次做了什么</b>
+把实验里“针尖处的氦气泡在 2.0 kV 下先长大、再在中部变细（颈缩）、最后断开，上半个气泡飘走，下半个留在管口”的过程，用流体力学软件 OpenFOAM 在电脑里重新算了一遍，并做成动图。
+</div>
+<ol>
+  <li><b>模拟的本质</b>：把空间切成两万个小格子，每个格子记录“速度、压力、液体占比 α”，按物理定律一小步（约 10 微秒）一小步往前推，推 6 000–9 000 步得到 60 毫秒的过程。</li>
+  <li><b>物理定律</b>：质量守恒 + 动量守恒（就是牛顿第二定律）+ 一个描述“哪里是液体、哪里是气体”的方程。</li>
+  <li><b>表面张力</b>是这次的核心之一：它让气泡保持圆润、决定颈缩和断开，用 CSF 方法把它变成格子里的一个力。</li>
+  <li><b>等离子体</b>本身没有算（那需要求解电子、离子的方程，难度高一个量级）。我们用三个“等效力”代替：把气泡拴在针尖的力、把顶部往上推的力、界面上的随机抖动。三个力的大小是<b>照着实验视频调出来的</b>。</li>
+  <li><b>结果</b>：正、负极性都重现了“残留→长大→颈缩→脱离”；脱离气泡体积 6.1 / 8.4 mm³，实验为 7.7 mm³，量级一致。断开比实验快约 3 倍，负极性的表面褶皱也比视频弱，这些是还没解决的问题。</li>
+</ol>
+<h3>目录</h3>
+<ol class="toc">
+  <li>实验在看什么</li>
+  <li>CFD 是什么：把流体切成格子</li>
+  <li>怎么区分液体和气体：VOF 方法</li>
+  <li>控制方程：逐项解释</li>
+  <li>表面张力（重点）</li>
+  <li>等离子体怎么放进模型</li>
+  <li>OpenFOAM 与自编求解器</li>
+  <li>搭建算例：几何、网格、边界、初始</li>
+  <li>从视频里读数据</li>
+  <li>调参全过程：每一步遇到什么、怎么改</li>
+  <li>结果怎么看</li>
+  <li>局限与下一步</li>
+  <li>名词小词典</li>
+</ol>
+</section>
+
+<!-- ============================================================ 1 experiment -->
+<section class="chapter newpage">
+<h2>1　实验在看什么</h2>
+<p>实验装置很简单：一根细玻璃管（内径 0.3 mm、外径 0.5 mm）竖直插在无水乙醇里，管里有一根钨针，针尖和管口平齐。氦气以每分钟 3 mL 的速度从管口冒出，形成气泡。管口上方 30 mm 处有一个金属环，环和针之间加 2.0 kV 直流电压。</p>
+<p>不加电压时，气泡长到一定大小就脱离管口飘走（就像吸管吹泡泡）。加了电压，针尖附近的氦气被电离成<b>等离子体</b>（能看到针尖处的亮点），气泡突然变得很大，而且不会整个飘走：它的下半部分像被“拴”在管口，上半部分越长越高，中间变细，最后断开，只有上半个飘走。</p>
+<figure>
+  <img src="../slides/fig/video_frames.png">
+  <figcaption>图 1　实验视频 mmc7 的四个阶段。上排正极性（+2.0 kV），下排负极性（−2.0 kV）。黑色是气泡，虚线是管口高度。正极性表面光滑，负极性表面有很多褶皱。</figcaption>
+</figure>
+<p>论文发现两种极性的差别主要在<b>界面稳定性</b>：负极性时打到界面上的主要是电子，界面抖得更厉害（论文 Fig. 4 的曲率波动约大 10 倍）。我们要在电脑里重现的，就是图 1 这个过程。</p>
+</section>
+
+<!-- ============================================================ 2 CFD -->
+<section class="chapter">
+<h2>2　CFD 是什么：把流体切成格子</h2>
+<p>CFD（计算流体力学）的思路可以用“拍电影”来理解：</p>
+<ul>
+  <li><b>把空间切成格子</b>（网格）。本次计算一共 20 722 个格子，最细的地方每格边长 50 微米，大约是头发丝的一半粗。</li>
+  <li><b>每个格子记几个数</b>：这里的速度 U、压力 p、液体占比 α。</li>
+  <li><b>把时间切成小段</b>（时间步 Δt）。本次每步约 10 微秒。</li>
+  <li><b>用物理定律从这一帧推出下一帧</b>，一直推下去。把每 0.5 毫秒的结果画出来连起来，就是动图。</li>
+</ul>
+<figure>
+  <img src="fig/time_loop.png">
+  <figcaption>图 2　每个时间步做的事情。第 ④ 步是“先猜速度、再用压力把速度修正到满足质量守恒”，这种做法叫 PIMPLE 算法。</figcaption>
+</figure>
+<div class="box">
+<b class="t">为什么时间步要这么小？</b>
+一步之内，流体不能跨过一个以上的格子，否则计算会“跳格”而发散。衡量这一点的是 Courant 数 Co = |U|·Δt/Δx，本次要求 Co ≤ 0.4。表面张力还有自己的限制（第 5 章）。所以格子越细，时间步也必须越小，计算量增长得很快。
+</div>
+<div class="box">
+<b class="t">为什么只算“一个切片”？</b>
+气泡大体是绕针轴旋转对称的，所以只需要算一个很薄的扇形切片（5° 的楔形），软件会把它当成整圈。这叫<b>轴对称</b>模拟，计算量比完整三维小两个数量级以上。代价是：真正三维、不对称的褶皱算不出来。
+</div>
+</section>
+
+<!-- ============================================================ 3 VOF -->
+<section class="chapter">
+<h2>3　怎么区分液体和气体：VOF 方法</h2>
+<p>两种流体共用一套格子。为了知道每个格子里是什么，引入一个数 <b>α</b>（读作 alpha）：格子里乙醇占的体积比例。</p>
+<figure>
+  <img src="fig/vof_cells.png">
+  <figcaption>图 3　VOF（Volume of Fluid，流体体积法）的含义。橙色圆是真实界面，格子里的数字是 α。界面穿过的格子 α 在 0 和 1 之间。</figcaption>
+</figure>
+<p>有了 α，任何格子里的密度和黏度都可以按比例混合出来（式 3）。气泡的形状就是 α = 0.5 的那条等值线：动图里看到的白色/深蓝色边界就是它。</p>
+<p>α 本身会随流体流动而搬运，就像往水里滴的墨水会跟着水流走。这由第 4 章的相方程描述。</p>
+</section>
+
+<!-- ============================================================ 4 equations -->
+<section class="chapter">
+<h2>4　控制方程：逐项解释</h2>
+<p>整个模拟只用了下面这几个方程。看起来复杂，但每一项都有很直观的意思。符号约定：<b>U</b> 是速度（矢量），p 是压力，ρ 是密度，μ 是黏度，<b>g</b> 是重力加速度，∇ 读作“梯度/散度”，可以理解为“在空间里的变化率”。</p>
+
+<h3>(1) 质量守恒：流进多少就流出多少</h3>
+<div class="eq s"><img src="fig/eq_cont.png"></div>
+<p>液体和气体在这里都当作不可压缩（体积不会被压小）。∇·U = 0 的意思是：任何一个格子，流进来的体积 = 流出去的体积。唯一的例外是管口下方的进气口，那里规定氦气以 0.707 m/s 流入（第 8 章）。</p>
+
+<h3>(2) 相方程：α 跟着流体走</h3>
+<div class="eq m"><img src="fig/eq_alpha.png"></div>
+<ul>
+  <li><span class="term">∂α/∂t</span>某处 α 随时间的变化；</li>
+  <li><span class="term">∇·(αU)</span>流体把 α 从一个格子带到另一个格子（“墨水随水流走”）；</li>
+  <li><span class="term">第三项</span>人为加的“界面压缩”项，只在界面附近起作用，把模糊的界面重新压锐。OpenFOAM 用一种叫 MULES 的算法来保证 α 始终在 0 到 1 之间。</li>
+</ul>
+
+<h3>(3) 混合物性</h3>
+<div class="eq m"><img src="fig/eq_mix.png"></div>
+<p>下标 l 表示液体（乙醇），g 表示气体（氦气）。乙醇密度是氦气的 4 870 倍：这么大的密度比是气泡问题难算的原因之一。</p>
+
+<h3>(4) 动量方程：牛顿第二定律 ma = F</h3>
+<div class="eq"><img src="fig/eq_mom.png"></div>
+<p>等号左边是“质量 × 加速度”，右边是所有的力。从左到右：</p>
+<table>
+  <tr><th style="width:24%">项</th><th>意思</th><th style="width:30%">在气泡问题里的作用</th></tr>
+  <tr><td>∂(ρU)/∂t + ∇·(ρUU)</td><td>单位体积流体的“质量 × 加速度”。第二部分表示流体带着自己的动量一起流动。</td><td>惯性：气泡上浮、断开后的回弹</td></tr>
+  <tr><td>−∇p<sub>rgh</sub></td><td>压力差推着流体从高压流向低压。p<sub>rgh</sub> = p − ρ g·x 是扣掉静水压后的压力，数值上更好算。</td><td>维持质量守恒</td></tr>
+  <tr><td>−(g·x)∇ρ</td><td>重力与浮力。只在密度变化的地方（即界面上）不为零：轻的气体被推着往上。</td><td>浮力：让气泡往上走</td></tr>
+  <tr><td>∇·[μ(∇U+∇U<sup>T</sup>)]</td><td>黏性力：相邻流体层之间的“摩擦”。</td><td>阻尼振荡，影响颈缩速度</td></tr>
+  <tr><td>f<sub>σ</sub></td><td>表面张力（第 5 章）。</td><td>让气泡变圆；决定颈缩、断开</td></tr>
+  <tr><td>f<sub>EHD</sub> + f<sub>pl</sub></td><td>等离子体的等效作用（第 6 章），是我们自己加的。</td><td>把气泡拴在管口、拉长、抖动</td></tr>
+</table>
+<div class="box key">
+<b class="t">一句话</b>
+前四项是标准的 OpenFOAM 两相流求解器 interFoam 本来就有的；f<sub>σ</sub> 也是 interFoam 自带的；只有最后的等离子体两项是这次新写进程序的。
+</div>
+</section>
+
+<!-- ============================================================ 5 surface tension -->
+<section class="chapter">
+<h2>5　表面张力（重点）</h2>
+<h3>5.1 它从哪来</h3>
+<p>液体内部的分子被四周分子均匀地拉着，合力为零；表面上的分子外面没有液体，只被往里拉。结果是液面像一张绷紧的膜，总想让自己的面积最小。这就是表面张力，用 σ 表示，单位 N/m。乙醇的 σ = 22.14 mN/m（论文给定），大约是水的三分之一。</p>
+<figure>
+  <img src="fig/surface_tension.png" style="max-width:96%">
+  <figcaption>图 4　(a) 表面张力的分子来源；(b) 弯曲的界面像一张膜往里压，气泡里的压力比外面高；(c) CSF 方法：把界面上的力摊到界面经过的格子里，箭头沿 α 变化最快的方向。</figcaption>
+</figure>
+
+<h3>5.2 弯曲界面两侧有压力差（Laplace 压差）</h3>
+<div class="eq m"><img src="fig/eq_laplace.png"></div>
+<p>半径 R = 1.5 mm 的气泡，内部比外面高约 29 Pa。这个数很关键：我们后面加的等离子体界面力是 5–60 Pa，和它同一个量级。所以气泡最后在哪里变细、什么时候断开，是表面张力和等离子体力“拔河”的结果。</p>
+
+<h3>5.3 怎么放进方程：CSF（连续表面力）模型</h3>
+<div class="eq m"><img src="fig/eq_csf.png"></div>
+<ul>
+  <li><span class="term">∇α</span>α 变化最快的方向，只在界面附近不为零，方向从气体指向液体。所以 f<sub>σ</sub> 自动只作用在界面上。</li>
+  <li><span class="term">κ</span>界面曲率，越弯越大，直接从 α 场算出来（先求单位法向 ∇α/|∇α|，再求它的散度）。</li>
+  <li><span class="term">效果</span>对气泡，f<sub>σ</sub> 指向气泡内部，把气泡往里压，使气泡内压力高于外面，与 5.2 一致。</li>
+</ul>
+<p>OpenFOAM 在计算时把表面张力和压力梯度放在格子的同一个面上计算（“平衡力”离散），这样静止的气泡不会因为数值误差自己乱动。我们新加的等离子体力也用同样的方式加进去。</p>
+
+<h3>5.4 气泡贴在玻璃管上：接触角</h3>
+<div class="eq s"><img src="fig/eq_angle.png"></div>
+<p>在玻璃管壁上，界面与管壁的夹角规定为 45°（从乙醇一侧量）。这决定了气泡沿管外壁往下包多少。乙醇实际上很容易润湿玻璃，45° 是一个折中取值。</p>
+
+<h3>5.5 表面张力限制时间步</h3>
+<div class="eq m"><img src="fig/eq_dt.png"></div>
+<p>表面张力会在界面上激起很快的小波（毛细波）。时间步太大，这些波会被数值放大导致发散。50 µm 格子对应的上限约 19 µs；实际计算时由 Courant 数控制，平均步长 8.9–9.9 µs，在上限以内。</p>
+
+<h3>5.6 只有表面张力和浮力时会怎样（0 kV 对照）</h3>
+<div class="eq m"><img src="fig/eq_bo.png"></div>
+<p>Bond 数 Bo 比较的是浮力和表面张力。直径 3 mm 的气泡 Bo ≈ 3.2 > 1，说明浮力占优。0 kV 对照算例证实了这一点：同样的 15 mm³ 气泡，不加等离子体力时，在 14.5–15 ms 内整个脱离管口。也就是说，<b>实验里那个巨大的、拴在管口的气泡，单靠表面张力是拴不住的</b>，必须有等离子体的作用。</p>
+</section>
+
+<!-- ============================================================ 6 plasma -->
+<section class="chapter">
+<h2>6　等离子体怎么放进模型</h2>
+<div class="box warn">
+<b class="t">先说清楚</b>
+真正的放电过程（电场、电子、离子的产生和运动）没有计算。我们用三个“等效力”来代表放电对气泡的作用，它们的形式参考论文 Fig. 1I 的受力分析，大小是照着实验视频调出来的。这类模型叫<b>唯象模型</b>：能重现现象，但不能从电压直接预测结果。
+</div>
+<figure>
+  <img src="fig/plasma_forces.png" style="max-width:62%">
+  <figcaption>图 5　加进模型的三个等效力。</figcaption>
+</figure>
+
+<h3>6.1 ① EHD 拉力：把气泡拴在管口</h3>
+<div class="eq"><img src="fig/eq_ehd.png"></div>
+<ul>
+  <li><span class="term">F<sub>0</sub></span>力的强度。最终取 F<sub>0</sub> = 40 ρ<sub>l</sub> g ≈ 3.1×10<sup>5</sup> N/m³，即对气体的拉力是同体积乙醇重量的 40 倍。</li>
+  <li><span class="term">(1−α)</span>只拉气体，不拉液体。</li>
+  <li><span class="term">d̂</span>指向针尖的方向，d 是到针尖的距离。</li>
+  <li><span class="term">S(d)</span>“作用范围”开关：针尖周围 R<sub>E</sub> = 1.5 mm 内为 1，再往外在 0.15 mm 内平滑降到 0。所以只有气泡下部被拴住，上部只受浮力，自然被拉长、在 R<sub>E</sub> 附近变细。</li>
+</ul>
+
+<h3>6.2 ② 顶部推力和 ③ 随机抖动</h3>
+<div class="eq m"><img src="fig/eq_pl.png"></div>
+<ul>
+  <li>和表面张力一样乘以 ∇α，所以只作用在界面上。ϑ 是从针尖看、相对竖直向上方向的角度。</li>
+  <li><span class="term">P<sub>up</sub></span>顶部推力 60 Pa，只推气泡朝上的那一面（cos ϑ > 0），模拟离子风把气泡顶部往上推。</li>
+  <li><span class="term">P<sub>fl</sub></span>随机抖动的强度：正极性 5 Pa，负极性 8 Pa。<b>两种极性的模型只有这一个数不同。</b></li>
+</ul>
+<div class="eq m"><img src="fig/eq_xi.png"></div>
+<p>ξ 是一组波长不同（m = 4–24）的正弦波叠加，每个波的振幅 a<sub>m</sub>、b<sub>m</sub> 随时间随机变化，变化的“记忆时间”约 0.3 ms。这样界面上就有一个忽正忽负、不断变化的小压力，模拟带电粒子撞击界面造成的扰动。</p>
+
+<h3>6.3 只对“连着针尖的气体”起作用</h3>
+<p>等离子体只存在于和针尖相连的那团气体里。程序每一步都从针尖附近 0.8 mm 内的气体格子出发，像“油漆桶填色”一样找出所有连通的气体格子，只对这些格子（再往外扩 2 层，覆盖界面）施加上面两个力。气泡断开后，飘走的那一半就只受浮力和表面张力。没有这一步时，飘走的气泡会被拉回来重新合并（第 10 章）。</p>
+</section>
+
+<!-- ============================================================ 7 OpenFOAM -->
+<section class="chapter">
+<h2>7　OpenFOAM 与自编求解器</h2>
+<p><b>OpenFOAM</b> 是一个开源的 CFD 软件包，本质是一大套 C++ 程序。它为不同问题准备了不同的“求解器”，其中 <b>interFoam</b> 专门算两种不相溶流体（如气泡、液滴、溃坝），已经包含第 4 章的 (1)–(3) 式和动量方程里除等离子体以外的所有项。</p>
+<p>我们做的事：</p>
+<ol>
+  <li>安装 Ubuntu 软件源里的 OpenFOAM v1912，并下载它的源代码（为了得到编译所需的头文件）。</li>
+  <li>把 interFoam 复制一份，命名为 <b>plasmaInterFoam</b>。</li>
+  <li><b>先不改任何东西就编译</b>，用官方的溃坝算例对比：新程序与原版结果逐位相同（α 的最大差为 0）。这证明编译环境没问题。</li>
+  <li>再加入第 6 章的三个力：写在格子面上，与表面张力用同样的离散方式，并加入“连通气体”搜索。</li>
+</ol>
+<div class="box">
+<b class="t">源码在哪</b>
+<code>solver/plasmaInterFoam/</code>：新增的文件是 <code>createPlasmaForce.H</code>（读参数、预先算好与时间无关的部分）和 <code>plasmaForce.H</code>（每步更新随机振幅、找连通气体、算力），另外在 <code>UEqn.H</code>、<code>pEqn.H</code> 里各加了一项 <code>plasmaForcef</code>。所有参数在算例的 <code>constant/plasmaProperties</code> 里，不用重新编译就能改。
+</div>
+</section>
+
+<!-- ============================================================ 8 case -->
+<section class="chapter">
+<h2>8　搭建算例：几何、网格、边界、初始</h2>
+<figure>
+  <img src="../slides/fig/geometry.png" style="max-width:82%">
+  <figcaption>图 6　左：整个计算域（r 为离轴距离，z 为高度，管口在 z = 0）。右：管口附近放大，浅色细线每两个格子画一条。</figcaption>
+</figure>
+<table>
+  <tr><th style="width:20%">项目</th><th>设置</th><th style="width:28%">为什么</th></tr>
+  <tr><td>计算域</td><td>r ≤ 5 mm，z 从 −3 到 20 mm，5° 楔形</td><td>与动图视野一致；轴对称</td></tr>
+  <tr><td>网格</td><td>20 722 格；管口附近 r ≤ 2.5 mm、z ≤ 7 mm 内均匀 50 µm，往外逐渐放大到约 0.2 mm</td><td>管壁 0.1 mm 厚，至少要 2 格</td></tr>
+  <tr><td>乙醇</td><td>ρ<sub>l</sub> = 791 kg/m³，μ<sub>l</sub> = 1.17 mPa·s，σ = 22.14 mN/m</td><td>论文给定</td></tr>
+  <tr><td>氦气</td><td>ρ<sub>g</sub> = 0.1625 kg/m³，μ<sub>g</sub> = 1.99×10<sup>−5</sup> Pa·s</td><td>25 °C、1 atm</td></tr>
+  <tr><td>进气口</td><td>管内 r &lt; 0.15 mm 的底面，氦气以 0.707 m/s 流入（见下式）</td><td>3 mL/min</td></tr>
+  <tr><td>管壁</td><td>无滑移（贴壁速度为 0），接触角 45°</td><td>玻璃管</td></tr>
+  <tr><td>底面</td><td>壁面</td><td>—</td></tr>
+  <tr><td>外侧 r = 5 mm</td><td>滑移（只挡住，不摩擦）</td><td>离气泡足够远</td></tr>
+  <tr><td>顶面 z = 20 mm</td><td>压力固定，液体可进出</td><td>让上浮的气泡离开</td></tr>
+  <tr><td>初始条件</td><td>球心 z = 0.1 mm、半径 1.54 mm 的氦气泡，其余是静止的乙醇</td><td>视频里上一次断开后留下的气泡（第 9 章）</td></tr>
+  <tr><td>算多久</td><td>0–60 ms（0 kV 对照算到 80 ms），每 0.5 ms 存一次结果</td><td>覆盖一次完整的颈缩和断开</td></tr>
+</table>
+<div class="eq m"><img src="fig/eq_uin.png"></div>
+<p class="small">针本身只有 0.08 mm 粗，在 50 µm 的格子里只有不到一格，所以没有单独画出，只把针尖位置当作等离子体力的中心。</p>
+</section>
+
+<!-- ============================================================ 9 video -->
+<section class="chapter">
+<h2>9　从视频里读数据</h2>
+<p>为了让模拟能和实验比，先要从视频里量出数字。做法是对每一帧做黑白分割（黑色 = 气泡），然后：</p>
+<ol>
+  <li><b>比例尺</b>：气泡下方露出的玻璃管宽 74 像素，对应外径 0.5 mm，所以 1 mm = 148 像素。</li>
+  <li><b>管口位置</b>：气泡里的亮点是针尖的放电辉光，它就在管口（z = 0）。</li>
+  <li><b>时间</b>：视频标注 10 000 fps 拍摄、60 fps 播放，但文件只有 30 fps，帧间隔不确定。我们换了一种办法：把每帧的气泡轮廓绕轴旋转算体积，正极性气泡每帧增大 0.0053 mm³。氦气进气量是 50 mm³/s，两者对上要求每帧 = 0.1 ms。</li>
+  <li><b>残留气泡</b>：顶在 +1.57 mm，底在 −1.37 mm（包住管子往下），宽 3.0 mm，体积 15.0 mm³。这就是模拟的初始条件。</li>
+  <li><b>负极性</b>：断开时飘走 7.7 mm³，留下 9.2 mm³。</li>
+</ol>
+<div class="box">
+<b class="t">一个小推论</b>
+残留气泡上下不对称（顶 1.57、底 1.37），很接近一个以针尖为焦点的椭圆。如果气体被一个“指向针尖的力”拉住、同时受浮力，平衡形状正好是这种椭圆，偏心程度 = 浮力 / 拉力。由此估出拉力约为 14.7 倍 ρ<sub>l</sub>g，这是第 6.1 节拉力 F<sub>0</sub> 的起点（后来调到 40 倍）。
+</div>
+</section>
+
+<!-- ============================================================ 10 calibration -->
+<section class="chapter">
+<h2>10　调参全过程：每一步遇到什么、怎么改</h2>
+<p>模型的几个参数（F<sub>0</sub>、R<sub>E</sub>、P<sub>up</sub>、P<sub>fl</sub>）不能从理论直接算出来，只能试算、和视频比、再调。下面是实际走过的路，每一步都用视频量出的数字（顶高、底深、宽度、颈缩、断开体积）来判断。</p>
+<table>
+  <tr><th class="c" style="width:5%">#</th><th style="width:30%">试了什么</th><th style="width:32%">看到什么</th><th>怎么改、学到什么</th></tr>
+  <tr><td class="c">1</td><td>只加 EHD 拉力，F<sub>0</sub> = 14.7 ρ<sub>l</sub>g，R<sub>E</sub> = 1.7 mm；抖动 40 Pa（正）/ 500 Pa（负）</td><td>正极性表面起皱；负极性气泡被撕成很多“手指”</td><td>抖动强度太大，降到 5 Pa / 40 Pa</td></tr>
+  <tr><td class="c">2</td><td>同上，抖动减小</td><td>33 ms 内气泡顶部一直停在 1.6 mm，不长高</td><td>拉住的范围 R<sub>E</sub> 比气泡大，新进的气都被“装”在范围内。R<sub>E</sub> 改为 1.5 mm，初始体积改为视频的 15 mm³</td></tr>
+  <tr><td class="c">3</td><td>R<sub>E</sub> = 1.5 mm</td><td>顶部在 2.3–3.3 mm 上下晃，80 ms 内不颈缩</td><td>只有拉力时，上部要攒到约 18 mm³ 才能挣脱，远大于实验。参考论文受力图，加入顶部推力 P<sub>up</sub></td></tr>
+  <tr><td class="c">4</td><td>加 P<sub>up</sub> = 30–100 Pa</td><td>顶部反而被压低</td><td>界面力的符号写反了（−P∇α 是往里压，+P∇α 才是往外推），改正</td></tr>
+  <tr><td class="c">5</td><td>改正后 P<sub>up</sub> = 60–100 Pa</td><td>整个气泡被推离管口</td><td>拉力不够大，F<sub>0</sub> 提到 25 → 40 ρ<sub>l</sub>g</td></tr>
+  <tr><td class="c">6</td><td>F<sub>0</sub> = 25 ρ<sub>l</sub>g，P<sub>up</sub> = 40 Pa</td><td>第一次成功颈缩断开！但飘走的气泡又被拉回来合并</td><td>等离子体力也作用在了飘走的气泡上。加入“只对连通气体起作用”的开关（6.3 节）</td></tr>
+  <tr><td class="c">7</td><td>负极性抖动 25–40 Pa</td><td>约 3 ms 起整个气泡被甩离管口</td><td>抖动松动了气泡在管子上的“根”，再被顶部推力推走。F<sub>0</sub> 提到 40 ρ<sub>l</sub>g、P<sub>up</sub> 60 Pa，抖动降到 8 Pa</td></tr>
+  <tr><td class="c">✓</td><td>最终：F<sub>0</sub> = 40 ρ<sub>l</sub>g，R<sub>E</sub> = 1.5 mm，P<sub>up</sub> = 60 Pa，P<sub>fl</sub> = 5 / 8 Pa</td><td>两种极性都完成“残留→颈缩→断开→上浮”</td><td>见第 11 章</td></tr>
+</table>
+<p class="small">每个试算约 15–30 分钟。最终每个算例 6 000–9 000 步，单核 16–27 分钟。</p>
+</section>
+
+<!-- ============================================================ 11 results -->
+<section class="chapter">
+<h2>11　结果怎么看</h2>
+<figure>
+  <img src="../slides/fig/key_frames.png" style="max-width:80%">
+  <figcaption>图 7　三个算例在五个时刻的气泡形状（深蓝 = 氦气，虚线 = 管口）。第三列是断开前一刻，第四列是刚断开。</figcaption>
+</figure>
+<table>
+  <tr><th></th><th>什么时候断开</th><th>飘走的气泡</th><th>留下的气泡</th></tr>
+  <tr><td>+2.0 kV 模拟</td><td>16.0–16.5 ms</td><td>6.1 mm³（等效半径 1.13 mm）</td><td>9.8 mm³</td></tr>
+  <tr><td>−2.0 kV 模拟</td><td>11.5–12.0 ms</td><td>8.4 mm³（等效半径 1.26 mm）</td><td>7.2 mm³</td></tr>
+  <tr><td>−2.0 kV 实验</td><td>—</td><td>7.7 mm³</td><td>9.2 mm³</td></tr>
+  <tr><td>+2.0 kV 实验</td><td>约 52 ms</td><td>—</td><td>—</td></tr>
+  <tr><td>0 kV 模拟</td><td>14.5–15 ms</td><td>整个气泡 15.8 mm³</td><td>几乎没有</td></tr>
+</table>
+<h3>读图要点</h3>
+<ul>
+  <li><b>0 kV（最下排）</b>：只有表面张力和浮力，气泡整个离开管口，管口又冒出一个新的小气泡。这就是不放电时的普通情况。</li>
+  <li><b>±2.0 kV</b>：下半部被拴在管口，上半部被推高、拉长，中间变细，在 z ≈ 1.5–2 mm 处断开（正好是拉力作用范围 R<sub>E</sub> 的边缘），与论文说的“断开发生在气泡体内”一致。断开后上半个气泡以约 0.15 m/s 上浮。</li>
+  <li><b>负极性</b>比正极性早断开、飘走得更多，方向与实验一致（实验负极性飘走 7.7 mm³）。</li>
+  <li><b>动图</b> <code>plasma_bubble_2p0kV.gif</code>：三栏从左到右是 0 kV、+2.0 kV、−2.0 kV，每栏上方是该栏的时刻，右上角红字是总时间，0–60 ms，每帧 0.5 ms。</li>
+</ul>
+</section>
+
+<!-- ============================================================ 12 limits -->
+<section class="chapter">
+<h2>12　局限与下一步</h2>
+<h3>目前做不到的</h3>
+<ul>
+  <li><b>等离子体是“调”出来的，不是“算”出来的。</b>三个力的大小来自对视频的拟合，换一个电压就要重新调，不能预测。</li>
+  <li><b>断开比实验快约 3 倍</b>（正极性 16 ms 对 52 ms），说明顶部推力偏强或拉力的分布形式不对。</li>
+  <li><b>负极性的褶皱远比视频弱。</b>论文里负极性的曲率波动是正极性的约 10 倍，但我们的抖动只能用到 8 Pa（是正极性的 1.6 倍），再大气泡就被甩走。</li>
+  <li><b>轴对称</b>：实验里不对称的三维褶皱算不出来。</li>
+  <li><b>网格</b>：只用了 50 µm 一种网格，没有用更细网格验证结果是否变化。</li>
+  <li>针没有画进几何；接触角 45° 是假定值。</li>
+</ul>
+<h3>可以怎么改进</h3>
+<ol>
+  <li>用实验测的放电电流和光强约束等离子体力的大小，而不是只看形状。</li>
+  <li>把顶部推力改成随时间变化（比如和放电脉冲同步），对比断开时间。</li>
+  <li>做 25 µm 网格的对比，确认断开时间和体积不依赖网格。</li>
+  <li>负极性做三维计算，才能出现视频里的不对称褶皱（计算量约大 100 倍）。</li>
+  <li>长远：耦合电场和带电粒子方程，让等离子体力从物理上算出来。</li>
+</ol>
+</section>
+
+<!-- ============================================================ 13 glossary -->
+<section class="chapter">
+<h2>13　名词小词典</h2>
+<table>
+  <tr><th style="width:22%">名词</th><th>意思</th></tr>
+  <tr><td>CFD</td><td>计算流体力学：用计算机解流体方程。</td></tr>
+  <tr><td>网格 / 单元</td><td>把空间切成的小格子，本次 20 722 个。</td></tr>
+  <tr><td>时间步 Δt</td><td>每次往前推进的时间，本次约 10 µs。</td></tr>
+  <tr><td>Courant 数</td><td>一步内流体走过几个格子；要求 ≤ 0.4。</td></tr>
+  <tr><td>VOF、α</td><td>流体体积法；α 是格子里液体的体积比例。</td></tr>
+  <tr><td>MULES</td><td>OpenFOAM 里保证 α 在 0–1 之间、界面不被抹糊的算法。</td></tr>
+  <tr><td>PIMPLE</td><td>先预测速度、再解压力修正速度的迭代算法。</td></tr>
+  <tr><td>p<sub>rgh</sub></td><td>扣掉静水压后的压力，方便计算。</td></tr>
+  <tr><td>表面张力 σ</td><td>液面收缩的倾向，乙醇 22.14 mN/m。</td></tr>
+  <tr><td>曲率 κ</td><td>界面弯曲的程度，半径越小越弯。</td></tr>
+  <tr><td>CSF</td><td>连续表面力模型：把界面上的表面张力变成界面格子里的体积力。</td></tr>
+  <tr><td>Laplace 压差</td><td>弯曲界面两侧的压力差，2σ/R。</td></tr>
+  <tr><td>接触角</td><td>界面碰到固体壁时的夹角。</td></tr>
+  <tr><td>Bond 数</td><td>浮力和表面张力之比，&gt; 1 时浮力占优。</td></tr>
+  <tr><td>轴对称、楔形网格</td><td>只算一个绕轴的薄扇形，代表整圈。</td></tr>
+  <tr><td>边界条件</td><td>计算域边上规定的速度、压力等。</td></tr>
+  <tr><td>EHD</td><td>电流体动力学：电场对带电流体的作用力。</td></tr>
+  <tr><td>唯象模型</td><td>不追究微观机理、只用形式简单的等效项重现现象的模型。</td></tr>
+  <tr><td>标定</td><td>调整模型参数使结果与实验吻合。</td></tr>
+  <tr><td>颈缩 / 断开</td><td>气泡中部变细（neck），最后一分为二（pinch-off）。</td></tr>
+  <tr><td>OpenFOAM / interFoam</td><td>开源 CFD 软件 / 其中的两相流求解器。</td></tr>
+  <tr><td>plasmaInterFoam</td><td>本次在 interFoam 上加了等离子体等效力的自编求解器。</td></tr>
+</table>
+</section>
+
+</body>
+</html>

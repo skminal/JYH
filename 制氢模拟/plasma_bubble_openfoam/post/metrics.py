@@ -71,6 +71,8 @@ def analyse(c, tname):
         zc = float((dV * m * zz[:, None]).sum() / (dV * m).sum())
         res['z_free'].append(zc)
         res['R_free'].append(float((3 * v / (4 * np.pi))**(1 / 3)))
+        zs = zz[np.where(m.any(1))[0]]
+        res.setdefault('AR_free', []).append(float((zs.max() - zs.min() + DR) / (2 * rr[np.where(m.any(0))[0].max()] + DR)))
     return res
 
 
@@ -93,10 +95,10 @@ def main():
         json.dump(out, open(p, 'w'), indent=0)
         print('==', os.path.basename(d))
         for r in out[::max(1, len(out) // 12)] + out[-1:]:
-            print('  t=%6.2f ms top %5.2f bot %5.2f w %4.2f V_att %5.2f neck r %4.2f@z %4.2f | free %d V %.2f z %s' % (
+            print('  t=%6.2f ms top %5.2f bot %5.2f w %4.2f V_att %5.2f neck r %4.2f@z %4.2f | free %d V %.2f z %s AR %s' % (
                 r['t_ms'], r.get('top', 0), r.get('bottom', 0), r.get('width', 0), r.get('V_att', 0),
                 r.get('neck_r', 0), r.get('neck_z', 0), r['n_free'], r['V_free'],
-                ','.join('%.1f' % z for z in r['z_free'])))
+                ','.join('%.1f' % z for z in r['z_free']), ','.join('%.2f' % z for z in r.get('AR_free', []))))
 
 
 if __name__ == '__main__':

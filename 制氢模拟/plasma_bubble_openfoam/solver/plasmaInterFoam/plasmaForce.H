@@ -18,6 +18,8 @@
     const vectorField& C = mesh.C().primitiveField();
     boolList conn(mesh.nCells(), false);
     {
+        const labelUList& fc = mesh.faceOwner();
+        const label nInt = mesh.nInternalFaces();
         DynamicList<label> front;
         forAll(C, ci)
         {
@@ -27,23 +29,52 @@
                 front.append(ci);
             }
         }
-        while (front.size())
+        // flood fill; in parallel, repeat with seeds taken across processor faces
+        bool changed = true;
+        while (changed)
         {
-            DynamicList<label> next;
-            forAll(front, k)
+            while (front.size())
             {
-                const labelList& nb = cc[front[k]];
-                forAll(nb, j)
+                DynamicList<label> next;
+                forAll(front, k)
                 {
-                    const label c = nb[j];
-                    if (!conn[c] && a1[c] < 0.5)
+                    const labelList& nb = cc[front[k]];
+                    forAll(nb, j)
                     {
-                        conn[c] = true;
-                        next.append(c);
+                        const label c = nb[j];
+                        if (!conn[c] && a1[c] < 0.5)
+                        {
+                            conn[c] = true;
+                            next.append(c);
+                        }
                     }
                 }
+                front.transfer(next);
             }
-            front.transfer(next);
+            changed = false;
+            if (Pstream::parRun())
+            {
+                boolList bnd(mesh.nFaces() - nInt, false);
+                forAll(bnd, bi) { bnd[bi] = conn[fc[nInt + bi]]; }
+                syncTools::swapBoundaryFaceList(mesh, bnd);
+                const polyBoundaryMesh& pbm = mesh.boundaryMesh();
+                forAll(pbm, p)
+                {
+                    if (!pbm[p].coupled()) continue;
+                    const label st = pbm[p].start();
+                    forAll(pbm[p], i)
+                    {
+                        const label c = fc[st + i];
+                        if (bnd[st + i - nInt] && !conn[c] && a1[c] < 0.5)
+                        {
+                            conn[c] = true;
+                            front.append(c);
+                            changed = true;
+                        }
+                    }
+                }
+                reduce(changed, orOp<bool>());
+            }
         }
         for (label layer = 0; layer < plNlayer; ++layer)
         {
@@ -56,6 +87,22 @@
                     forAll(nb, j) { grown[nb[j]] = true; }
                 }
             }
+            if (Pstream::parRun())
+            {
+                boolList bnd(mesh.nFaces() - nInt, false);
+                forAll(bnd, bi) { bnd[bi] = conn[fc[nInt + bi]]; }
+                syncTools::swapBoundaryFaceList(mesh, bnd);
+                const polyBoundaryMesh& pbm = mesh.boundaryMesh();
+                forAll(pbm, p)
+                {
+                    if (!pbm[p].coupled()) continue;
+                    const label st = pbm[p].start();
+                    forAll(pbm[p], i)
+                    {
+                        if (bnd[st + i - nInt]) grown[fc[st + i]] = true;
+                    }
+                }
+            }
             conn.transfer(grown);
         }
     }
@@ -66,14 +113,15 @@
     const surfaceScalarField snGradAlpha(fvc::snGrad(alpha1));
 
     // fluctuating stress amplitude per face
-    scalarField xi(plUp);
-    if (plPfl > 0)
+    scalarField xi(plK.size(), Zero);
+    if (plPfl > 0 || true)
     {
         for (label k = 0; k < plNm; ++k)
         {
             xi += plA[k]*plCos[k] + plB[k]*plSin[k];
         }
-        xi *= plPfl*norm*plSw;
+        xi *= plPfl*norm*plSwFl;
+        xi += plUp;
     }
 
     label n = 0;

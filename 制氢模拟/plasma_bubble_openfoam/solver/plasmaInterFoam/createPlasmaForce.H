@@ -15,9 +15,12 @@ IOdictionary plasmaDict
     (
         "plasmaProperties",
         runTime.constant(),
+        fileName::null,
         mesh,
         IOobject::MUST_READ_IF_MODIFIED,
-        IOobject::NO_WRITE
+        IOobject::NO_WRITE,
+        true,       // register
+        true        // global: one file read by all processors in parallel
     )
 );
 
@@ -39,6 +42,10 @@ const scalar plnUp = plasmaDict.getOrDefault<scalar>("nUp", 2);
 // seed radius and dilation layers of the electrode-connected gas region
 const scalar plSeedR = plasmaDict.getOrDefault<scalar>("seedR", 3e-4);
 const label  plNlayer = plasmaDict.getOrDefault<label>("nLayer", 2);
+// angular window of the fluctuating stress: off for theta > thCut (deg), i.e. near
+// the anchoring at the capillary, smooth over dTh (deg)
+const scalar plThCut = plasmaDict.getOrDefault<scalar>("thetaCut", 180)*constant::mathematical::pi/180;
+const scalar plDTh = plasmaDict.getOrDefault<scalar>("dTheta", 10)*constant::mathematical::pi/180;
 
 Random plRnd(plSeed);
 const label plNm = plM1 - plM0 + 1;
@@ -97,6 +104,8 @@ scalarField plK(plNf), plSw(plNf), plTh(plNf);
     plK.setSize(n); plSw.setSize(n); plTh.setSize(n);
 }
 scalarField plUp(plPup*plSw*pow(max(cos(plTh), scalar(0)), plnUp));
+// apply the angular window to the fluctuation window plSw (P_up already uses plSw)
+scalarField plSwFl(plSw*0.5*(1.0 - tanh((plTh - plThCut)/max(plDTh, SMALL))));
 PtrList<scalarField> plCos(plNm), plSin(plNm);
 for (label k = 0; k < plNm; ++k)
 {
